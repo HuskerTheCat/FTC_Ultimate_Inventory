@@ -15,6 +15,7 @@
   --accent-gradient: linear-gradient(135deg, #5aa9ff, #3d6ff2);
   --accent-text: #ffffff;
   --danger: #ff6b7d;
+  --pending: #f2b84b;
   --row-hover: #1c2238;
   --focus: 0 0 0 3px rgb(91 155 255 / 0.45);
   --float-shadow: 0 18px 48px rgb(0 0 0 / 0.5);
@@ -258,6 +259,12 @@ tbody tr:last-child td { border-bottom: none; }
 td.packed { width: 1%; }
 td.packed input { width: 22px; min-height: 22px; margin: 0; accent-color: var(--accent); }
 tr.packed td.name { color: var(--muted); }
+/* Parts the team is waiting on, with none arrived yet: striped, with an amber edge. */
+tbody tr.waiting {
+  background: repeating-linear-gradient(135deg, transparent 0 12px, rgb(242 184 75 / 0.05) 12px 24px);
+  box-shadow: inset 3px 0 var(--pending);
+}
+tr.waiting td.name { color: var(--muted); }
 tbody tr.loading { cursor: default; }
 tbody tr.loading:hover { background: none; }
 
@@ -282,6 +289,7 @@ td.qty small.unit { margin: 0 4px 0 0; font-size: 0.8rem; }
 td.name .notes { font-weight: 400; max-width: 32ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .badge { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: var(--raised); font-size: 0.75rem; font-weight: 500; color: var(--muted); vertical-align: middle; }
 .badge.broken { color: var(--danger); background: rgb(255 107 125 / 0.12); }
+.badge.on-order { color: var(--pending); background: rgb(242 184 75 / 0.12); }
 textarea:is([name="notes"], [name="text"]) { font: inherit; }
 button.step {
   width: 32px;
@@ -364,6 +372,7 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   td.name { order: -2; grid-column: 1 / -1; font-size: 1.1rem; padding-right: 36px; }
   td.name::before { content: none; }
   td.name .badge { align-self: flex-start; margin: 4px 0 0; }
+  tbody tr.waiting { border: 1px dashed var(--pending); box-shadow: none; }
   td.name .notes { max-width: 100%; }
   td.qty { order: -1; grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 6px; padding: 6px 0; border-block: 1px solid var(--border); }
   td.qty::before { margin-right: auto; font-size: 0.9rem; }

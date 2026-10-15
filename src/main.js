@@ -135,6 +135,10 @@ const inventoryNote = (part) => (inventories().length > 1 ? project(part.project
 // A packing list only holds a part once it's checked off as packed.
 const holdsPart = (use) => use.packed !== false;
 const inUse = (partId) => usesOfPart(partId).filter(holdsPart).reduce((sum, u) => sum + u.quantity, 0);
+// How many of a part the team is waiting on from the order list.
+const onOrder = (partId) => state.orders.filter((o) => o.partId === partId).reduce((sum, o) => sum + o.quantity, 0);
+// None of the part has arrived yet: the team has none and some are on order.
+const waiting = (partId) => onOrder(partId) > 0 && !state.parts.find((p) => p.id === partId).quantity;
 // Numeric so "Bin 2" sorts before "Bin 10".
 const naturalCompare = (a, b) => a.localeCompare(b, undefined, { numeric: true });
 const sameName = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
@@ -686,12 +690,12 @@ function rowHtml(p, columns) {
   const selected = state.selected?.has(p.id);
   const label = (key) => columns.find(([k]) => k === key)?.[1];
   return `
-    <tr data-id="${esc(p.id)}" class="${selected ? 'selected' : ''} ${p.packed ? 'packed' : ''}">
+    <tr data-id="${esc(p.id)}" class="${selected ? 'selected' : ''} ${p.packed ? 'packed' : ''} ${waiting(p.id) ? 'waiting' : ''}">
       <td class="fav">${state.selected
         ? `<input type="checkbox" aria-label="Select ${esc(p.name)}" ${selected ? 'checked' : ''} />`
         : `<button class="star" data-fav="1" aria-label="Favorite" aria-pressed="${favorite}">${favorite ? '★' : '☆'}</button>`}</td>
       ${label('packed') ? `<td data-label="Packed" class="packed"><input type="checkbox" data-packed="1" aria-label="Packed" ${p.packed ? 'checked' : ''} /></td>` : ''}
-      <td data-label="Item" class="name">${esc(p.name)}${conditionBadge(p.condition)}${notesLine(p.notes)}${tagChips(p.tags)}</td>
+      <td data-label="Item" class="name">${esc(p.name)}${orderBadge(p.id)}${conditionBadge(p.condition)}${notesLine(p.notes)}${tagChips(p.tags)}</td>
       <td data-label="Part #">${esc(p.partNumber)}</td>
       <td data-label="${label('quantity')}" class="qty">
         <button class="step" data-delta="-1" ${p.quantity > 0 ? '' : 'disabled'} aria-label="Remove one">−</button>
@@ -750,6 +754,7 @@ function printList() {
   printSheet(current.name, `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, groups);
 }
 
+const orderBadge = (partId) => onOrder(partId) ? `<small class="badge on-order">${onOrder(partId)} on order</small>` : '';
 const conditionBadge = (condition) => ['used', 'broken'].includes(condition)
   ? `<small class="badge ${condition}">${CONDITIONS[condition]}</small>` : '';
 const notesLine = (notes) => notes ? `<div class="notes muted small">${esc(notes.split('\n')[0])}</div>` : '';
@@ -990,7 +995,7 @@ function openOrdersDialog() {
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>Order list</h2>
-      <p class="muted small">Parts the team is waiting on. When one arrives, tap Arrived to add it to the inventory. New parts go into Main Inventory.</p>
+      <p class="muted small">Parts the team is waiting on. They show in the inventory as on order, and projects and packing lists can use them already. Tap Arrived when one comes in. New items go into Main Inventory.</p>
       <ul id="order-list" class="members"></ul>
       <h2>Add to the order list</h2>
       <input name="name" maxlength="200" list="order-parts" placeholder="Item, or pick a part you already have" />
@@ -1033,14 +1038,18 @@ function openOrdersDialog() {
     const link = orderLink(form.link.value);
     if (link === null) return showError(new Error('That item link is not a web address.'));
     const part = state.parts.find((p) => sameName(p.name, name));
-    fb.addOrder({
+    const order = {
       name: part?.name ?? name,
       partNumber: form.partNumber.value.trim() || (part?.partNumber ?? ''),
       supplier: form.supplier.value.trim() || (part?.supplier ?? ''),
       quantity,
-      partId: part?.id ?? '',
+      partId: part?.id ?? fb.newPartId(),
       ...(link && { link }), // left out when empty, so orders without a link still pass older firestore.rules
-    }).catch(showError);
+    };
+    // Something new is added to the inventory with none in stock, so it shows as on order and projects can use it.
+    // The part is written first, because the rules only accept an order for a part that exists.
+    if (!part) writeParts([[order.partId, orderedPart(order, 0)]], 'added', order.name, `Ordered ${quantity}`);
+    fb.addOrder(order).catch(showError);
     form.reset();
     form.name.focus();
   };
@@ -1068,13 +1077,17 @@ function orderLink(text) {
   }
 }
 
-// Adds an arrived order to the part it's for, or makes it a new part in Main Inventory.
+// A Main Inventory part for an order of something the team doesn't have.
+const orderedPart = (order, quantity) => ({
+  projectId: fb.MAIN_PROJECT, name: order.name, partNumber: order.partNumber, quantity, location: '',
+  supplier: order.supplier, category: '', tags: [], unit: '', condition: 'new', notes: '',
+});
+
+// Adds an arrived order to the part it's for, or makes it a new part in Main Inventory
+// (orders from before new items were added to the inventory right away, or whose part was deleted).
 function receiveOrder(order) {
   const part = state.parts.find((p) => p.id === order.partId);
-  const newPart = part ? null : {
-    projectId: fb.MAIN_PROJECT, name: order.name, partNumber: order.partNumber, quantity: order.quantity, location: '',
-    supplier: order.supplier, category: '', tags: [], unit: '', condition: 'new', notes: '',
-  };
+  const newPart = part ? null : orderedPart(order, order.quantity);
   logged(fb.receiveOrder(order, newPart, state.user), 'arrived', order.name, `+${order.quantity} from the order list`);
 }
 
@@ -1112,7 +1125,7 @@ function openPicker() {
         const using = useOf(current.id, p.id)?.quantity ?? 0;
         const free = p.quantity - inUse(p.id);
         return `<li><button type="button" class="secondary" data-id="${esc(p.id)}">
-          <span><strong>${esc(p.name)}</strong> <span class="muted small">${esc([p.partNumber, p.location, inventoryNote(p)].filter(Boolean).join(' · '))}</span></span>
+          <span><strong>${esc(p.name)}</strong>${orderBadge(p.id)} <span class="muted small">${esc([p.partNumber, p.location, inventoryNote(p)].filter(Boolean).join(' · '))}</span></span>
           <span class="small ${free < 0 ? 'over' : ''}">${free} free${using ? ` · using ${using}` : ''}</span>
         </button></li>`;
       }).join('') || '<li class="muted">No parts match.</li>';
@@ -1134,7 +1147,7 @@ function openUseDialog(use) {
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>${esc(part.name)}</h2>
-      <p class="muted">${esc(project(part.projectId).name)} has ${part.quantity}, and ${part.quantity - inUse(part.id)} are free.</p>
+      <p class="muted">${esc(project(part.projectId).name)} has ${part.quantity}, and ${part.quantity - inUse(part.id)} are free.${onOrder(part.id) ? ` ${onOrder(part.id)} more are on order.` : ''}</p>
       <label>${isPacking(use.projectId) ? 'How many to pack' : 'How many this project uses'}<input name="quantity" type="number" min="0" step="1" required value="${use.quantity}" /></label>
       <div class="row">
         <button value="save">Save</button>
@@ -1172,6 +1185,7 @@ function openPartDialog(part, carry = null, note = '') {
       <h2>${part ? 'Edit part' : 'Add part'}</h2>
       ${carry?.added ? `<p class="muted small">${carry.added} added so far. Location, category and tags are kept from the last part.</p>` : ''}
       ${note ? `<p class="muted small">${esc(note)}</p>` : ''}
+      ${part && onOrder(part.id) ? `<p class="muted small">${onOrder(part.id)} on order. Tap Arrived in Orders when they come in.</p>` : ''}
       ${input('name', 'Item', 'required')}
       ${input('partNumber', 'Part number')}
       ${input('barcode', 'Barcode', 'maxlength="200" placeholder="Scan a package to fill in"')}
@@ -1839,6 +1853,8 @@ async function start() {
       }, onError),
       fb.watchOrders((docs) => {
         state.orders = docs;
+        renderRows();
+        state.picker?.();
         state.onOrdersChange?.();
       }, onError),
       fb.watchPrinted((docs) => { state.printed = new Set(docs.map((d) => d.id)); }, onError),

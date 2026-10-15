@@ -141,9 +141,12 @@ function loadSamples() {
     const partId = ids.get(name);
     write('uses', `${PACKING}_${partId}`, { projectId: PACKING, partId, quantity, packed });
   }
+  // An order for something new comes with a part in Main Inventory that has none yet, like in the app.
   for (const [name, partNumber, quantity, supplier, partName, link] of SAMPLE_ORDERS) {
-    add('orders', { name, partNumber, quantity, supplier, partId: partName ? ids.get(partName) : '', ...(link && { link }) });
+    if (!partName) addParts([[name, partNumber, 0, '', supplier, '', []]], MAIN_PROJECT);
+    add('orders', { name, partNumber, quantity, supplier, partId: ids.get(partName || name), ...(link && { link }) });
   }
+  write('uses', `${ROBOT}_${ids.get('Limit switch')}`, { projectId: ROBOT, partId: ids.get('Limit switch'), quantity: 2 });
   add('log', { at: hoursAgo(2), by: 'maya', byName: 'Maya', action: 'quantity', part: '12V Slim battery', details: 'Quantity +1' });
   add('log', { at: hoursAgo(1), by: 'coach', byName: 'Coach Rivera', action: 'added', part: 'Pinpoint odometry computer', details: '' });
   const oldServo = { projectId: MAIN_PROJECT, name: 'Servo horn (old style)', partNumber: '', quantity: 3, location: 'Bin 1', supplier: 'goBILDA', category: 'Hardware', tags: [], unit: 'pcs', condition: 'used', notes: '' };
