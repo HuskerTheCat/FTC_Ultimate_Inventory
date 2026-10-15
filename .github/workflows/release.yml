@@ -1,0 +1,68 @@
+name: Build apps
+
+# Run from the Actions tab ("Build apps" -> "Run workflow") to build the Windows installer
+# and Android APK and publish them as a GitHub release.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version number, e.g. 0.2.0
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm pkg set version=${{ inputs.version }}
+      - run: npm run build:windows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: release/FTC-Ultimate-Inventory-Setup.exe
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npm pkg set version=${{ inputs.version }}
+      - run: npm run build:android
+      - run: mv android/app/build/outputs/apk/debug/app-debug.apk FTC-Ultimate-Inventory.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: FTC-Ultimate-Inventory.apk
+
+  release:
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
+        with:
+          tag_name: v${{ inputs.version }}
+          target_commitish: ${{ github.sha }}
+          files: |
+            FTC-Ultimate-Inventory-Setup.exe
+            FTC-Ultimate-Inventory.apk

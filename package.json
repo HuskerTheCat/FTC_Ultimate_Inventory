@@ -1,0 +1,48 @@
+{
+  "name": "ftc-ultimate-inventory",
+  "version": "0.2.0",
+  "description": "Parts inventory for FTC robotics teams: web, Windows and Android.",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "emulators": "npx firebase-tools emulators:start --project demo-inventory",
+    "desktop": "vite build --mode app && electron .",
+    "build:windows": "vite build --mode app && electron-builder --win nsis",
+    "build:android": "vite build --mode app && npx cap add android && cp -r android-res/. android/app/src/main/res/ && sed -i 's#</manifest>#<uses-permission android:name=\\\"android.permission.CAMERA\\\" />\\n</manifest>#' android/app/src/main/AndroidManifest.xml && npx cap sync android && cd android && ./gradlew assembleDebug"
+  },
+  "author": "HuskerTheCat",
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "@fontsource/barlow": "^5.3.0",
+    "firebase": "^13.0.0",
+    "qrcode": "^1.5.4",
+    "zxing-wasm": "^3.1.5"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3",
+    "vite": "^8.3.4"
+  },
+  "private": true,
+  "type": "module",
+  "build": {
+    "appId": "io.github.huskerthecat.ftcinventory",
+    "productName": "FTC Ultimate Inventory",
+    "files": [
+      "dist/**",
+      "electron/**"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "icon": "public/icon-512.png",
+      "artifactName": "FTC-Ultimate-Inventory-Setup.exe"
+    },
+    "publish": null
+  }
+}

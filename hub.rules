@@ -1,0 +1,55 @@
+rules_version = '2';
+// Rules for the app developer's hub project (src/hub.js), not for team projects.
+// The app can only add teams, move them between lists, add bug reports, and look up one team by its number to find
+// its Firebase project. Nobody can list teams or read reports except in the Firebase console.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function text(value, max) {
+      return value is string && value.size() <= max;
+    }
+    // Team docs are named by program and number ("frc-254"), FTC teams by number alone. Docs from older app versions
+    // have no program and are FTC teams.
+    function validTeam(key, data) {
+      let program = data.get('program', 'FTC');
+      return data.number is int && data.number > 0 && data.number < 1000000
+        && program in ['FTC', 'FRC', 'FLL', 'Other']
+        && key == (program == 'FTC' ? string(data.number) : program.lower() + '-' + string(data.number));
+    }
+    function team(key) {
+      return /databases/$(database)/documents/teams/$(key);
+    }
+    function deleted(key) {
+      return /databases/$(database)/documents/deleted/$(key);
+    }
+
+    // Each team is in at most one list: teams while the team uses the app, deleted after it deletes itself.
+    // A team moves between the lists in one batch, deleting it from one list as it is added to the other.
+    // Teams added before projectId existed have none; older app versions still add teams without it.
+    match /teams/{key} {
+      allow get: if true;
+      allow create: if request.resource.data.keys().hasOnly(['name', 'program', 'number', 'projectId', 'at'])
+        && text(request.resource.data.name, 200)
+        && (!('projectId' in request.resource.data) || request.resource.data.projectId.matches('[a-z0-9-]{6,30}'))
+        && validTeam(key, request.resource.data)
+        && request.resource.data.at == request.time
+        && !existsAfter(deleted(key));
+      allow delete: if existsAfter(deleted(key));
+    }
+
+    match /deleted/{key} {
+      allow create: if request.resource.data.keys().hasOnly(['program', 'number', 'at'])
+        && validTeam(key, request.resource.data)
+        && request.resource.data.at == request.time
+        && exists(team(key)) && !existsAfter(team(key));
+      allow delete: if existsAfter(team(key));
+    }
+
+    match /reports/{reportId} {
+      allow create: if request.resource.data.keys().hasOnly(['team', 'text', 'version', 'at'])
+        && text(request.resource.data.team, 200)
+        && text(request.resource.data.text, 5000) && request.resource.data.text.size() > 0
+        && text(request.resource.data.version, 20)
+        && request.resource.data.at == request.time;
+    }
+  }
+}

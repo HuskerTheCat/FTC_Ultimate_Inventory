@@ -1,0 +1,175 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isMember() {
+      return signedIn() && exists(/databases/$(database)/documents/members/$(request.auth.uid));
+    }
+    function team() {
+      return get(/databases/$(database)/documents/team/info).data;
+    }
+    function isOwner() {
+      return isMember() && team().owner == request.auth.uid;
+    }
+    function shortText(value) {
+      return value is string && value.size() <= 200;
+    }
+    // existsAfter, so restoring from the trash can bring back a project and its uses in one write.
+    function projectExists(id) {
+      return id is string && existsAfter(/databases/$(database)/documents/projects/$(id));
+    }
+    function validProject() {
+      let project = request.resource.data;
+      return project.keys().hasOnly(['name', 'source', 'kind'])
+        && shortText(project.name) && project.name.size() > 0
+        && (project.source == '' || projectExists(project.source))
+        && (!('kind' in project) || (project.kind == 'packing' && project.source != ''));
+    }
+    function validName(value) {
+      return value is string && value.size() > 0 && value.size() <= 40;
+    }
+    function validPart() {
+      let part = request.resource.data;
+      return part.keys().hasOnly(['projectId', 'name', 'partNumber', 'barcode', 'quantity', 'location', 'supplier', 'category', 'tags', 'unit', 'condition', 'notes', 'updatedBy', 'updatedAt'])
+        && projectExists(part.projectId)
+        && shortText(part.name) && part.name.size() > 0
+        && shortText(part.partNumber)
+        && (!('barcode' in part) || shortText(part.barcode))
+        && shortText(part.location)
+        && shortText(part.supplier)
+        && shortText(part.category)
+        && part.tags is list && part.tags.size() <= 20
+        && (!('unit' in part) || shortText(part.unit))
+        && (!('condition' in part) || part.condition in ['', 'new', 'used', 'broken'])
+        && (!('notes' in part) || (part.notes is string && part.notes.size() <= 1000))
+        && part.quantity is int && part.quantity >= 0 && part.quantity <= 1000000
+        && part.updatedBy == request.auth.token.email
+        && part.updatedAt == request.time;
+    }
+    function validUse(useId) {
+      let use = request.resource.data;
+      return use.keys().hasOnly(['projectId', 'partId', 'quantity', 'packed'])
+        && (!('packed' in use) || use.packed is bool)
+        && useId == use.projectId + '_' + use.partId
+        && projectExists(use.projectId)
+        && existsAfter(/databases/$(database)/documents/parts/$(use.partId))
+        && use.quantity is int && use.quantity > 0 && use.quantity <= 1000000;
+    }
+    function validOrder() {
+      let order = request.resource.data;
+      return order.keys().hasOnly(['name', 'partNumber', 'quantity', 'supplier', 'partId'])
+        && shortText(order.name) && order.name.size() > 0
+        && shortText(order.partNumber)
+        && shortText(order.supplier)
+        && order.quantity is int && order.quantity > 0 && order.quantity <= 1000000
+        && (order.partId == '' || exists(/databases/$(database)/documents/parts/$(order.partId)));
+    }
+
+    match /team/info {
+      allow read: if isMember();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['name', 'secret', 'owner'])
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.secret is string && request.resource.data.secret.size() >= 10;
+      allow update: if isOwner()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['secret'])
+        && request.resource.data.secret is string && request.resource.data.secret.size() >= 10;
+    }
+
+    match /join/info {
+      allow read: if true;
+      allow write: if isOwner()
+        && request.resource.data.keys().hasOnly(['apiKey', 'authDomain', 'appId', 'name'])
+        && shortText(request.resource.data.apiKey)
+        && shortText(request.resource.data.authDomain)
+        && shortText(request.resource.data.appId)
+        && shortText(request.resource.data.name);
+    }
+    match /members/{uid} {
+      allow read: if isMember();
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['email', 'name', 'secret', 'joinedAt'])
+        && request.resource.data.email == request.auth.token.email
+        && validName(request.resource.data.name)
+        && request.resource.data.joinedAt == request.time
+        && request.resource.data.secret == team().secret;
+      allow update: if request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
+        && validName(request.resource.data.name);
+      allow delete: if isOwner() && uid != request.auth.uid;
+    }
+
+    match /log/{entryId} {
+      allow read: if isMember();
+      allow create: if isMember()
+        && request.resource.data.keys().hasOnly(['at', 'by', 'byName', 'action', 'part', 'details'])
+        && request.resource.data.at == request.time
+        && request.resource.data.by == request.auth.uid
+        && validName(request.resource.data.byName)
+        && request.resource.data.action in ['added', 'edited', 'quantity', 'deleted', 'used', 'arrived']
+        && shortText(request.resource.data.part)
+        && request.resource.data.details is string && request.resource.data.details.size() <= 2000;
+    }
+
+    match /parts/{partId} {
+      allow read, delete: if isMember();
+      allow create, update: if isMember() && validPart();
+    }
+
+    match /projects/{projectId} {
+      allow read: if isMember();
+      allow create: if isMember() && validProject();
+      allow delete: if isMember() && projectId != 'main';
+    }
+
+    match /locations/{locationId} {
+      allow read, delete: if isMember();
+      allow create: if isMember()
+        && request.resource.data.keys().hasOnly(['name'])
+        && shortText(request.resource.data.name) && request.resource.data.name.size() > 0;
+    }
+
+    match /printed/{labelKey} {
+      allow read: if isMember();
+      allow create, update: if isMember()
+        && request.resource.data.keys().hasOnly(['at'])
+        && request.resource.data.at == request.time;
+    }
+
+    match /uses/{useId} {
+      allow read, delete: if isMember();
+      allow create, update: if isMember() && validUse(useId);
+    }
+
+    match /orders/{orderId} {
+      allow read, delete: if isMember();
+      allow create: if isMember() && validOrder();
+    }
+
+    // Deleted parts, projects and orders, kept so they can be brought back. Restoring writes `data` and `uses`
+    // through the rules above, so they're only checked for size here.
+    match /trash/{entryId} {
+      allow read, delete: if isMember();
+      allow create, update: if isMember()
+        && request.resource.data.keys().hasOnly(['kind', 'docId', 'name', 'data', 'uses', 'deletedBy', 'deletedAt'])
+        && request.resource.data.kind in ['part', 'project', 'order']
+        && request.resource.data.docId is string
+        && entryId == request.resource.data.kind + '_' + request.resource.data.docId
+        && shortText(request.resource.data.name)
+        && request.resource.data.data is map
+        && request.resource.data.uses is list && request.resource.data.uses.size() <= 400
+        && request.resource.data.deletedBy == request.auth.token.email
+        && request.resource.data.deletedAt == request.time;
+    }
+
+    match /prefs/{uid} {
+      allow read: if isMember() && request.auth.uid == uid;
+      allow create, update: if isMember() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['favorites', 'views'])
+        && request.resource.data.favorites is list && request.resource.data.favorites.size() <= 500
+        && request.resource.data.views is list && request.resource.data.views.size() <= 50;
+    }
+  }
+}

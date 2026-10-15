@@ -1,0 +1,60 @@
+name: Android check
+
+# Builds the Android debug APK for each pull request and smoke-tests it on an emulator.
+# Uses only local Firebase emulators and demo mode, never a real team's project or the hub.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npm run build:android
+      # Test build only: lets the app reach the local Firebase emulators over plain http.
+      - run: |
+          sed -i 's#<application#<application android:usesCleartextTraffic="true"#' android/app/src/main/AndroidManifest.xml
+          cd android && ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Start Firebase emulators with a test team
+        run: |
+          npx firebase-tools emulators:start --project demo-ftc > emulators.log 2>&1 &
+          npx -y wait-on@8.0.3 -t 120000 tcp:127.0.0.1:8080 tcp:127.0.0.1:9099
+          node .github/scripts/seed-emulator.mjs
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - run: npm install --no-save playwright@1.64.0
+      - uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back emulated
+          script: adb reverse tcp:8080 tcp:8080 && adb reverse tcp:9099 tcp:9099 && node .github/scripts/android-smoke.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-screens
+          path: |
+            android-screens
+            emulators.log

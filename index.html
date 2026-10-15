@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0e1221" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://*.googleapis.com https://api.github.com ws://localhost:* ws://127.0.0.1:* http://127.0.0.1:9099 http://127.0.0.1:8080; frame-src https://*.firebaseapp.com; object-src 'none'; base-uri 'none'" />
+    <title>FTC Ultimate Inventory</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <p id="offline-banner" class="status-banner offline" hidden>Offline, changes will sync when you reconnect</p>
+    <a id="update-banner" class="status-banner update" hidden></a>
+    <a id="demo-banner" class="status-banner demo" href="index.html" hidden>Demo only. Click to set up an account</a>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
