@@ -8,7 +8,7 @@ FTC Ultimate Inventory is made by Husker for FTC robotics teams. This page says 
 - **When a team owner deletes the team in the app:** the program, team number and the date.
 - **When someone sends a bug report:** the report text, the team name, the app version and the date. Please don't put personal info in a report.
 
-That's all. People's names, emails, passwords, accounts, parts lists, projects, and anything else about a person or a team's inventory are never logged to the central server. All of it stays in your team's own Firebase project, which your team admin set up and controls, protected by your team's sign-in and security rules. The developer can't see or access it.
+That's all. Users names, emails, passwords, accounts, parts lists, projects, and anything else about a person or a team's inventory are never logged to the central server. All of it stays in your team's own Firebase project, which your team admin set up and controls, protected by your team's sign-in and security rules. The developer can't see or access it.
 
 **Firebase is run by Google under [Google's privacy policy](https://policies.google.com/privacy).**
 
