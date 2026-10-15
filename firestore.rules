@@ -131,12 +131,15 @@ service cloud.firestore {
     match /projects/{projectId} {
       allow read: if isMember();
       allow create: if isMember() && validProject();
+      allow update: if isMember()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
+        && shortText(request.resource.data.name) && request.resource.data.name.size() > 0;
       allow delete: if isMember() && projectId != 'main';
     }
 
     match /locations/{locationId} {
       allow read, delete: if isMember();
-      allow create: if isMember()
+      allow create, update: if isMember()
         && request.resource.data.keys().hasOnly(['name'])
         && shortText(request.resource.data.name) && request.resource.data.name.size() > 0;
     }

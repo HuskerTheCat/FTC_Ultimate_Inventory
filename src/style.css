@@ -213,9 +213,8 @@ button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised)
 .types input { position: absolute; opacity: 0; pointer-events: none; }
 .types label:has(input:checked) { border-color: var(--accent); background: rgb(91 155 255 / 0.15); color: var(--accent); }
 .types label:has(input:focus-visible) { box-shadow: var(--focus); }
-/* Square delete button next to the project picker. */
+/* Square rename/delete button next to the project picker. */
 .projectpick button.icon { width: 48px; min-height: 0; margin-left: 0; }
-.projectpick button.icon.danger:hover { background: rgb(255 107 125 / 0.1); color: var(--danger); border-color: rgb(255 107 125 / 0.5); }
 
 .toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 8px; margin-bottom: 16px; }
 .toolbar:has(+ .filters:not([hidden])) { margin-bottom: 8px; }
@@ -407,6 +406,9 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
 .members button.danger { margin-left: 0; }
 /* Buttons under each item instead of beside it, for lists with longer details. */
 .members.stacked li { flex-direction: column; align-items: stretch; }
+/* Location rows: the buttons stay together, moving under the name when they don't fit beside it. */
+#location-list li { flex-wrap: wrap; }
+#location-list li > .row { flex-wrap: nowrap; margin-left: auto; }
 /* Order rows: details on their own line without splitting a part number, Arrived and Remove stacked the same on every row. */
 #order-list li > .row { flex-direction: column; align-items: stretch; flex-shrink: 0; }
 .order-details { display: block; }

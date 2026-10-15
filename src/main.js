@@ -34,7 +34,7 @@ const CONDITIONS = { '': 'Condition not set', new: 'New', used: 'Used', broken: 
 const SEARCH_KEYS = ['name', 'partNumber', 'barcode', 'supplier', 'location', 'category', 'condition', 'notes'];
 // Small line icons that take the button's text color.
 const icon = (paths) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
-const ICON_TRASH = icon('<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>');
+const ICON_EDIT = icon('<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>');
 const ICON_CHEVRON = icon('<path d="m6 9 6 6 6-6"/>');
 const ICON_SCAN = icon('<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10"/>');
 const ICON_MENU = icon('<path d="M4 6h16M4 12h16M4 18h16"/>');
@@ -169,12 +169,12 @@ function showError(error) {
 }
 
 // Asks for a line of text over whatever dialog is open. The Windows app has no prompt(), so the app uses this instead.
-// Resolves with the trimmed text, or '' when cancelled.
-function ask(question) {
+// Resolves with the trimmed text, or '' when cancelled. `value` fills the box to start with.
+function ask(question, value = '') {
   const dialog = app.querySelector('#ask');
   dialog.innerHTML = `
     <form method="dialog" class="card">
-      <label>${esc(question)}<input name="answer" /></label>
+      <label>${esc(question)}<input name="answer" value="${esc(value)}" /></label>
       <div class="row">
         <button value="ok">OK</button>
         <button value="cancel" formnovalidate class="secondary">Cancel</button>
@@ -391,7 +391,7 @@ function renderInventory() {
         <button id="project" class="secondary" aria-haspopup="true" aria-expanded="false" aria-controls="project-menu"></button>
         <div id="project-menu" class="menu" hidden></div>
       </div>
-      <button id="delete-project" class="icon danger" aria-label="Delete project" title="Delete project">${ICON_TRASH}</button>
+      <button id="edit-project" class="icon" aria-label="Rename or delete" title="Rename or delete">${ICON_EDIT}</button>
     </div>
     <div class="toolbar">
       <input id="search" type="search" placeholder="Search name, part #, supplier, tag…" />
@@ -457,7 +457,7 @@ function renderInventory() {
   app.querySelector('#locations').onclick = openLocationsDialog;
   app.querySelector('#orders').onclick = openOrdersDialog;
   app.querySelector('#trash').onclick = openTrashDialog;
-  app.querySelector('#delete-project').onclick = () => deleteCurrentProject().catch(showError);
+  app.querySelector('#edit-project').onclick = openListDialog;
   app.querySelector('#search').oninput = (e) => { state.search = e.target.value; renderRows(); };
   app.querySelector('#category').onchange = (e) => { state.category = e.target.value; renderRows(); };
   app.querySelector('#location').onchange = (e) => { state.location = e.target.value; renderRows(); };
@@ -543,7 +543,6 @@ function renderProjectPicker() {
     return items.length ? `<h3>${plural}</h3>` + items.map((p) =>
       `<button type="button" class="menu-item" data-project="${esc(p.id)}" ${p === current ? 'aria-current="true"' : ''}>${typeIcon}<span>${esc(p.name)}</span></button>`).join('') : '';
   }).join('') + `<hr /><button type="button" id="new-project" class="menu-item">${ICON_PLUS}<span>New inventory, project or list</span></button>`;
-  app.querySelector('#delete-project').hidden = current.id === fb.MAIN_PROJECT;
 }
 
 // Menus (the project picker, the header menu and More) open from their button.
@@ -935,7 +934,8 @@ function openLocationsDialog() {
       return `<li>
         <span><strong>${esc(l.name)}</strong> <span class="muted small">${count} part${count === 1 ? '' : 's'}</span></span>
         <span class="row">
-          <button type="button" class="secondary" data-label="${esc(l.name)}">Print label</button>
+          <button type="button" class="secondary" data-rename="${esc(l.id)}">Rename</button>
+          <button type="button" class="secondary" data-label="${esc(l.name)}">Label</button>
           <button type="button" class="danger" data-id="${esc(l.id)}" ${count ? 'disabled' : ''}>Delete</button>
         </span>
       </li>`;
@@ -957,11 +957,23 @@ function openLocationsDialog() {
   list.onclick = (e) => {
     if (e.target.dataset.id) fb.deleteLocation(e.target.dataset.id).catch(showError);
     if (e.target.dataset.label) printAndMark([locationLabel(state.projectId, e.target.dataset.label)]);
+    if (e.target.dataset.rename) renameLocation(state.locations.find((l) => l.id === e.target.dataset.rename)).catch(showError);
   };
   renderLocations();
   state.onLocationsChange = renderLocations;
   dialog.addEventListener('close', () => { state.onLocationsChange = null; }, { once: true });
   dialog.showModal();
+}
+
+// Renames a location and moves every part there (in any inventory) to the new name.
+// QR labels hold the location's name, so labels for the old name need printing again.
+async function renameLocation(location) {
+  const name = (await ask(`Rename ${location.name}. Its printed QR labels will need printing again.`, location.name)).slice(0, 200);
+  if (!name || name === location.name) return;
+  if (state.locations.some((l) => l.id !== location.id && sameName(l.name, name))) throw new Error(`${name} is already a location.`);
+  fb.renameLocation(location.id, name).catch(showError);
+  const changes = state.parts.filter((p) => p.location === location.name).map((p) => [p.id, { ...partData(p), location: name }]);
+  if (changes.length) writeParts(changes, 'edited', countParts(changes.length), `Location ${location.name} → ${name}`);
 }
 
 // Parts the team is waiting on. "Arrived" moves an order into the inventory.
@@ -970,7 +982,7 @@ function openOrdersDialog() {
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>Order list</h2>
-      <p class="muted small">Parts the team is waiting on. They show in the inventory as on order, and projects and packing lists can use them already. Tap Arrived when one comes in. New items go into Main Inventory.</p>
+      <p class="muted small">Parts the team is waiting on. They show in the inventory as on order, and projects and packing lists can use them already. Tap Arrived when one comes in. New items go into ${esc(project(fb.MAIN_PROJECT).name)}.</p>
       <ul id="order-list" class="members"></ul>
       <h2>Add to the order list</h2>
       <input name="name" maxlength="200" list="order-parts" placeholder="Item, or pick a part you already have" />
@@ -1094,6 +1106,29 @@ async function deleteCurrentProject() {
   const { id, ...data } = current;
   const uses = state.uses.filter((u) => u.projectId === id).map(useData);
   fb.moveToTrash({ kind: 'project', docId: id, name: current.name, data, uses }, state.user).catch(showError);
+}
+
+// Renames the inventory, project or packing list on screen, or deletes it. Main Inventory can be renamed but not deleted.
+function openListDialog() {
+  const dialog = app.querySelector('#dialog');
+  const current = currentProject();
+  dialog.innerHTML = `
+    <form method="dialog" class="card">
+      <h2>${TYPES[typeOf(current)].label}</h2>
+      <label>Name<input name="name" required maxlength="200" value="${esc(current.name)}" /></label>
+      <div class="row">
+        <button value="save">Save</button>
+        <button value="cancel" formnovalidate class="secondary">Cancel</button>
+        ${current.id === fb.MAIN_PROJECT ? '' : '<button value="delete" formnovalidate class="danger">Delete</button>'}
+      </div>
+    </form>`;
+  const form = dialog.querySelector('form');
+  form.onsubmit = (e) => {
+    const name = form.name.value.trim();
+    if (e.submitter.value === 'save' && name !== current.name) fb.renameProject(current.id, name).catch(showError);
+    if (e.submitter.value === 'delete') deleteCurrentProject().catch(showError);
+  };
+  dialog.showModal();
 }
 
 // Lists the parts in every inventory; tapping one adds one more to the current project.

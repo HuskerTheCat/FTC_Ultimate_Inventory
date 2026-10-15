@@ -99,12 +99,16 @@ export async function ensureMainProject() {
   if (!(await getDoc(ref)).exists()) await setDoc(ref, { name: 'Main Inventory', source: '' });
 }
 
+export const renameLocation = (id, name) => updateDoc(doc(db, 'locations', id), { name });
+
 // Made on the device, so the app can switch to a new project before it reaches the server (or while offline).
 export const newProjectId = () => doc(collection(db, 'projects')).id;
 
 // A project either holds its own parts (source '') or uses parts from the inventory project named by source.
 // A packing list (kind 'packing') uses parts too, but only holds the ones checked off as packed.
 export const createProject = (id, name, source, kind) => setDoc(doc(db, 'projects', id), { name, source, ...(kind && { kind }) });
+
+export const renameProject = (id, name) => updateDoc(doc(db, 'projects', id), { name });
 
 // Made on the device, so a new part can be undone before it reaches the server.
 export const newPartId = () => doc(collection(db, 'parts')).id;

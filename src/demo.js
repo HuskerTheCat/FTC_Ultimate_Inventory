@@ -195,6 +195,10 @@ export async function deleteLocation(id) {
   remove('locations', id);
 }
 
+export async function renameLocation(id, name) {
+  write('locations', id, { name });
+}
+
 export async function markPrinted(keys) {
   for (const key of keys) collections.printed.set(key, { at: Timestamp.now() });
   changed('printed');
@@ -204,6 +208,10 @@ export const newProjectId = () => `demo-${nextId++}`;
 
 export async function createProject(id, name, source, kind) {
   write('projects', id, { name, source, ...(kind && { kind }) });
+}
+
+export async function renameProject(id, name) {
+  write('projects', id, { ...collections.projects.get(id), name });
 }
 
 export const newPartId = () => `demo-${nextId++}`;
