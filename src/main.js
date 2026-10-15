@@ -171,6 +171,25 @@ function showError(error) {
   errorTimer = setTimeout(() => { banner.hidden = true; }, ERROR_MS);
 }
 
+// Asks for a line of text over whatever dialog is open. The Windows app has no prompt(), so the app uses this instead.
+// Resolves with the trimmed text, or '' when cancelled.
+function ask(question) {
+  const dialog = app.querySelector('#ask');
+  dialog.innerHTML = `
+    <form method="dialog" class="card">
+      <label>${esc(question)}<input name="answer" /></label>
+      <div class="row">
+        <button value="ok">OK</button>
+        <button value="cancel" formnovalidate class="secondary">Cancel</button>
+      </div>
+    </form>`;
+  dialog.returnValue = ''; // Escape keeps the last returnValue
+  dialog.showModal();
+  return new Promise((resolve) => {
+    dialog.addEventListener('close', () => resolve(dialog.returnValue === 'ok' ? dialog.querySelector('input').value.trim() : ''), { once: true });
+  });
+}
+
 function saveConnection(connection) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(connection));
   location.reload();
@@ -236,7 +255,7 @@ function renderWelcome() {
       <form id="create" class="card">
         <h2>Set up a new team</h2>
         <p class="muted">For one person per team. Follow the <a href="https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/SETUP.md" target="_blank" rel="noopener">setup guide</a> to make your free Firebase project first.</p>
-        <input name="teamName" required placeholder="Team name, e.g. 26706 Thunder Lab" />
+        <input name="teamName" required maxlength="200" placeholder="Team name, e.g. 26706 Thunder Lab" />
         ${teamFields()}
         <textarea name="config" rows="6" required placeholder="Paste your firebaseConfig here"></textarea>
         <button>Create team</button>
@@ -427,7 +446,8 @@ function renderInventory() {
     </table>
     <p id="empty" class="muted center-text" hidden></p>
     <div id="undo" class="toast" hidden><span></span><button class="link">Undo</button></div>
-    <dialog id="dialog"></dialog>`;
+    <dialog id="dialog"></dialog>
+    <dialog id="ask"></dialog>`;
 
   const dialog = app.querySelector('#dialog');
   app.querySelectorAll('[aria-haspopup]').forEach((button) => {
@@ -719,8 +739,8 @@ function toggleFavorite(id) {
   savePrefs({ ...state.prefs, favorites: favorites.includes(id) ? favorites.filter((f) => f !== id) : [...favorites, id] });
 }
 
-function saveView() {
-  const name = prompt('Name this view')?.trim().slice(0, 40);
+async function saveView() {
+  const name = (await ask('Name this view')).slice(0, 40);
   if (!name) return renderRows();
   const view = { name, ...Object.fromEntries(VIEW_KEYS.map((key) => [key, state[key]])) };
   const views = [...state.prefs.views.filter((v) => v.name !== name), view].sort((a, b) => a.name.localeCompare(b.name));
@@ -1281,8 +1301,8 @@ function openPartDialog(part, carry = null, note = '') {
     tags = tags.filter((t) => t !== tag);
     renderTags();
   };
-  addTag.onchange = () => {
-    const picked = addTag.value === NEW_OPTION ? prompt('New tag') ?? '' : addTag.value;
+  addTag.onchange = async () => {
+    const picked = addTag.value === NEW_OPTION ? await ask('New tag') : addTag.value;
     tags = parseTags([...tags, picked].join(','));
     renderTags();
   };
@@ -1312,9 +1332,9 @@ function openPartDialog(part, carry = null, note = '') {
 // Lets a category picker's "+ New category…" option ask for the new name.
 function watchNewCategory(select) {
   let category = select.value;
-  select.onchange = () => {
+  select.onchange = async () => {
     if (select.value !== NEW_OPTION) return (category = select.value);
-    const typed = prompt('New category. Use "/" for a subcategory, e.g. Electronics/Motors');
+    const typed = await ask('New category. Use "/" for a subcategory, e.g. Electronics/Motors');
     const name = typed ? canonicalCategory(typed) : '';
     if (name && ![...select.options].some((o) => o.value === name)) select.add(new Option(name), select.options.length - 1);
     select.value = name || category;
@@ -1592,8 +1612,8 @@ function openBulkEditDialog() {
     else remove.push(tag);
     renderTags();
   };
-  addTag.onchange = () => {
-    const picked = addTag.value === NEW_OPTION ? prompt('New tag') ?? '' : addTag.value;
+  addTag.onchange = async () => {
+    const picked = addTag.value === NEW_OPTION ? await ask('New tag') : addTag.value;
     add.push(...parseTags(picked).filter((t) => !add.includes(t) && !remove.includes(t)));
     renderTags();
   };
@@ -1760,7 +1780,7 @@ async function openTeamDialog() {
 // The app can't delete a Firebase project, so it records the team as deleted for the developer (see hub.js),
 // then points the owner to the Firebase console to erase the inventory and accounts.
 async function deleteTeam() {
-  const typed = prompt("Delete your team? This tells the app's developer your team stopped using the app, then shows how to erase your inventory and accounts. Type your program and team number to confirm, e.g. FTC 26706.")?.trim();
+  const typed = await ask("Delete your team? This tells the app's developer your team stopped using the app, then shows how to erase your inventory and accounts. Type your program and team number to confirm, e.g. FTC 26706.");
   if (!typed) return;
   const match = typed.match(/^(ftc|frc|fll|other)\s*([1-9][0-9]{0,5})$/i);
   if (!match) throw new Error('Enter your program and team number, e.g. FTC 26706.');
