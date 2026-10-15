@@ -4,7 +4,7 @@ FTC Ultimate Inventory is made by HuskerTheCat for FTC robotics teams. This page
 
 ## What the developer receives
 
-- **When a new team is set up:** the team name, program (FTC, FRC, FLL or Other) and team number, the team's Firebase project ID, and the date. The app looks up the project ID by program and team number so teammates can sign in on a new device, so anyone with the app can find a team's name and project ID from its number.
+- **When a new team is set up:** the team name, program (FTC, FRC, FLL or Other) and team number, the team's Firebase project ID, a random key that only lets the team's owner take the team off the list, and the date. The app looks up the project ID by program and team number so teammates can sign in on a new device, so anyone with the app can find a team's name and project ID from its number.
 - **When a team owner deletes the team in the app:** the program, team number and the date.
 - **When someone sends a bug report:** the report text, the team name, the app version and the date. Please don't put personal info in a report.
 

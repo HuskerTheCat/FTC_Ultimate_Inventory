@@ -186,6 +186,15 @@ export async function getTeam() {
   return (await getDoc(doc(db, 'team', 'info'))).data();
 }
 
+// The key that lets the owner take the team off the developer's team list (see hub.js). Only the owner can read it.
+export const saveOwnerKey = (ownerKey) => setDoc(doc(db, 'team', 'owner'), { ownerKey });
+
+export async function getOwnerKey() {
+  const ownerKey = (await getDoc(doc(db, 'team', 'owner'))).data()?.ownerKey;
+  if (!ownerKey) throw new Error('This team isn’t on the developer’s list of active teams.');
+  return ownerKey;
+}
+
 export const setTeamSecret = (secret) => updateDoc(doc(db, 'team', 'info'), { secret });
 
 // Public, so a short join code can find the team: holds no secret, only what the app needs to start Firebase.

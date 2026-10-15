@@ -21,10 +21,15 @@ service cloud.firestore {
     function deleted(key) {
       return /databases/$(database)/documents/deleted/$(key);
     }
+    function owner(key) {
+      return /databases/$(database)/documents/owners/$(key);
+    }
 
     // Each team is in at most one list: teams while the team uses the app, deleted after it deletes itself.
     // A team moves between the lists in one batch, deleting it from one list as it is added to the other.
-    // Teams added before projectId existed have none; older app versions still add teams without it.
+    // Teams added before projectId existed have none.
+    // Each team gets a random owner key, kept in its own Firebase project. Only a move that knows it can delete the team,
+    // so nobody else can take a team off the list or swap in another project.
     match /teams/{key} {
       allow get: if true;
       allow create: if request.resource.data.keys().hasOnly(['name', 'program', 'number', 'projectId', 'at'])
@@ -32,15 +37,26 @@ service cloud.firestore {
         && (!('projectId' in request.resource.data) || request.resource.data.projectId.matches('[a-z0-9-]{6,30}'))
         && validTeam(key, request.resource.data)
         && request.resource.data.at == request.time
-        && !existsAfter(deleted(key));
+        && !existsAfter(deleted(key))
+        && existsAfter(owner(key));
       allow delete: if existsAfter(deleted(key));
     }
 
+    // Never read by anyone; only these rules compare it.
+    match /owners/{key} {
+      allow create: if request.resource.data.keys().hasOnly(['ownerKey'])
+        && text(request.resource.data.ownerKey, 100) && request.resource.data.ownerKey.size() >= 10
+        && !exists(team(key)) && existsAfter(team(key));
+      allow delete: if !exists(deleted(key)) && existsAfter(deleted(key));
+    }
+
     match /deleted/{key} {
-      allow create: if request.resource.data.keys().hasOnly(['program', 'number', 'at'])
+      allow create: if request.resource.data.keys().hasOnly(['program', 'number', 'ownerKey', 'at'])
         && validTeam(key, request.resource.data)
         && request.resource.data.at == request.time
-        && exists(team(key)) && !existsAfter(team(key));
+        && exists(team(key)) && !existsAfter(team(key))
+        && request.resource.data.ownerKey == get(owner(key)).data.ownerKey
+        && !existsAfter(owner(key));
       allow delete: if existsAfter(team(key));
     }
 

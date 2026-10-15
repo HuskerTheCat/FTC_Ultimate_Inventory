@@ -80,6 +80,14 @@ service cloud.firestore {
         && request.resource.data.secret is string && request.resource.data.secret.size() >= 10;
     }
 
+    // The key that lets the owner take the team off the developer's team list (see hub.rules). Only the owner sees it.
+    match /team/owner {
+      allow read: if isOwner();
+      allow create: if isOwner()
+        && request.resource.data.keys().hasOnly(['ownerKey'])
+        && request.resource.data.ownerKey is string && request.resource.data.ownerKey.size() >= 10;
+    }
+
     match /join/info {
       allow read: if true;
       allow write: if isOwner()

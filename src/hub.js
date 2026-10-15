@@ -23,16 +23,20 @@ const teamKey = (program, number) => (program === 'FTC' ? String(number) : `${pr
 // Only team-level info, never anything about a person (see PRIVACY.md).
 // Each team is in one list at a time: teams while the team uses the app, deleted after it deletes itself.
 // A move deletes the team from one list and adds it to the other in one write, as the rules require.
-async function moveTeam(from, to, data) {
+// The owner key comes with the team and must be shown to take it off the list, so only the team's owner can.
+async function moveTeam(from, to, data, ownerKey) {
   const key = teamKey(data.program, data.number);
   const batch = writeBatch(db);
   batch.delete(doc(db, from, key));
-  batch.set(doc(db, to, key), { ...data, at: serverTimestamp() });
+  batch.set(doc(db, to, key), { ...data, ...(to === 'deleted' && { ownerKey }), at: serverTimestamp() });
+  if (to === 'teams') batch.set(doc(db, 'owners', key), { ownerKey });
+  else batch.delete(doc(db, 'owners', key));
   await batch.commit();
 }
 
 // A new team, or a deleted team signing up again under the same number. The rules refuse a team that's active.
-export const recordTeam = (name, program, number, projectId) => moveTeam('deleted', 'teams', { name, program, number, projectId });
+export const recordTeam = (name, program, number, projectId, ownerKey) =>
+  moveTeam('deleted', 'teams', { name, program, number, projectId }, ownerKey);
 
 // Lets teammates sign in on a new device with their team number instead of a join code.
 export async function findTeamProject(program, number) {
@@ -41,7 +45,7 @@ export async function findTeamProject(program, number) {
   return team.data().projectId;
 }
 
-export const recordDeletedTeam = (program, number) => moveTeam('teams', 'deleted', { program, number });
+export const recordDeletedTeam = (program, number, ownerKey) => moveTeam('teams', 'deleted', { program, number }, ownerKey);
 
 export const sendBugReport = (team, text) =>
   addDoc(collection(db, 'reports'), { team, text, version: __APP_VERSION__, at: serverTimestamp() });

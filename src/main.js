@@ -1785,7 +1785,7 @@ async function deleteTeam() {
   const match = typed.match(/^(ftc|frc|fll|other)\s*([1-9][0-9]{0,5})$/i);
   if (!match) throw new Error('Enter your program and team number, e.g. FTC 26706.');
   const program = PROGRAMS.find((p) => p.toLowerCase() === match[1].toLowerCase());
-  await recordDeletedTeam(program, Number(match[2])).catch((error) => {
+  await recordDeletedTeam(program, Number(match[2]), await fb.getOwnerKey()).catch((error) => {
     if (error.code !== 'permission-denied') throw error;
     throw new Error(`${program} team ${match[2]} isn't on the developer's list of active teams.`);
   });
@@ -1802,6 +1802,15 @@ async function deleteTeam() {
 }
 
 // ---------- startup ----------
+
+// Adds a new team to the developer's team list (see hub.js), so teammates can sign in by team number.
+// The owner key is saved in the team's own project first, so the owner can always take the team off the list later.
+async function registerTeam() {
+  const { teamName, program, teamNumber, config } = state.connection;
+  const ownerKey = newSecret();
+  await fb.saveOwnerKey(ownerKey);
+  await recordTeam(teamName, program, teamNumber, config.projectId, ownerKey);
+}
 
 async function joinFromLink() {
   const code = new URLSearchParams(location.hash.slice(1)).get('join');
@@ -1873,7 +1882,7 @@ async function start() {
     if (!user) return renderSignIn();
     try {
       const createdTeam = await fb.ensureMembership(user, state.connection, state.newName || nameOf({ email: user.email }), state.acceptedPrivacy);
-      if (createdTeam) recordTeam(state.connection.teamName, state.connection.program, state.connection.teamNumber, state.connection.config.projectId).catch(console.error);
+      if (createdTeam) registerTeam().catch(console.error);
       state.newName = null;
       await fb.ensureMainProject();
     } catch (error) {
