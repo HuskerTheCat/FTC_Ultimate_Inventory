@@ -1630,6 +1630,15 @@ async function reopenTeamDialog() {
 }
 
 // The join code is built from the team's current secret, so it stays valid after the owner resets it.
+// A button that copies `text` and says "Copied" for a moment.
+function copyButton(button, text) {
+  const label = button.textContent;
+  button.onclick = () => navigator.clipboard.writeText(text).then(() => {
+    button.textContent = 'Copied';
+    setTimeout(() => { button.textContent = label; }, 1500);
+  }).catch(showError);
+}
+
 async function openTeamDialog() {
   const dialog = app.querySelector('#dialog');
   const team = await fb.getTeam();
@@ -1642,13 +1651,14 @@ async function openTeamDialog() {
       <h2>Invite teammates</h2>
       <p class="muted">Teammates scan this or open the link, then sign in. In the Windows, Android or iPhone app, they choose Scan QR under Join a team, or paste the join code. To use your account on another device, choose Sign in to your team and enter your team number.</p>
       <canvas id="qr"></canvas>
-      <label>Join link<input readonly value="${esc(link)}" /></label>
-      <label>Join code<input readonly value="${esc(code)}" /></label>
-      <p class="muted small">Only share this with your team. Anyone with it can join.</p>
-      <div class="row">
-        <button type="button" id="copy-link">Copy link</button>
-        <button type="button" id="copy-code" class="secondary">Copy code</button>
+      <div class="field">Join code
+        <div class="password">
+          <input readonly value="${esc(code)}" aria-label="Join code" />
+          <button type="button" id="copy-code" class="secondary">Copy</button>
+        </div>
       </div>
+      <button type="button" id="copy-link">Copy join link</button>
+      <p class="muted small">Only share these with your team. Anyone with them can join.</p>
       <h2>Your name</h2>
       <div class="password">
         <input id="my-name" maxlength="40" value="${esc(nameOf(state.members.find((m) => m.uid === state.user.uid)))}" />
@@ -1663,8 +1673,8 @@ async function openTeamDialog() {
       <p class="muted small">FTC Ultimate Inventory is open source under the AGPL v3. <a href="${SOURCE_URL}" target="_blank" rel="noopener">Source code</a></p>
       <div class="row"><button value="close" class="secondary">Close</button></div>
     </form>`;
-  dialog.querySelector('#copy-link').onclick = () => navigator.clipboard.writeText(link);
-  dialog.querySelector('#copy-code').onclick = () => navigator.clipboard.writeText(code);
+  copyButton(dialog.querySelector('#copy-link'), link);
+  copyButton(dialog.querySelector('#copy-code'), code);
   await QRCode.toCanvas(dialog.querySelector('#qr'), link, { width: 220, margin: 1 });
 
   dialog.querySelector('#save-name').onclick = async () => {
