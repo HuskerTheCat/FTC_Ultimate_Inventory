@@ -22,7 +22,9 @@
   color-scheme: dark;
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; scrollbar-width: thin; }
+/* Thin navy scrollbars everywhere (Chrome, Edge, the Windows and Android apps, Firefox). */
+:root { scrollbar-color: #3a4466 transparent; }
 body {
   margin: 0;
   background: var(--bg);
@@ -58,7 +60,6 @@ a { color: var(--accent); }
   flex-direction: column;
   gap: 12px;
 }
-dialog .card { box-shadow: var(--float-shadow); }
 .muted { color: var(--muted); margin: 0; }
 .small { font-size: 0.875rem; }
 .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
@@ -316,9 +317,10 @@ button.tag:hover .x { background: rgb(91 155 255 / 0.25); }
 button.tag.removed { padding: 3px 12px; font-size: 0.875rem; text-decoration: line-through; opacity: 0.55; }
 
 /* Dialogs */
-dialog { border: none; padding: 0; background: transparent; width: min(480px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; color: var(--text); }
+/* The dialog itself is the rounded panel, so its scrollbar sits inside it and the sticky buttons never poke out at the corners. */
+dialog { border: 1px solid var(--border); border-radius: 16px; padding: 0; background: var(--surface); box-shadow: var(--float-shadow); width: min(480px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; color: var(--text); }
 dialog::backdrop { background: rgb(5 7 14 / 0.75); backdrop-filter: blur(3px); }
-dialog .card { padding: 24px; }
+dialog .card { padding: 24px; border: none; }
 /* The last row of buttons stays in view while a long form scrolls. */
 dialog .card > .row:last-child { position: sticky; bottom: 0; margin: 4px -24px -24px; padding: 14px 24px; background: var(--surface); border-top: 1px solid var(--border); }
 /* The part form gets two columns on wide screens. */
