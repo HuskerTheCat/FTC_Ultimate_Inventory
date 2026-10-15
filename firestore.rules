@@ -59,9 +59,10 @@ service cloud.firestore {
     }
     function validOrder() {
       let order = request.resource.data;
-      return order.keys().hasOnly(['name', 'partNumber', 'quantity', 'supplier', 'partId', 'link'])
+      return order.keys().hasOnly(['name', 'partNumber', 'quantity', 'supplier', 'partId', 'link', 'notes'])
         && shortText(order.name) && order.name.size() > 0
         && (!('link' in order) || (order.link is string && order.link.size() <= 1000 && order.link.matches('https://.+')))
+        && (!('notes' in order) || (order.notes is string && order.notes.size() <= 1000))
         && shortText(order.partNumber)
         && shortText(order.supplier)
         && order.quantity is int && order.quantity > 0 && order.quantity <= 1000000

@@ -1020,21 +1020,26 @@ function openOrdersDialog() {
         <input name="supplier" maxlength="200" placeholder="Supplier" />
       </div>
       <input name="link" maxlength="1000" inputmode="url" placeholder="Item link (optional)" />
+      <input name="notes" maxlength="1000" placeholder="Notes (optional)" />
       <div class="row">
         <button value="add">Add</button>
+        <button type="button" id="print-orders" class="secondary">Print</button>
         <button value="close" formnovalidate class="secondary">Close</button>
       </div>
     </form>`;
   const form = dialog.querySelector('form');
   autofillFromCatalog(form);
   const list = dialog.querySelector('#order-list');
+  const printButton = dialog.querySelector('#print-orders');
+  printButton.onclick = printOrders;
   const renderOrders = () => {
-    list.innerHTML = [...state.orders].sort((a, b) => a.name.localeCompare(b.name)).map((o) => {
+    printButton.disabled = !state.orders.length;
+    list.innerHTML = sortedOrders().map((o) => {
       const part = state.parts.find((p) => p.id === o.partId);
       const details = [o.partNumber, o.supplier, part ? `have ${part.quantity}` : 'new part'].filter(Boolean).map((d) => `<span>${esc(d)}</span>`);
       if (o.link) details.push(`<a href="${esc(o.link)}" target="_blank" rel="noopener">Item link ↗</a>`);
       return `<li>
-        <span><strong>${esc(o.name)}</strong> ×${o.quantity} <span class="muted small order-details">${details.join(' · ')}</span></span>
+        <span><strong>${esc(o.name)}</strong> ×${o.quantity} <span class="muted small order-details">${details.join(' · ')}</span>${o.notes ? `<span class="small order-notes">${esc(o.notes)}</span>` : ''}</span>
         <span class="row">
           <button type="button" data-arrived="${esc(o.id)}">Arrived</button>
           <button type="button" class="danger" data-remove="${esc(o.id)}">Remove</button>
@@ -1052,6 +1057,7 @@ function openOrdersDialog() {
     if (!Number.isInteger(quantity) || quantity < 1) return showError(new Error('Order at least 1.'));
     const link = orderLink(form.link.value);
     if (link === null) return showError(new Error('That item link is not a web address.'));
+    const notes = form.notes.value.trim();
     const part = state.parts.find((p) => sameName(p.name, name));
     const order = {
       name: part?.name ?? name,
@@ -1059,7 +1065,9 @@ function openOrdersDialog() {
       supplier: form.supplier.value.trim() || (part?.supplier ?? ''),
       quantity,
       partId: part?.id ?? fb.newPartId(),
-      ...(link && { link }), // left out when empty, so orders without a link still pass older firestore.rules
+      // Left out when empty, so orders without them still pass older firestore.rules.
+      ...(link && { link }),
+      ...(notes && { notes }),
     };
     // Something new is added to the inventory with none in stock, so it shows as on order and projects can use it.
     // The part is written first, because the rules only accept an order for a part that exists.
@@ -1077,6 +1085,15 @@ function openOrdersDialog() {
   state.onOrdersChange = renderOrders;
   dialog.addEventListener('close', () => { state.onOrdersChange = null; }, { once: true });
   dialog.showModal();
+}
+
+const sortedOrders = () => [...state.orders].sort((a, b) => a.name.localeCompare(b.name));
+
+// Prints the order list as a table.
+function printOrders() {
+  const headers = ['Item', 'Part #', 'Qty', 'Supplier', 'Notes'];
+  const rows = sortedOrders().map((o) => [o.name, o.partNumber, String(o.quantity), o.supplier, o.notes ?? '']);
+  printSheet('Order list', `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, [['', rows]]);
 }
 
 // The typed item link as an https:// address ('' when empty, null when it isn't a web address).

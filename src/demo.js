@@ -116,10 +116,10 @@ const SAMPLE_PACKING = [
   ['Control Hub (spare)', 1, false], ['Battery charger', 1, true],
 ];
 
-// [name, part number, quantity, supplier, existing part name or '', item link or '']
+// [name, part number, quantity, supplier, existing part name or '', item link or '', notes or '']
 const SAMPLE_ORDERS = [
   ['Yellow Jacket motor 312 RPM', '5203-2402-0019', 2, 'goBILDA', 'Yellow Jacket motor 312 RPM', 'https://www.gobilda.com/'],
-  ['Servo extension cable 300mm', '3802-0003-0300', 6, 'goBILDA', '', ''],
+  ['Servo extension cable 300mm', '3802-0003-0300', 6, 'goBILDA', '', '', 'For the intake rebuild'],
   ['Limit switch', 'REV-31-1462', 2, 'REV Robotics', '', 'https://www.revrobotics.com/'],
 ];
 
@@ -142,9 +142,9 @@ function loadSamples() {
     write('uses', `${PACKING}_${partId}`, { projectId: PACKING, partId, quantity, packed });
   }
   // An order for something new comes with a part in Main Inventory that has none yet, like in the app.
-  for (const [name, partNumber, quantity, supplier, partName, link] of SAMPLE_ORDERS) {
+  for (const [name, partNumber, quantity, supplier, partName, link, notes] of SAMPLE_ORDERS) {
     if (!partName) addParts([[name, partNumber, 0, '', supplier, '', []]], MAIN_PROJECT);
-    add('orders', { name, partNumber, quantity, supplier, partId: ids.get(partName || name), ...(link && { link }) });
+    add('orders', { name, partNumber, quantity, supplier, partId: ids.get(partName || name), ...(link && { link }), ...(notes && { notes }) });
   }
   write('uses', `${ROBOT}_${ids.get('Limit switch')}`, { projectId: ROBOT, partId: ids.get('Limit switch'), quantity: 2 });
   add('log', { at: hoursAgo(2), by: 'maya', byName: 'Maya', action: 'quantity', part: '12V Slim battery', details: 'Quantity +1' });
