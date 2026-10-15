@@ -972,6 +972,7 @@ function openOrdersDialog() {
         <input name="partNumber" maxlength="200" placeholder="Part #" />
         <input name="supplier" maxlength="200" placeholder="Supplier" />
       </div>
+      <input name="link" maxlength="1000" inputmode="url" placeholder="Item link (optional)" />
       <div class="row">
         <button value="add">Add</button>
         <button value="close" formnovalidate class="secondary">Close</button>
@@ -982,9 +983,10 @@ function openOrdersDialog() {
   const renderOrders = () => {
     list.innerHTML = [...state.orders].sort((a, b) => a.name.localeCompare(b.name)).map((o) => {
       const part = state.parts.find((p) => p.id === o.partId);
-      const details = [o.partNumber, o.supplier, part ? `have ${part.quantity}` : 'new part'].filter(Boolean).join(' · ');
+      const details = [o.partNumber, o.supplier, part ? `have ${part.quantity}` : 'new part'].filter(Boolean).map((d) => `<span>${esc(d)}</span>`);
+      if (o.link) details.push(`<a href="${esc(o.link)}" target="_blank" rel="noopener">Item link ↗</a>`);
       return `<li>
-        <span><strong>${esc(o.name)}</strong> ×${o.quantity} <span class="muted small">${esc(details)}</span></span>
+        <span><strong>${esc(o.name)}</strong> ×${o.quantity} <span class="muted small order-details">${details.join(' · ')}</span></span>
         <span class="row">
           <button type="button" data-arrived="${esc(o.id)}">Arrived</button>
           <button type="button" class="danger" data-remove="${esc(o.id)}">Remove</button>
@@ -1000,6 +1002,8 @@ function openOrdersDialog() {
     const quantity = Number(form.quantity.value);
     if (!name) return showError(new Error('Enter the item to order.'));
     if (!Number.isInteger(quantity) || quantity < 1) return showError(new Error('Order at least 1.'));
+    const link = orderLink(form.link.value);
+    if (link === null) return showError(new Error('That item link is not a web address.'));
     const part = state.parts.find((p) => sameName(p.name, name));
     fb.addOrder({
       name: part?.name ?? name,
@@ -1007,6 +1011,7 @@ function openOrdersDialog() {
       supplier: form.supplier.value.trim() || (part?.supplier ?? ''),
       quantity,
       partId: part?.id ?? '',
+      ...(link && { link }), // left out when empty, so orders without a link still pass older firestore.rules
     }).catch(showError);
     form.reset();
     form.name.focus();
@@ -1020,6 +1025,19 @@ function openOrdersDialog() {
   state.onOrdersChange = renderOrders;
   dialog.addEventListener('close', () => { state.onOrdersChange = null; }, { once: true });
   dialog.showModal();
+}
+
+// The typed item link as an https:// address ('' when empty, null when it isn't a web address).
+// The Windows app only opens https links, so http:// and missing schemes become https://.
+function orderLink(text) {
+  const rest = text.trim().replace(/^https?:\/\//i, '');
+  if (!rest) return '';
+  try {
+    const url = new URL(`https://${rest}`);
+    return url.hostname.includes('.') ? url.href : null;
+  } catch {
+    return null;
+  }
 }
 
 // Adds an arrived order to the part it's for, or makes it a new part in Main Inventory.
@@ -1122,7 +1140,7 @@ function openPartDialog(part, carry = null, note = '') {
     `<datalist id="${key}-list">${unique(state.parts, key).map((v) => `<option value="${esc(v)}">`).join('')}</datalist>`;
 
   dialog.innerHTML = `
-    <form method="dialog" class="card">
+    <form method="dialog" class="card part-form">
       <h2>${part ? 'Edit part' : 'Add part'}</h2>
       ${carry?.added ? `<p class="muted small">${carry.added} added so far. Location, category and tags are kept from the last part.</p>` : ''}
       ${note ? `<p class="muted small">${esc(note)}</p>` : ''}

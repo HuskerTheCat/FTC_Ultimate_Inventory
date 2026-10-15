@@ -116,11 +116,11 @@ const SAMPLE_PACKING = [
   ['Control Hub (spare)', 1, false], ['Battery charger', 1, true],
 ];
 
-// [name, part number, quantity, supplier, existing part name or '']
+// [name, part number, quantity, supplier, existing part name or '', item link or '']
 const SAMPLE_ORDERS = [
-  ['Yellow Jacket motor 312 RPM', '5203-2402-0019', 2, 'goBILDA', 'Yellow Jacket motor 312 RPM'],
-  ['Servo extension cable 300mm', '3802-0003-0300', 6, 'goBILDA', ''],
-  ['Limit switch', 'REV-31-1462', 2, 'REV Robotics', ''],
+  ['Yellow Jacket motor 312 RPM', '5203-2402-0019', 2, 'goBILDA', 'Yellow Jacket motor 312 RPM', 'https://www.gobilda.com/'],
+  ['Servo extension cable 300mm', '3802-0003-0300', 6, 'goBILDA', '', ''],
+  ['Limit switch', 'REV-31-1462', 2, 'REV Robotics', '', 'https://www.revrobotics.com/'],
 ];
 
 function loadSamples() {
@@ -141,8 +141,8 @@ function loadSamples() {
     const partId = ids.get(name);
     write('uses', `${PACKING}_${partId}`, { projectId: PACKING, partId, quantity, packed });
   }
-  for (const [name, partNumber, quantity, supplier, partName] of SAMPLE_ORDERS) {
-    add('orders', { name, partNumber, quantity, supplier, partId: partName ? ids.get(partName) : '' });
+  for (const [name, partNumber, quantity, supplier, partName, link] of SAMPLE_ORDERS) {
+    add('orders', { name, partNumber, quantity, supplier, partId: partName ? ids.get(partName) : '', ...(link && { link }) });
   }
   add('log', { at: hoursAgo(2), by: 'maya', byName: 'Maya', action: 'quantity', part: '12V Slim battery', details: 'Quantity +1' });
   add('log', { at: hoursAgo(1), by: 'coach', byName: 'Coach Rivera', action: 'added', part: 'Pinpoint odometry computer', details: '' });
