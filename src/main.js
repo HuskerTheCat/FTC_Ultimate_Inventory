@@ -837,6 +837,20 @@ async function openBarcode(code) {
   openPartDialog(null, { barcode: code, quantity: 1 }, 'This barcode isn’t in the supplier catalog. Fill in the part once, and scanning it again will find it.');
 }
 
+// Fills a form's item and supplier from the supplier catalog as its part number is typed. What it filled follows
+// the part number, so a partial number's match is replaced; whatever the user typed in those fields stays.
+function autofillFromCatalog(form) {
+  const filled = { name: '', supplier: '' };
+  form.partNumber.addEventListener('input', () => {
+    findProduct(form.partNumber.value).then((product) => {
+      for (const key of Object.keys(filled)) {
+        if (form[key].value && form[key].value !== filled[key]) continue;
+        form[key].value = filled[key] = product?.[key] ?? '';
+      }
+    }).catch(showError);
+  });
+}
+
 // The part a code is saved on as its barcode or part number. Prefers the inventory on screen.
 function partWithCode(code) {
   const key = codeKey(code);
@@ -1012,6 +1026,7 @@ function openOrdersDialog() {
       </div>
     </form>`;
   const form = dialog.querySelector('form');
+  autofillFromCatalog(form);
   const list = dialog.querySelector('#order-list');
   const renderOrders = () => {
     list.innerHTML = [...state.orders].sort((a, b) => a.name.localeCompare(b.name)).map((o) => {
@@ -1233,6 +1248,7 @@ function openPartDialog(part, carry = null, note = '') {
   if (part) dialog.querySelector('#label').onclick = () => printAndMark([partLabel(part)]);
 
   watchNewCategory(form.category);
+  autofillFromCatalog(form);
 
   const tagBox = dialog.querySelector('#part-tags');
   const addTag = dialog.querySelector('#add-tag');

@@ -23,13 +23,13 @@ function index(catalog) {
 
 // Browsers don't fetch a module again after it failed, so a failed load needs the app reloaded.
 const products = import('./catalog.json').then(({ default: catalog }) => index(catalog));
-products.catch(() => {}); // reported below, when a scan needs the catalog
+products.catch(() => {}); // reported below, when a lookup needs the catalog
 
 // The supplier's part for a package barcode (its UPC, or a printed part number), or null if the catalog doesn't have it.
 export async function findProduct(code) {
   const byCode = await products.catch((error) => {
     console.error(error);
-    throw new Error('Couldn’t load the part catalog. Reload the app while online, then scan again.');
+    throw new Error('Couldn’t load the part catalog. Reload the app while online, then try again.');
   });
   return byCode.get(codeKey(code)) ?? null;
 }
