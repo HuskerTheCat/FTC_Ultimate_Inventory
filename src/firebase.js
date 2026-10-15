@@ -220,11 +220,3 @@ export async function removeMember(uid, secret) {
   batch.update(doc(db, 'team', 'info'), { secret });
   await batch.commit();
 }
-
-// Each person's favorite part ids and saved views. Only they can read or write it.
-const prefsRef = (uid) => doc(db, 'prefs', uid);
-
-export const watchPrefs = (uid, callback, onError) =>
-  onSnapshot(prefsRef(uid), (snap) => callback(snap.data() ?? { favorites: [], views: [] }), onError);
-
-export const savePrefs = (uid, prefs) => setDoc(prefsRef(uid), prefs);

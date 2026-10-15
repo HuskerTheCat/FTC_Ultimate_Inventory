@@ -28,7 +28,6 @@ const collections = {
   printed: new Map(),
   log: new Map(),
   trash: new Map(),
-  prefs: new Map([[USER.uid, { favorites: [], views: [] }]]),
 };
 const listeners = Object.fromEntries(Object.keys(collections).map((name) => [name, new Set()]));
 let nextId = 1;
@@ -187,7 +186,6 @@ export const watchMembers = (callback) =>
 export const watchLog = (callback) =>
   watch('log', () => callback(docs('log').sort((a, b) => b.at.toMillis() - a.at.toMillis())));
 
-export const watchPrefs = (uid, callback) => watch('prefs', () => callback(collections.prefs.get(uid)));
 
 export async function addLocation(name) {
   return add('locations', { name });
@@ -269,8 +267,4 @@ export async function setMyName(uid, name) {
 
 export async function logChange(member, action, part, details) {
   add('log', { at: Timestamp.now(), by: member.uid, byName: member.name, action, part, details });
-}
-
-export async function savePrefs(uid, prefs) {
-  write('prefs', uid, prefs);
 }

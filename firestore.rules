@@ -174,6 +174,7 @@ service cloud.firestore {
         && request.resource.data.deletedAt == request.time;
     }
 
+    // Favorites and saved views, which the app no longer has. Kept so older versions of the app still work.
     match /prefs/{uid} {
       allow read: if isMember() && request.auth.uid == uid;
       allow create, update: if isMember() && request.auth.uid == uid

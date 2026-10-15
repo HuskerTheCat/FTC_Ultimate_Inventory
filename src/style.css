@@ -221,7 +221,7 @@ button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised)
 .toolbar:has(+ .filters:not([hidden])) { margin-bottom: 8px; }
 #filters-toggle.active { color: var(--accent); border-color: var(--accent); }
 #filter-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--accent-text); font-size: 0.8rem; line-height: 20px; text-align: center; }
-/* The panel the Filters button opens: filters on one row, sort and saved views on the next. */
+/* The panel the Filters button opens: filters on one row, sort and grouping on the next. */
 .filters { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 16px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
 .filters[hidden] { display: none; }
 .filters .row { width: 100%; }
@@ -250,12 +250,10 @@ tbody tr { cursor: pointer; }
 tbody tr:hover { background: var(--row-hover); }
 tbody tr.group { cursor: default; background: var(--bg); }
 tbody tr.selected { background: rgb(91 155 255 / 0.1); box-shadow: inset 3px 0 var(--accent); }
-td.fav input { width: 18px; min-height: 18px; margin: 0 6px; accent-color: var(--accent); }
+td.check input { width: 18px; min-height: 18px; margin: 0 6px; accent-color: var(--accent); }
 tr.group th { color: var(--text); font-size: 1rem; cursor: default; padding-top: 18px; }
-td.fav { width: 1%; padding-right: 0; }
-button.star { min-height: 0; padding: 4px; background: none; border: none; color: #4c5577; font-size: 1.25rem; line-height: 1; }
-button.star:hover { color: var(--muted); }
-button.star[aria-pressed="true"] { color: #f2b84b; }
+td.check { width: 1%; padding-right: 0; }
+td.card-meta { display: none; }
 tbody tr:last-child td { border-bottom: none; }
 td.packed { width: 1%; }
 td.packed input { width: 22px; min-height: 22px; margin: 0; accent-color: var(--accent); }
@@ -357,37 +355,36 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   table, tbody, tr, td { display: block; }
   table { border: none; background: none; border-radius: 0; }
   thead { display: none; }
+  /* A card: name with the quantity stepper beside it, then location and part # on one line, then what uses the part.
+     Supplier and category are left to the part dialog. The first column only holds a checkbox (packed, or selected). */
   tbody tr:is([data-id], .loading) {
-    position: relative;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 12px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    row-gap: 2px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 14px;
-    margin-bottom: 10px;
-    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    padding: 8px 8px 8px 12px;
   }
-  td { border: none; padding: 0; display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
-  td::before { content: attr(data-label); color: var(--muted); font-size: 0.8rem; font-weight: 500; }
-  td:empty { display: none; }
-  td.name { order: -2; grid-column: 1 / -1; font-size: 1.1rem; padding-right: 36px; }
-  td.name::before { content: none; }
-  td.name .badge { align-self: flex-start; margin: 4px 0 0; }
-  tbody tr.waiting { border: 1px dashed var(--pending); box-shadow: none; }
+  td { border: none; padding: 0; min-width: 0; overflow-wrap: anywhere; }
+  td:empty, td:is([data-label="Part #"], [data-label="Location"], [data-label="Supplier"], [data-label="Category"]) { display: none; }
+  td:is(.check, .packed) { grid-column: 1; grid-row: 1; width: auto; margin-right: 10px; }
+  td:is(.check, .packed) input { width: 24px; min-height: 24px; margin: 0; }
+  td.name { grid-column: 2; grid-row: 1; font-size: 1.02rem; }
+  td.name .badge { margin-left: 6px; }
   td.name .notes { max-width: 100%; }
-  td.qty { order: -1; grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 6px; padding: 6px 0; border-block: 1px solid var(--border); }
-  td.qty::before { margin-right: auto; font-size: 0.9rem; }
-  td.packed { order: -1; grid-column: 1 / -1; width: auto; flex-direction: row; align-items: center; padding-top: 6px; }
-  td.packed::before { margin-right: auto; font-size: 0.9rem; }
-  td.packed input { width: 28px; min-height: 28px; }
-  td.qty .skeleton { height: 44px; width: 132px; border-radius: 999px; }
-  td .skeleton { margin-top: 4px; }
-  td.qty span { font-size: 1.5rem; }
-  button.step { width: 44px; min-height: 44px; font-size: 1.3rem; }
-  td.fav { position: absolute; top: 10px; right: 8px; width: auto; }
-  td.fav::before { content: none; }
-  button.star { padding: 6px; }
+  td.name .tags { margin-top: 4px; }
+  td.qty { grid-column: 3; grid-row: 1; display: flex; align-items: center; gap: 2px; margin-left: 8px; }
+  td.qty span { font-size: 1.3rem; }
+  button.step { width: 40px; min-height: 40px; font-size: 1.25rem; }
+  td.card-meta:not(:empty) { display: block; grid-column: 2 / -1; grid-row: 2; }
+  /* Free count and the projects using the part, on one wrapping line. */
+  td[data-label="In use"] { grid-column: 2 / -1; grid-row: 3; }
+  td[data-label="In use"] .in-use { flex-flow: row wrap; align-items: baseline; gap: 0 8px; font-size: 0.85rem; }
+  tbody tr.waiting { border: 1px dashed var(--pending); box-shadow: none; }
+  td.qty .skeleton { height: 40px; width: 120px; border-radius: 999px; }
   tbody tr.group { background: none; margin: 18px 0 8px; }
   tbody tr.group:hover { background: none; }
   tr.group th { display: block; padding: 0; border: none; }
@@ -398,6 +395,7 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   header h1 { font-size: 1.3rem; }
   :is(#scan, #filters-toggle) > span { display: none; }
   #scan { width: 42px; padding: 0; justify-content: center; }
+  button.step { width: 36px; min-height: 36px; }
 }
 
 .password { display: flex; gap: 8px; }

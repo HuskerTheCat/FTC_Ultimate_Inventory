@@ -32,9 +32,6 @@ const UNITS = ['pcs', 'pack', 'box', 'm', 'ft'];
 const CONDITIONS = { '': 'Condition not set', new: 'New', used: 'Used', broken: 'Broken' };
 
 const SEARCH_KEYS = ['name', 'partNumber', 'barcode', 'supplier', 'location', 'category', 'condition', 'notes'];
-// What a saved view remembers.
-const VIEW_KEYS = ['projectId', 'search', 'category', 'location', 'tag', 'sort', 'sortDir', 'group', 'favoritesOnly'];
-
 // Small line icons that take the button's text color.
 const icon = (paths) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 const ICON_TRASH = icon('<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>');
@@ -65,13 +62,13 @@ const TYPES = {
 };
 
 // The unfiltered view that "Reset filters" returns to.
-const DEFAULT_FILTERS = { search: '', category: '', location: '', tag: '', sort: 'name', sortDir: 1, group: '', favoritesOnly: false };
+const DEFAULT_FILTERS = { search: '', category: '', location: '', tag: '', sort: 'name', sortDir: 1, group: '' };
 
 let fb = firebase;
 const app = document.getElementById('app');
 const state = {
   connection: null, user: null, parts: [], projects: [], uses: [], members: [], locations: [], orders: [], printed: new Set(), loaded: new Set(), pendingLink: null, picker: null, newProjectId: null,
-  projectId: fb.MAIN_PROJECT, ...DEFAULT_FILTERS, view: '', prefs: { favorites: [], views: [] }, selected: null,
+  projectId: fb.MAIN_PROJECT, ...DEFAULT_FILTERS, selected: null,
 };
 
 // ---------- helpers ----------
@@ -206,7 +203,6 @@ function forgetConnection() {
 // Grey placeholder rows shaped like part rows, shown until the inventory arrives.
 const skeletonRows = () => [70, 45, 60, 80, 50, 65].map((width) => `
   <tr class="loading" aria-hidden="true">
-    <td class="fav"></td>
     <td class="name"><div class="skeleton" style="width: ${width}%"></div></td>
     <td data-label="Part #"><div class="skeleton"></div></td>
     <td data-label="Qty" class="qty"><div class="skeleton"></div></td>
@@ -416,7 +412,6 @@ function renderInventory() {
         <select id="category"></select>
         <select id="location"></select>
         <select id="tag"></select>
-        <button id="favorites-only" class="secondary">★ Favorites</button>
       </div>
       <div class="row">
         <span class="muted small">Sort</span>
@@ -428,8 +423,6 @@ function renderInventory() {
           <option value="location">Group by location</option>
           <option value="supplier">Group by supplier</option>
         </select>
-        <select id="views" aria-label="Saved views"></select>
-        <button id="delete-view" class="danger">Delete view</button>
       </div>
       <button id="reset-filters" class="link" hidden>Reset filters</button>
     </div>
@@ -474,17 +467,6 @@ function renderInventory() {
   app.querySelector('#sort').onchange = (e) => { Object.assign(state, { sort: e.target.value, sortDir: 1 }); renderRows(); };
   app.querySelector('#sort-dir').onclick = () => { state.sortDir = -state.sortDir; renderRows(); };
   app.querySelector('#group').onchange = (e) => { state.group = e.target.value; renderRows(); };
-  app.querySelector('#favorites-only').onclick = () => { state.favoritesOnly = !state.favoritesOnly; renderRows(); };
-  app.querySelector('#views').onchange = (e) => {
-    try {
-      if (e.target.value === 'save') saveView();
-      else if (e.target.value) applyView(state.prefs.views[e.target.value]);
-    } catch (error) {
-      showError(error);
-      renderRows();
-    }
-  };
-  app.querySelector('#delete-view').onclick = deleteView;
   app.querySelector('#print-list').onclick = printList;
   app.querySelector('#select').onclick = () => { state.selected = new Set(); renderRows(); };
   app.querySelector('#select-shown').onclick = () => { visibleRows().forEach((p) => state.selected.add(p.id)); renderRows(); };
@@ -512,7 +494,6 @@ function renderInventory() {
     if (!row) return;
     if (state.selected) return toggleSelected(row.dataset.id);
     if (e.target.dataset.packed) return setPacked(useOf(state.projectId, row.dataset.id), e.target.checked);
-    if (e.target.dataset.fav) return toggleFavorite(row.dataset.id);
     if (e.target.dataset.tag) {
       state.tag = e.target.dataset.tag;
       return renderRows();
@@ -533,13 +514,13 @@ function renderInventory() {
 }
 
 function switchProject(id) {
-  Object.assign(state, { projectId: id, search: '', category: '', location: '', tag: '', sort: 'name', sortDir: 1, view: '', selected: null });
+  Object.assign(state, { projectId: id, search: '', category: '', location: '', tag: '', sort: 'name', sortDir: 1, selected: null });
   app.querySelector('#search').value = '';
   renderRows();
 }
 
 function resetFilters() {
-  Object.assign(state, DEFAULT_FILTERS, { view: '' });
+  Object.assign(state, DEFAULT_FILTERS);
   app.querySelector('#search').value = '';
   renderRows();
 }
@@ -582,7 +563,7 @@ function closeMenus(keep) {
 document.addEventListener('pointerdown', (e) => closeMenus(e.target.closest('.menuwrap')));
 document.addEventListener('keydown', (e) => e.key === 'Escape' && closeMenus());
 
-// The Filters button shows or hides the filter, sort and saved view controls.
+// The Filters button shows or hides the filter and sort controls.
 function toggleFilters(e) {
   const filters = app.querySelector('#filters');
   filters.hidden = !filters.hidden;
@@ -614,7 +595,6 @@ function visibleRows() {
     .filter((p) => !state.category || inCategory(p, state.category))
     .filter((p) => !state.location || p.location === state.location)
     .filter((p) => !state.tag || p.tags.includes(state.tag))
-    .filter((p) => !state.favoritesOnly || state.prefs.favorites.includes(p.id))
     .filter((p) => !query || matches(p, query))
     .sort(compareRows);
 }
@@ -648,14 +628,6 @@ function renderViewBar(columns) {
     `<option value="${key}" ${key === state.sort ? 'selected' : ''}>Sort: ${label}</option>`).join('');
   app.querySelector('#sort-dir').textContent = state.sortDir > 0 ? '▾' : '▴';
   app.querySelector('#group').value = state.group;
-  const favoritesOnly = app.querySelector('#favorites-only');
-  favoritesOnly.classList.toggle('active', state.favoritesOnly);
-  favoritesOnly.setAttribute('aria-pressed', state.favoritesOnly);
-  const views = state.prefs.views;
-  app.querySelector('#views').innerHTML = '<option value="">Saved views</option>' +
-    views.map((v, i) => `<option value="${i}" ${v.name === state.view ? 'selected' : ''}>${esc(v.name)}</option>`).join('') +
-    '<option value="save">Save current view…</option>';
-  app.querySelector('#delete-view').hidden = !views.some((v) => v.name === state.view);
   const selecting = Boolean(state.selected);
   app.querySelector('#select').hidden = selecting;
   app.querySelector('#bulkbar').hidden = !selecting;
@@ -666,7 +638,7 @@ function renderViewBar(columns) {
 
 // The Filters button counts the filters that hide parts, so a hidden filter is never forgotten.
 function renderFilterCount() {
-  const count = ['category', 'location', 'tag', 'favoritesOnly'].filter((key) => state[key] !== DEFAULT_FILTERS[key]).length;
+  const count = ['category', 'location', 'tag'].filter((key) => state[key] !== DEFAULT_FILTERS[key]).length;
   const badge = app.querySelector('#filter-count');
   badge.hidden = !count;
   badge.textContent = count;
@@ -690,12 +662,12 @@ function renderRows() {
   renderViewBar(columns);
   app.querySelector('#add').textContent = usesParts ? '+ Add parts' : '+ Add part';
   app.querySelector('#add').disabled = false;
-  app.querySelector('thead tr').innerHTML = '<th aria-label="Favorite"></th>' + columns.map(([key, label]) =>
+  app.querySelector('thead tr').innerHTML = (state.selected ? '<th aria-label="Selected"></th>' : '') + columns.map(([key, label]) =>
     `<th data-sort="${key}" class="${key === state.sort ? `sorted${state.sortDir < 0 ? ' desc' : ''}` : ''}">${label}</th>`).join('');
 
   const rows = visibleRows();
   app.querySelector('#rows').innerHTML = groupRows(rows).map(([name, group]) =>
-    (name ? `<tr class="group"><th colspan="${columns.length + 1}">${esc(name)} <span class="muted small">${countParts(group.length)}</span></th></tr>` : '')
+    (name ? `<tr class="group"><th colspan="${columns.length + (state.selected ? 1 : 0)}">${esc(name)} <span class="muted small">${countParts(group.length)}</span></th></tr>` : '')
     + group.map((p) => rowHtml(p, columns)).join('')).join('');
 
   const empty = app.querySelector('#empty');
@@ -706,16 +678,14 @@ function renderRows() {
 }
 
 function rowHtml(p, columns) {
-  const favorite = state.prefs.favorites.includes(p.id);
   const selected = state.selected?.has(p.id);
   const label = (key) => columns.find(([k]) => k === key)?.[1];
   return `
     <tr data-id="${esc(p.id)}" class="${selected ? 'selected' : ''} ${p.packed ? 'packed' : ''} ${waiting(p.id) ? 'waiting' : ''}">
-      <td class="fav">${state.selected
-        ? `<input type="checkbox" aria-label="Select ${esc(p.name)}" ${selected ? 'checked' : ''} />`
-        : `<button class="star" data-fav="1" aria-label="Favorite" aria-pressed="${favorite}">${favorite ? '★' : '☆'}</button>`}</td>
+      ${state.selected ? `<td class="check"><input type="checkbox" aria-label="Select ${esc(p.name)}" ${selected ? 'checked' : ''} /></td>` : ''}
       ${label('packed') ? `<td data-label="Packed" class="packed"><input type="checkbox" data-packed="1" aria-label="Packed" ${p.packed ? 'checked' : ''} /></td>` : ''}
       <td data-label="Item" class="name">${esc(p.name)}${orderBadge(p.id)}${conditionBadge(p.condition)}${notesLine(p.notes)}${tagChips(p.tags)}</td>
+      <td class="card-meta muted small">${esc(cardMeta(p, !label('inUse')))}</td>
       <td data-label="Part #">${esc(p.partNumber)}</td>
       <td data-label="${label('quantity')}" class="qty">
         <button class="step" data-delta="-1" ${p.quantity > 0 ? '' : 'disabled'} aria-label="Remove one">−</button>
@@ -729,39 +699,7 @@ function rowHtml(p, columns) {
     </tr>`;
 }
 
-// ---------- favorites, saved views and printing ----------
-
-// Favorites and saved views belong to each person and sync across their devices.
-const savePrefs = (prefs) => fb.savePrefs(state.user.uid, prefs).catch(showError);
-
-function toggleFavorite(id) {
-  const favorites = state.prefs.favorites;
-  savePrefs({ ...state.prefs, favorites: favorites.includes(id) ? favorites.filter((f) => f !== id) : [...favorites, id] });
-}
-
-async function saveView() {
-  const name = (await ask('Name this view')).slice(0, 40);
-  if (!name) return renderRows();
-  const view = { name, ...Object.fromEntries(VIEW_KEYS.map((key) => [key, state[key]])) };
-  const views = [...state.prefs.views.filter((v) => v.name !== name), view].sort((a, b) => a.name.localeCompare(b.name));
-  state.view = name;
-  savePrefs({ ...state.prefs, views });
-}
-
-function applyView(view) {
-  if (!project(view.projectId)) throw new Error(`The project in "${view.name}" was deleted.`);
-  const { name, ...settings } = view;
-  Object.assign(state, settings, { view: name });
-  app.querySelector('#search').value = state.search;
-  renderRows();
-}
-
-function deleteView() {
-  if (!confirm(`Delete the saved view "${state.view}"?`)) return;
-  const views = state.prefs.views.filter((v) => v.name !== state.view);
-  state.view = '';
-  savePrefs({ ...state.prefs, views });
-}
+// ---------- printing ----------
 
 // Prints the parts listed right now, grouped like the screen.
 function printList() {
@@ -777,7 +715,10 @@ function printList() {
 const orderBadge = (partId) => onOrder(partId) ? `<small class="badge on-order">${onOrder(partId)} on order</small>` : '';
 const conditionBadge = (condition) => ['used', 'broken'].includes(condition)
   ? `<small class="badge ${condition}">${CONDITIONS[condition]}</small>` : '';
-const notesLine = (notes) => notes ? `<div class="notes muted small">${esc(notes.split('\n')[0])}</div>` : '';
+// Phones show a part as a short card, with its location (and inventory, outside inventories) and part number on one
+// line under the name. Supplier and category are left to the part dialog there.
+const cardMeta = (p, withInventory) => [p.location, withInventory && inventoryNote(p), p.partNumber].filter(Boolean).join(' · ');
+const notesLine = (notes) => notes ?`<div class="notes muted small">${esc(notes.split('\n')[0])}</div>` : '';
 
 // Free count plus a link to every project using this inventory part, one per line.
 function usedIn(part) {
@@ -1913,7 +1854,6 @@ async function start() {
   fb.watchUser(async (user) => {
     stopWatching.forEach((stop) => stop());
     state.user = null;
-    state.prefs = { favorites: [], views: [] };
     state.loaded.clear();
     if (!user) return renderSignIn();
     try {
@@ -1956,10 +1896,6 @@ async function start() {
         state.onOrdersChange?.();
       }, onError),
       fb.watchPrinted((docs) => { state.printed = new Set(docs.map((d) => d.id)); }, onError),
-      fb.watchPrefs(user.uid, (prefs) => {
-        state.prefs = prefs;
-        renderRows();
-      }, onError),
     ];
   });
 }
