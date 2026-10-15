@@ -1795,11 +1795,12 @@ async function openTeamDialog() {
 // The app can't delete a Firebase project, so it records the team as deleted for the developer (see hub.js),
 // then points the owner to the Firebase console to erase the inventory and accounts.
 async function deleteTeam() {
-  const typed = await ask("Delete your team? This logs to a central server that your team stopped using the app, then shows how to erase your inventory and accounts. Type your program and team number to confirm, e.g. FTC 26706.");
+  const typed = await ask('Delete your team? Type your team number to confirm, e.g. FTC 26706.');
   if (!typed) return;
-  const match = typed.match(/^(ftc|frc|fll|other)\s*([1-9][0-9]{0,5})$/i);
-  if (!match) throw new Error('Enter your program and team number, e.g. FTC 26706.');
-  const program = PROGRAMS.find((p) => p.toLowerCase() === match[1].toLowerCase());
+  // The program is optional for FTC teams.
+  const match = typed.match(/^(?:(ftc|frc|fll|other)\s*)?([1-9][0-9]{0,5})$/i);
+  if (!match) throw new Error('Enter your team number, e.g. FTC 26706.');
+  const program = PROGRAMS.find((p) => p.toLowerCase() === (match[1] ?? 'ftc').toLowerCase());
   await recordDeletedTeam(program, Number(match[2]), await fb.getOwnerKey()).catch((error) => {
     if (error.code !== 'permission-denied') throw error;
     throw new Error(`${program} team ${match[2]} isn't on the central server's list of active teams.`);
