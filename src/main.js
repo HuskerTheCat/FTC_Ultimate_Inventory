@@ -40,6 +40,11 @@ const icon = (paths) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="n
 const ICON_INFO = icon('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>');
 const ICON_TRASH = icon('<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>');
 const ICON_CHEVRON = icon('<path d="m6 9 6 6 6-6"/>');
+const ICON_SCAN = icon('<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10"/>');
+const ICON_MENU = icon('<path d="M4 6h16M4 12h16M4 18h16"/>');
+const ICON_MORE = icon('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>');
+const ICON_FILTER = icon('<path d="M4 6h16M7 12h10M10 18h4"/>');
+const ICON_PLUS = icon('<path d="M12 5v14M5 12h14"/>');
 
 // Every project is an inventory (holds its own parts), a project or a packing list (both use parts from inventories).
 const TYPES = {
@@ -344,52 +349,67 @@ function renderInventory() {
     <header>
       <h1>${esc(state.connection.teamName)}</h1>
       <div class="row">
-        <button id="scan" class="secondary">Scan</button>
-        <button id="log" class="secondary">Log</button>
-        <button id="invite" class="secondary">Team</button>
-        <button id="bug" class="secondary">Report bug</button>
-        <button id="signout" class="secondary">Sign out</button>
+        <button id="scan" class="secondary">${ICON_SCAN}<span>Scan</span></button>
+        <div class="menuwrap">
+          <button id="main-menu-toggle" class="icon" aria-label="Menu" title="Menu" aria-haspopup="true" aria-expanded="false" aria-controls="main-menu">${ICON_MENU}</button>
+          <div id="main-menu" class="menu right" hidden>
+            <button id="orders" class="menu-item">Orders</button>
+            <button id="locations" class="menu-item">Locations</button>
+            <button id="log" class="menu-item">Change log</button>
+            <button id="trash" class="menu-item">Trash</button>
+            <hr />
+            <button id="invite" class="menu-item">Team</button>
+            <button id="bug" class="menu-item">Report bug</button>
+            <button id="signout" class="menu-item">Sign out</button>
+          </div>
+        </div>
       </div>
     </header>
     <p id="error" class="error" hidden></p>
-    <div class="projectbar">
-      <div class="projectpick">
-        <div class="projectmenu">
-          <button id="project" class="secondary" aria-haspopup="true" aria-expanded="false" aria-controls="project-menu"></button>
-          <div id="project-menu" class="menu" hidden></div>
-        </div>
-        <button id="project-info-toggle" class="icon" aria-label="About this project" aria-expanded="false" aria-controls="project-info">${ICON_INFO}</button>
-        <button id="delete-project" class="icon danger" aria-label="Delete project" title="Delete project">${ICON_TRASH}</button>
+    <div class="projectpick">
+      <div class="projectmenu menuwrap">
+        <button id="project" class="secondary" aria-haspopup="true" aria-expanded="false" aria-controls="project-menu"></button>
+        <div id="project-menu" class="menu" hidden></div>
       </div>
-      <button id="new-project" class="secondary">New</button>
-      <button id="locations" class="secondary">Locations</button>
-      <button id="orders" class="secondary">Orders</button>
-      <button id="trash" class="secondary">Trash</button>
+      <button id="project-info-toggle" class="icon" aria-label="About this project" aria-expanded="false" aria-controls="project-info">${ICON_INFO}</button>
+      <button id="delete-project" class="icon danger" aria-label="Delete project" title="Delete project">${ICON_TRASH}</button>
     </div>
     <p id="project-info" class="muted small" hidden></p>
     <div class="toolbar">
       <input id="search" type="search" placeholder="Search name, part #, supplier, tag…" />
-      <select id="category"></select>
-      <select id="location"></select>
-      <select id="tag"></select>
-      <button id="reset-filters" class="link" hidden>Reset filters</button>
-      <button id="print-labels" class="secondary">QR labels</button>
+      <button id="filters-toggle" class="secondary" aria-expanded="false" aria-controls="filters">${ICON_FILTER}<span>Filters</span><b id="filter-count" hidden></b></button>
+      <div class="menuwrap">
+        <button id="more-toggle" class="icon" aria-label="More" title="More" aria-haspopup="true" aria-expanded="false" aria-controls="more-menu">${ICON_MORE}</button>
+        <div id="more-menu" class="menu right" hidden>
+          <button id="select" class="menu-item">Select parts</button>
+          <button id="print-labels" class="menu-item">Print QR labels</button>
+          <button id="print-list" class="menu-item">Print list</button>
+        </div>
+      </div>
       <button id="add" disabled>+ Add part</button>
     </div>
-    <div class="viewbar">
-      <select id="sort" aria-label="Sort by"></select>
-      <button id="sort-dir" class="secondary" aria-label="Reverse sort order">▾</button>
-      <select id="group" aria-label="Group by">
-        <option value="">No grouping</option>
-        <option value="category">Group by category</option>
-        <option value="location">Group by location</option>
-        <option value="supplier">Group by supplier</option>
-      </select>
-      <button id="favorites-only" class="secondary">★ Favorites</button>
-      <select id="views" aria-label="Saved views"></select>
-      <button id="delete-view" class="danger">Delete view</button>
-      <button id="print-list" class="secondary">Print list</button>
-      <button id="select" class="secondary">Select</button>
+    <div id="filters" class="filters" hidden>
+      <div class="row">
+        <span class="muted small">Filter</span>
+        <select id="category"></select>
+        <select id="location"></select>
+        <select id="tag"></select>
+        <button id="favorites-only" class="secondary">★ Favorites</button>
+      </div>
+      <div class="row">
+        <span class="muted small">Sort</span>
+        <select id="sort" aria-label="Sort by"></select>
+        <button id="sort-dir" class="secondary" aria-label="Reverse sort order">▾</button>
+        <select id="group" aria-label="Group by">
+          <option value="">No grouping</option>
+          <option value="category">Group by category</option>
+          <option value="location">Group by location</option>
+          <option value="supplier">Group by supplier</option>
+        </select>
+        <select id="views" aria-label="Saved views"></select>
+        <button id="delete-view" class="danger">Delete view</button>
+      </div>
+      <button id="reset-filters" class="link" hidden>Reset filters</button>
     </div>
     <div id="bulkbar" class="viewbar" hidden>
       <span id="selected-count"></span>
@@ -407,14 +427,17 @@ function renderInventory() {
     <dialog id="dialog"></dialog>`;
 
   const dialog = app.querySelector('#dialog');
-  app.querySelector('#project').onclick = () => showProjectMenu(app.querySelector('#project-menu').hidden);
+  app.querySelectorAll('[aria-haspopup]').forEach((button) => {
+    button.onclick = () => showMenu(button, button.getAttribute('aria-expanded') !== 'true');
+  });
+  // Choosing anything in a menu closes it.
+  app.querySelectorAll('.menu').forEach((menu) => menu.addEventListener('click', (e) => e.target.closest('button') && closeMenus()));
   app.querySelector('#project-menu').onclick = (e) => {
+    if (e.target.closest('#new-project')) return openProjectDialog();
     const id = e.target.closest('[data-project]')?.dataset.project;
-    if (!id) return;
-    showProjectMenu(false);
-    switchProject(id);
+    if (id) switchProject(id);
   };
-  app.querySelector('#new-project').onclick = openProjectDialog;
+  app.querySelector('#filters-toggle').onclick = toggleFilters;
   app.querySelector('#locations').onclick = openLocationsDialog;
   app.querySelector('#orders').onclick = openOrdersDialog;
   app.querySelector('#trash').onclick = openTrashDialog;
@@ -516,7 +539,7 @@ function renderProjectPicker() {
     const items = state.projects.filter((p) => typeOf(p) === key);
     return items.length ? `<h3>${plural}</h3>` + items.map((p) =>
       `<button type="button" class="menu-item" data-project="${esc(p.id)}" ${p === current ? 'aria-current="true"' : ''}>${typeIcon}<span>${esc(p.name)}</span></button>`).join('') : '';
-  }).join('');
+  }).join('') + `<hr /><button type="button" id="new-project" class="menu-item">${ICON_PLUS}<span>New inventory, project or list</span></button>`;
   app.querySelector('#delete-project').hidden = current.id === fb.MAIN_PROJECT;
   const info = {
     inventory: 'An inventory. "In use" shows which projects and packing lists are using each part.',
@@ -527,18 +550,29 @@ function renderProjectPicker() {
   app.querySelector('#project-info-toggle').title = info;
 }
 
-function showProjectMenu(open) {
-  app.querySelector('#project-menu').hidden = !open;
-  app.querySelector('#project').setAttribute('aria-expanded', String(open));
+// Menus (the project picker, the header menu and More) open from their button.
+function showMenu(button, open) {
+  app.querySelector(`#${button.getAttribute('aria-controls')}`).hidden = !open;
+  button.setAttribute('aria-expanded', String(open));
 }
 
-// The project menu closes on a tap anywhere else or on Escape.
-document.addEventListener('pointerdown', (e) => {
-  if (app.querySelector('#project-menu') && !e.target.closest('.projectmenu')) showProjectMenu(false);
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && app.querySelector('#project-menu')) showProjectMenu(false);
-});
+// Closes every open menu except the one inside `keep`.
+function closeMenus(keep) {
+  app.querySelectorAll('[aria-haspopup][aria-expanded="true"]').forEach((button) => {
+    if (button.closest('.menuwrap') !== keep) showMenu(button, false);
+  });
+}
+
+// A menu closes on a tap anywhere else or on Escape.
+document.addEventListener('pointerdown', (e) => closeMenus(e.target.closest('.menuwrap')));
+document.addEventListener('keydown', (e) => e.key === 'Escape' && closeMenus());
+
+// The Filters button shows or hides the filter, sort and saved view controls.
+function toggleFilters(e) {
+  const filters = app.querySelector('#filters');
+  filters.hidden = !filters.hidden;
+  e.currentTarget.setAttribute('aria-expanded', String(!filters.hidden));
+}
 
 // The info icon shows or hides the description of the current project.
 function toggleProjectInfo(e) {
@@ -622,6 +656,15 @@ function renderViewBar(columns) {
   app.querySelector('#bulk-edit').disabled = !state.selected.size;
 }
 
+// The Filters button counts the filters that hide parts, so a hidden filter is never forgotten.
+function renderFilterCount() {
+  const count = ['category', 'location', 'tag', 'favoritesOnly'].filter((key) => state[key] !== DEFAULT_FILTERS[key]).length;
+  const badge = app.querySelector('#filter-count');
+  badge.hidden = !count;
+  badge.textContent = count;
+  app.querySelector('#filters-toggle').classList.toggle('active', count > 0);
+}
+
 function renderRows() {
   // Projects, parts and uses must all arrive before rows replace the loading placeholders.
   if (!state.user || !app.querySelector('#rows') || state.loaded.size < 3 || !currentProject()) return;
@@ -635,6 +678,7 @@ function renderRows() {
   renderFilter('location', 'locations', unique(all, 'location'), state.location);
   renderFilter('tag', 'tags', allTags(all), state.tag);
   app.querySelector('#reset-filters').hidden = Object.entries(DEFAULT_FILTERS).every(([key, value]) => state[key] === value);
+  renderFilterCount();
   renderViewBar(columns);
   app.querySelector('#add').textContent = usesParts ? '+ Add parts' : '+ Add part';
   app.querySelector('#add').disabled = false;

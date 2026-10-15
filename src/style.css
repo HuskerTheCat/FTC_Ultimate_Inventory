@@ -83,6 +83,12 @@ input, select, textarea {
   border-radius: 10px;
   background: var(--field);
 }
+/* Our own dropdown arrow: the built-in one turns white while the list is open on some systems. */
+select {
+  appearance: none;
+  padding-right: 36px;
+  background: var(--field) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238f98b5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center / 18px;
+}
 input::placeholder, textarea::placeholder { color: #6b7493; }
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
 textarea { resize: vertical; font-family: ui-monospace, monospace; font-size: 0.85rem; }
@@ -110,17 +116,22 @@ button.danger:hover { background: rgb(255 107 125 / 0.1); }
 button.link { min-height: 0; background: none; border: none; color: var(--accent); padding: 4px; align-self: center; font-weight: 500; }
 button:disabled { opacity: 0.4; cursor: default; }
 
-/* Inventory: header, project bar, filters and view options */
-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-header h1 { margin: 0; }
-header .row { gap: 4px; }
-header button.secondary { background: none; color: var(--muted); }
-header button.secondary:hover { background: var(--raised); color: var(--text); }
-header #signout { margin-left: 8px; border-color: var(--border); }
+/* Inventory: header, project picker, search and filters */
+header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+header h1 { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+header .row { flex-wrap: nowrap; }
+/* Buttons with an icon and a label: Scan and Filters. */
+:is(#scan, #filters-toggle) { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border-color: var(--border); }
+/* Square icon buttons that open a menu: the header menu and More. */
+button.icon { width: 42px; padding: 0; background: var(--surface); color: var(--muted); border-color: var(--border); }
+button.icon svg { display: block; margin: 0 auto; }
+button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised); color: var(--text); }
+.menuwrap { position: relative; }
+.menu.right { left: auto; right: 0; width: max-content; min-width: 200px; }
+.menu hr { border: none; border-top: 1px solid var(--border); margin: 6px 4px; }
 
-.projectbar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto auto; gap: 8px; margin-bottom: 20px; }
-.projectbar:has(+ #project-info:not([hidden])) { margin-bottom: 6px; }
-.projectpick { display: flex; gap: 8px; min-width: 0; }
+.projectpick { display: flex; gap: 8px; min-width: 0; margin-bottom: 20px; }
+.projectpick:has(+ #project-info:not([hidden])) { margin-bottom: 6px; }
 /* The project picker: a button with the current project's type icon, opening a menu grouped by type. */
 .projectmenu { position: relative; flex: 1 1 auto; min-width: 0; }
 #project {
@@ -193,21 +204,29 @@ header #signout { margin-left: 8px; border-color: var(--border); }
 .types label:has(input:checked) { border-color: var(--accent); background: rgb(91 155 255 / 0.15); color: var(--accent); }
 .types label:has(input:focus-visible) { box-shadow: var(--focus); }
 /* Square icon buttons next to the project picker: info and delete. */
-.projectpick button.icon { width: 48px; min-height: 0; padding: 0; margin-left: 0; background: var(--surface); color: var(--muted); border-color: var(--border); }
-.projectpick button.icon svg { display: block; margin: 0 auto; }
-.projectpick button.icon:hover { background: var(--raised); color: var(--text); }
+.projectpick button.icon { width: 48px; min-height: 0; margin-left: 0; }
 .projectpick button.icon[aria-expanded="true"] { color: var(--accent); border-color: var(--accent); }
 .projectpick button.icon.danger:hover { background: rgb(255 107 125 / 0.1); color: var(--danger); border-color: rgb(255 107 125 / 0.5); }
 #project-info { margin-bottom: 20px; }
 
-.toolbar { display: grid; grid-template-columns: minmax(0, 1fr) repeat(3, 160px) auto auto auto; gap: 8px; margin-bottom: 8px; }
+.toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 8px; margin-bottom: 16px; }
+.toolbar:has(+ .filters:not([hidden])) { margin-bottom: 8px; }
+#filters-toggle.active { color: var(--accent); border-color: var(--accent); }
+#filter-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--accent-text); font-size: 0.8rem; line-height: 20px; text-align: center; }
+/* The panel the Filters button opens: filters on one row, sort and saved views on the next. */
+.filters { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 16px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+.filters[hidden] { display: none; }
+.filters .row { width: 100%; }
+.filters .row > span { width: 44px; font-weight: 600; }
+.filters select { width: auto; flex: 0 1 190px; min-height: 38px; padding: 4px 34px 4px 10px; }
+.filters button { min-height: 38px; padding: 4px 12px; }
+.filters button.secondary { background: var(--field); border-color: var(--border); }
+.filters button.danger { margin-left: 0; }
+.filters button.active { background: rgb(91 155 255 / 0.15); color: var(--accent); border-color: var(--accent); }
+.filters #reset-filters { align-self: flex-start; }
 .viewbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 16px; }
-.viewbar select, .viewbar button { min-height: 34px; padding: 4px 12px; font-size: 0.9rem; }
-.viewbar select { width: auto; flex: 0 1 200px; background-color: var(--surface); }
+.viewbar button { min-height: 34px; padding: 4px 12px; font-size: 0.9rem; }
 .viewbar button.secondary { background: var(--surface); border-color: var(--border); }
-.viewbar button.danger { margin-left: 0; }
-.viewbar button.active { background: rgb(91 155 255 / 0.15); color: var(--accent); border-color: var(--accent); }
-.viewbar #print-list { margin-left: auto; }
 #bulkbar[hidden] { display: none; }
 #bulkbar #selected-count { font-weight: 600; margin-right: auto; }
 
@@ -294,23 +313,14 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
 @media screen and (max-width: 700px) {
   #app { padding: 14px 16px 104px; }
   h1 { font-size: 1.5rem; }
-  header { margin-bottom: 12px; }
-  /* The header buttons share the width and wrap, so Sign out never ends up off screen. */
-  header .row { width: 100%; }
-  header .row button { flex: 1 1 auto; min-height: 36px; padding: 4px 10px; font-size: 0.9rem; }
-  header button.secondary { background: var(--surface); color: var(--text); }
-  header #signout { margin-left: 0; }
-  .projectbar { display: flex; flex-wrap: wrap; margin-bottom: 14px; }
-  .projectpick { flex: 1 1 100%; }
-  .projectbar > button { min-height: 36px; padding: 4px 12px; font-size: 0.9rem; }
+  header { margin-bottom: 12px; gap: 8px; }
+  #scan { padding: 4px 12px; }
+  .projectpick { margin-bottom: 12px; }
   #project-info { margin-bottom: 14px; }
-  /* Search on top, the three filters share the next row, and nothing runs off screen. */
-  .toolbar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .toolbar #search { grid-column: 1 / -1; }
-  .toolbar #print-labels { grid-column: 3; }
-  .toolbar select { min-height: 36px; padding: 4px 8px; font-size: 0.9rem; }
-  .toolbar #reset-filters { justify-self: start; }
-  .toolbar #print-labels { min-height: 36px; padding: 4px 12px; font-size: 0.9rem; }
+  #filters-toggle { padding: 4px 12px; }
+  /* Each filter row's label sits above it, and the selects share the width. */
+  .filters .row > span { width: 100%; }
+  .filters select { flex: 1 1 120px; }
   .toolbar #add {
     position: fixed;
     right: 16px;
@@ -322,8 +332,6 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
     font-size: 1.05rem;
     box-shadow: var(--float-shadow);
   }
-  .viewbar select { flex: 1 1 140px; }
-  .viewbar #print-list { margin-left: 0; }
 
   table, tbody, tr, td { display: block; }
   table { border: none; background: none; border-radius: 0; }
@@ -361,6 +369,13 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   tbody tr.group { background: none; margin: 18px 0 8px; }
   tbody tr.group:hover { background: none; }
   tr.group th { display: block; padding: 0; border: none; }
+}
+
+/* The narrowest phones: Scan and Filters show only their icons, leaving room for the team name and search. */
+@media screen and (max-width: 360px) {
+  header h1 { font-size: 1.3rem; }
+  :is(#scan, #filters-toggle) > span { display: none; }
+  #scan { width: 42px; padding: 0; justify-content: center; }
 }
 
 .password { display: flex; gap: 8px; }

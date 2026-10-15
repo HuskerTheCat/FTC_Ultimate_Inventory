@@ -47,10 +47,10 @@ console.log('Phone header fits the screen');
 const layout = await page.evaluate(() => ({
   width: innerWidth,
   scrollWidth: document.documentElement.scrollWidth,
-  signOutRight: document.querySelector('#signout').getBoundingClientRect().right,
+  menuRight: document.querySelector('#main-menu-toggle').getBoundingClientRect().right,
 }));
 console.log(JSON.stringify(layout));
-if (layout.scrollWidth > layout.width || layout.signOutRight > layout.width) throw new Error('The header is wider than the screen');
+if (layout.scrollWidth > layout.width || layout.menuRight > layout.width) throw new Error('The header is wider than the screen');
 
 console.log('Scanner shows the camera');
 await page.locator('#scan').click();
@@ -59,6 +59,7 @@ await shot('4-scanner');
 await page.getByRole('button', { name: 'Cancel' }).click();
 
 console.log('Demo opens from the welcome screen');
+await page.locator('#main-menu-toggle').click();
 await page.locator('#signout').click();
 await page.getByRole('button', { name: 'Use a different team' }).click();
 await page.getByRole('button', { name: 'Try the demo' }).click();
