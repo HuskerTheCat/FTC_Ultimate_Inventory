@@ -1672,7 +1672,7 @@ function openBugDialog() {
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>Report a bug</h2>
-      <p class="muted small">This goes to the app's developer with your team name and app version. Please don't include personal info.</p>
+      <p class="muted small">This is logged to a central server with your team name and app version. Please don't include personal info.</p>
       <label>What went wrong?<textarea name="text" rows="6" maxlength="5000" required placeholder="What you did, what you expected, and what happened instead"></textarea></label>
       <div class="row">
         <button value="send">Send</button>
@@ -1780,14 +1780,14 @@ async function openTeamDialog() {
 // The app can't delete a Firebase project, so it records the team as deleted for the developer (see hub.js),
 // then points the owner to the Firebase console to erase the inventory and accounts.
 async function deleteTeam() {
-  const typed = await ask("Delete your team? This tells the app's developer your team stopped using the app, then shows how to erase your inventory and accounts. Type your program and team number to confirm, e.g. FTC 26706.");
+  const typed = await ask("Delete your team? This logs to a central server that your team stopped using the app, then shows how to erase your inventory and accounts. Type your program and team number to confirm, e.g. FTC 26706.");
   if (!typed) return;
   const match = typed.match(/^(ftc|frc|fll|other)\s*([1-9][0-9]{0,5})$/i);
   if (!match) throw new Error('Enter your program and team number, e.g. FTC 26706.');
   const program = PROGRAMS.find((p) => p.toLowerCase() === match[1].toLowerCase());
   await recordDeletedTeam(program, Number(match[2]), await fb.getOwnerKey()).catch((error) => {
     if (error.code !== 'permission-denied') throw error;
-    throw new Error(`${program} team ${match[2]} isn't on the developer's list of active teams.`);
+    throw new Error(`${program} team ${match[2]} isn't on the central server's list of active teams.`);
   });
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `

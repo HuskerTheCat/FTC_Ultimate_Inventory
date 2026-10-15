@@ -191,7 +191,7 @@ export const saveOwnerKey = (ownerKey) => setDoc(doc(db, 'team', 'owner'), { own
 
 export async function getOwnerKey() {
   const ownerKey = (await getDoc(doc(db, 'team', 'owner'))).data()?.ownerKey;
-  if (!ownerKey) throw new Error('This team isn’t on the developer’s list of active teams.');
+  if (!ownerKey) throw new Error('This team isn’t on the central server’s list of active teams.');
   return ownerKey;
 }
 
