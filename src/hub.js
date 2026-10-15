@@ -2,9 +2,9 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, addDoc, doc, getDoc, collection, serverTimestamp, writeBatch } from 'firebase/firestore';
 
 // The app developer's own Firebase project, separate from every team's. It collects each new team's name, program
-// and number, the numbers of teams that deleted themselves, and bug reports. Anyone can add to it and nobody can read it
-// from the app, except looking up one team's Firebase project by its number. The developer reads it in the Firebase
-// console. Its security rules are in hub.rules.
+// and number, the numbers of teams that deleted themselves (with an optional reason), and bug reports. Anyone can add
+// to it and nobody can read it from the app, except looking up one team's Firebase project by its number. The developer
+// reads it in the Firebase console. Its security rules are in hub.rules.
 const HUB_CONFIG = {
   apiKey: 'AIzaSyAbyvOD4lczELqE9A0dZLVAK_4JtSFXMZE',
   authDomain: 'ultimate-inventory-hub.firebaseapp.com',
@@ -45,7 +45,9 @@ export async function findTeamProject(program, number) {
   return team.data().projectId;
 }
 
-export const recordDeletedTeam = (program, number, ownerKey) => moveTeam('teams', 'deleted', { program, number }, ownerKey);
+// The reason is optional text the owner typed about why they're leaving.
+export const recordDeletedTeam = (program, number, ownerKey, reason) =>
+  moveTeam('teams', 'deleted', { program, number, ...(reason && { reason }) }, ownerKey);
 
 export const sendBugReport = (team, text) =>
   addDoc(collection(db, 'reports'), { team, text, version: __APP_VERSION__, at: serverTimestamp() });

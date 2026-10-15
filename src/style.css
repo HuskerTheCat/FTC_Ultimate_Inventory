@@ -291,7 +291,7 @@ td.name .notes { font-weight: 400; max-width: 32ch; white-space: nowrap; overflo
 .badge { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: var(--raised); font-size: 0.75rem; font-weight: 500; color: var(--muted); vertical-align: middle; }
 .badge.broken { color: var(--danger); background: rgb(255 107 125 / 0.12); }
 .badge.on-order { color: var(--pending); background: rgb(242 184 75 / 0.12); }
-textarea:is([name="notes"], [name="text"]) { font: inherit; }
+textarea:is([name="notes"], [name="text"], [name="reason"]) { font: inherit; }
 button.step {
   width: 32px;
   min-height: 32px;

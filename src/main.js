@@ -1792,16 +1792,36 @@ async function openTeamDialog() {
   dialog.showModal();
 }
 
+// Like ask(), with an optional reason that goes to the developer with the deleted team (see hub.js).
+// Resolves to the form, or null if cancelled.
+function askDeleteTeam() {
+  const dialog = app.querySelector('#ask');
+  dialog.innerHTML = `
+    <form method="dialog" class="card">
+      <label>Delete your team? Type your team number to confirm, e.g. FTC 26706.<input name="team" /></label>
+      <label>Why are you leaving? (optional)<textarea name="reason" rows="3" maxlength="1000" placeholder="This goes to the app's developer. Please don't include personal info."></textarea></label>
+      <div class="row">
+        <button value="ok">OK</button>
+        <button value="cancel" formnovalidate class="secondary">Cancel</button>
+      </div>
+    </form>`;
+  dialog.returnValue = ''; // Escape keeps the last returnValue
+  dialog.showModal();
+  return new Promise((resolve) => {
+    dialog.addEventListener('close', () => resolve(dialog.returnValue === 'ok' ? dialog.querySelector('form') : null), { once: true });
+  });
+}
+
 // The app can't delete a Firebase project, so it records the team as deleted for the developer (see hub.js),
 // then points the owner to the Firebase console to erase the inventory and accounts.
 async function deleteTeam() {
-  const typed = await ask('Delete your team? Type your team number to confirm, e.g. FTC 26706.');
-  if (!typed) return;
+  const form = await askDeleteTeam();
+  if (!form) return;
   // The program is optional for FTC teams.
-  const match = typed.match(/^(?:(ftc|frc|fll|other)\s*)?([1-9][0-9]{0,5})$/i);
+  const match = form.team.value.trim().match(/^(?:(ftc|frc|fll|other)\s*)?([1-9][0-9]{0,5})$/i);
   if (!match) throw new Error('Enter your team number, e.g. FTC 26706.');
   const program = PROGRAMS.find((p) => p.toLowerCase() === (match[1] ?? 'ftc').toLowerCase());
-  await recordDeletedTeam(program, Number(match[2]), await fb.getOwnerKey()).catch((error) => {
+  await recordDeletedTeam(program, Number(match[2]), await fb.getOwnerKey(), form.reason.value.trim()).catch((error) => {
     if (error.code !== 'permission-denied') throw error;
     throw new Error(`${program} team ${match[2]} isn't on the central server's list of active teams.`);
   });

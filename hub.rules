@@ -51,7 +51,8 @@ service cloud.firestore {
     }
 
     match /deleted/{key} {
-      allow create: if request.resource.data.keys().hasOnly(['program', 'number', 'ownerKey', 'at'])
+      allow create: if request.resource.data.keys().hasOnly(['program', 'number', 'ownerKey', 'reason', 'at'])
+        && (!('reason' in request.resource.data) || text(request.resource.data.reason, 1000))
         && validTeam(key, request.resource.data)
         && request.resource.data.at == request.time
         && exists(team(key)) && !existsAfter(team(key))
