@@ -467,22 +467,32 @@ button.link.inline { padding: 0; align-self: auto; text-decoration: underline; f
 
 .toast {
   position: fixed;
-  left: 50%;
+  /* Centered without left: 50%, which would cap the width at half the screen. */
+  left: 16px;
+  right: 16px;
+  margin: 0 auto;
+  width: fit-content;
   bottom: calc(16px + env(safe-area-inset-bottom));
-  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 12px;
-  max-width: calc(100% - 32px);
   padding: 8px 8px 8px 16px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 14px;
   box-shadow: var(--float-shadow);
   z-index: 6;
-  overflow-wrap: anywhere;
 }
 .toast[hidden] { display: none; }
+/* Long part names wrap to two lines at most; Undo stays put. */
+.toast span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.toast button { flex: none; }
 /* On phones the toast sits above the floating Add button. */
 @media screen and (max-width: 700px) {
   .toast { bottom: calc(88px + env(safe-area-inset-bottom)); }
