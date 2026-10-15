@@ -726,15 +726,15 @@ const conditionBadge = (condition) => ['used', 'broken'].includes(condition)
   ? `<small class="badge ${condition}">${CONDITIONS[condition]}</small>` : '';
 const notesLine = (notes) => notes ? `<div class="notes muted small">${esc(notes.split('\n')[0])}</div>` : '';
 
-// Free count plus a link to every project using this inventory part.
+// Free count plus a link to every project using this inventory part, one per line.
 function usedIn(part) {
   const uses = usesOfPart(part.id).filter(holdsPart);
   if (!uses.length) return '';
   const free = part.quantity - part.inUse;
   const links = uses.map((u) =>
-    `<button class="link inline" data-project="${esc(u.projectId)}">${esc(project(u.projectId)?.name)}</button> (${u.quantity})`).join(', ');
+    `<span class="small muted"><button class="link inline" data-project="${esc(u.projectId)}">${esc(project(u.projectId)?.name)}</button> (${u.quantity})</span>`).join('');
   return `<div class="in-use"><span class="${free < 0 ? 'over' : ''}">${free < 0 ? `${-free} short` : `${free} free`}</span>
-    <span class="small muted">Used in ${links}</span></div>`;
+    <span class="small muted">Used in</span>${links}</div>`;
 }
 
 // ---------- links and labels ----------
