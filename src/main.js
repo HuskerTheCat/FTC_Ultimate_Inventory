@@ -1667,7 +1667,7 @@ async function openTeamDialog() {
       <h2>Members</h2>
       <ul id="members" class="members"></ul>
       ${owner ? `
-        <p class="muted small">Removing someone also makes a new join code. Reset the code yourself if it was shared by mistake.</p>
+        <p class="muted small">Removing a member automatically resets the join link. Reset the code yourself if it was shared by mistake.</p>
         <button type="button" id="reset-code" class="danger">Reset join code</button>
         <button type="button" id="delete-team" class="danger">Delete team</button>` : ''}
       <p class="muted small">FTC Ultimate Inventory is open source under the AGPL v3. <a href="${SOURCE_URL}" target="_blank" rel="noopener">Source code</a></p>
