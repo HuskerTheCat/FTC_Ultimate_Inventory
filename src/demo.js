@@ -237,10 +237,16 @@ export async function addOrder(order) {
   return add('orders', order);
 }
 
-export async function receiveOrder(order, newPart, user) {
+export async function saveOrder(id, order) {
+  write('orders', id, order);
+}
+
+export async function receiveOrder(order, newPart, user, count) {
   if (newPart) await saveParts([[newPartId(), newPart]], user);
-  else await changeQuantity(order.partId, order.quantity, user);
-  remove('orders', order.id);
+  else await changeQuantity(order.partId, count, user);
+  const { id, ...data } = order;
+  if (count < order.quantity) write('orders', id, { ...data, quantity: order.quantity - count });
+  else remove('orders', id);
 }
 
 const TRASH_COLLECTIONS = { part: 'parts', project: 'projects', order: 'orders' };

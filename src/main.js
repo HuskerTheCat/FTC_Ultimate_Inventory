@@ -804,7 +804,7 @@ function autofillFromCatalog(form) {
   form.partNumber.addEventListener('input', () => {
     findProduct(form.partNumber.value).then((product) => {
       for (const key of Object.keys(filled)) {
-        if (form[key].value && form[key].value !== filled[key]) continue;
+        if (form[key].readOnly || (form[key].value && form[key].value !== filled[key])) continue;
         form[key].value = filled[key] = product?.[key] ?? '';
       }
     }).catch(showError);
@@ -976,15 +976,15 @@ async function renameLocation(location) {
   if (changes.length) writeParts(changes, 'edited', countParts(changes.length), `Location ${location.name} → ${name}`);
 }
 
-// Parts the team is waiting on. "Arrived" moves an order into the inventory.
+// Parts the team is waiting on. "Arrived" moves an order into the inventory. Tapping an order loads it into the form below to change it.
 function openOrdersDialog() {
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>Order list</h2>
-      <p class="muted small">Parts the team is waiting on. They show in the inventory as on order, and projects and packing lists can use them already. Tap Arrived when one comes in. New items go into ${esc(project(fb.MAIN_PROJECT).name)}.</p>
+      <p class="muted small">Parts the team is waiting on. They show in the inventory as on order, and projects and packing lists can use them already. Tap an order to change it, and Arrived when it comes in. New items go into ${esc(project(fb.MAIN_PROJECT).name)}.</p>
       <ul id="order-list" class="members"></ul>
-      <h2>Add to the order list</h2>
+      <h2 id="order-form-title">Add to the order list</h2>
       <input name="name" maxlength="200" list="order-parts" placeholder="Item, or pick a part you already have" />
       <datalist id="order-parts">${sorted(state.parts.map((p) => p.name)).map((n) => `<option value="${esc(n)}">`).join('')}</datalist>
       <div class="row order-fields">
@@ -995,7 +995,8 @@ function openOrdersDialog() {
       <input name="link" maxlength="1000" inputmode="url" placeholder="Item link (optional)" />
       <input name="notes" maxlength="1000" placeholder="Notes (optional)" />
       <div class="row">
-        <button value="add">Add</button>
+        <button value="add" id="save-order">Add</button>
+        <button type="button" id="cancel-edit" class="secondary" hidden>Cancel</button>
         <button type="button" id="print-orders" class="secondary">Print</button>
         <button value="close" formnovalidate class="secondary">Close</button>
       </div>
@@ -1005,14 +1006,28 @@ function openOrdersDialog() {
   const list = dialog.querySelector('#order-list');
   const printButton = dialog.querySelector('#print-orders');
   printButton.onclick = printOrders;
+  // The order being changed, or null while the form adds new orders. Its item stays the same.
+  let editing = null;
+  const setEditing = (order) => {
+    editing = order;
+    form.reset();
+    if (order) for (const key of ['name', 'quantity', 'partNumber', 'supplier', 'link', 'notes']) form[key].value = order[key] ?? '';
+    form.name.readOnly = Boolean(order);
+    dialog.querySelector('#order-form-title').textContent = order ? `Change ${order.name}` : 'Add to the order list';
+    dialog.querySelector('#save-order').textContent = order ? 'Save' : 'Add';
+    dialog.querySelector('#cancel-edit').hidden = !order;
+    printButton.hidden = Boolean(order);
+  };
+  dialog.querySelector('#cancel-edit').onclick = () => setEditing(null);
   const renderOrders = () => {
+    if (editing && !state.orders.some((o) => o.id === editing.id)) setEditing(null);
     printButton.disabled = !state.orders.length;
     list.innerHTML = sortedOrders().map((o) => {
       const part = state.parts.find((p) => p.id === o.partId);
       const details = [o.partNumber, o.supplier, part ? `have ${part.quantity}` : 'new part'].filter(Boolean).map((d) => `<span>${esc(d)}</span>`);
       if (o.link) details.push(`<a href="${esc(o.link)}" target="_blank" rel="noopener">Item link ↗</a>`);
       return `<li>
-        <span><strong>${esc(o.name)}</strong> ×${o.quantity} <span class="muted small order-details">${details.join(' · ')}</span>${o.notes ? `<span class="small order-notes">${esc(o.notes)}</span>` : ''}</span>
+        <span class="order-text" data-edit="${esc(o.id)}"><strong>${esc(o.name)}</strong> ×${o.quantity} <span class="muted small order-details">${details.join(' · ')}</span>${o.notes ? `<span class="small order-notes">${esc(o.notes)}</span>` : ''}</span>
         <span class="row">
           <button type="button" data-arrived="${esc(o.id)}">Arrived</button>
           <button type="button" class="danger" data-remove="${esc(o.id)}">Remove</button>
@@ -1031,6 +1046,17 @@ function openOrdersDialog() {
     const link = orderLink(form.link.value);
     if (link === null) return showError(new Error('That item link is not a web address.'));
     const notes = form.notes.value.trim();
+    if (editing) {
+      const { id, ...before } = editing;
+      const order = {
+        name: editing.name, partId: editing.partId, quantity, partNumber: form.partNumber.value.trim(), supplier: form.supplier.value.trim(),
+        ...(link && { link }),
+        ...(notes && { notes }),
+      };
+      fb.saveOrder(id, order).catch(showError);
+      offerUndo(`Changed ${editing.name}`, () => fb.saveOrder(id, before).catch(showError));
+      return setEditing(null);
+    }
     const part = state.parts.find((p) => sameName(p.name, name));
     const order = {
       name: part?.name ?? name,
@@ -1051,8 +1077,12 @@ function openOrdersDialog() {
   };
   list.onclick = (e) => {
     const { arrived, remove } = e.target.dataset;
-    if (arrived) receiveOrder(state.orders.find((o) => o.id === arrived));
-    if (remove) trashOrder(state.orders.find((o) => o.id === remove));
+    if (arrived) return receiveOrder(state.orders.find((o) => o.id === arrived)).catch(showError);
+    if (remove) return trashOrder(state.orders.find((o) => o.id === remove));
+    const edit = e.target.closest('[data-edit]')?.dataset.edit;
+    if (!edit || e.target.closest('a')) return;
+    setEditing(state.orders.find((o) => o.id === edit));
+    form.quantity.focus();
   };
   renderOrders();
   state.onOrdersChange = renderOrders;
@@ -1090,10 +1120,14 @@ const orderedPart = (order, quantity) => ({
 
 // Adds an arrived order to the part it's for, or makes it a new part in Main Inventory
 // (orders from before new items were added to the inventory right away, or whose part was deleted).
-function receiveOrder(order) {
+// Some of an order can arrive first: what's left stays on the order list. Orders without a part arrive all at once.
+async function receiveOrder(order) {
   const part = state.parts.find((p) => p.id === order.partId);
+  const count = part && order.quantity > 1 ? Number(await ask(`How many ${order.name} arrived?`, order.quantity)) : order.quantity;
+  if (!count) return;
+  if (!Number.isInteger(count) || count < 1 || count > order.quantity) throw new Error(`Enter a whole number from 1 to ${order.quantity}.`);
   const newPart = part ? null : orderedPart(order, order.quantity);
-  logged(fb.receiveOrder(order, newPart, state.user), 'arrived', order.name, `+${order.quantity} from the order list`);
+  logged(fb.receiveOrder(order, newPart, state.user, count), 'arrived', order.name, `+${count} from the order list`);
 }
 
 async function deleteCurrentProject() {
@@ -1406,11 +1440,24 @@ function trashPart(part, details) {
   return entry;
 }
 
+// Removing an order can also remove the part it would leave behind with nothing in it.
 function trashOrder(order) {
   const { id, ...data } = order;
   const entry = { kind: 'order', docId: id, name: order.name, data, uses: [] };
+  const part = emptyPartOf(order);
+  const partEntry = part && confirm(`Also remove ${part.name} from ${project(part.projectId).name}? None are in stock.`)
+    ? trashPart(part, 'Removed with its order') : null;
   fb.moveToTrash(entry, state.user).catch(showError);
-  offerUndo(`Removed ${order.name}`, () => restore(entry));
+  // The part comes back first, because an order can only be for a part that exists.
+  offerUndo(`Removed ${order.name}`, () => (partEntry ? restore(partEntry, 'Undo: brought back with its order') : Promise.resolve())
+    .then(() => restore(entry)));
+}
+
+// The order's part when removing the order would leave it empty: none in stock, not used anywhere and on no other order.
+function emptyPartOf(order) {
+  const part = state.parts.find((p) => p.id === order.partId);
+  const empty = part && !part.quantity && !usesOfPart(part.id).length && !state.orders.some((o) => o.id !== order.id && o.partId === part.id);
+  return empty ? part : null;
 }
 
 // Net change of the taps on one part while its Undo shows, so one Undo reverts them all.
@@ -1488,8 +1535,7 @@ function restorable(entry) {
 
 function restore(entry, details = 'Brought back from Trash') {
   const write = fb.restoreFromTrash(restorable(entry), state.user);
-  if (entry.kind === 'part') logged(write, 'added', entry.name, details);
-  else write.catch(showError);
+  return entry.kind === 'part' ? logged(write, 'added', entry.name, details) : write.catch(showError);
 }
 
 function deleteForever(entry) {

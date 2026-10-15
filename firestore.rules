@@ -158,7 +158,7 @@ service cloud.firestore {
 
     match /orders/{orderId} {
       allow read, delete: if isMember();
-      allow create: if isMember() && validOrder();
+      allow create, update: if isMember() && validOrder();
     }
 
     // Deleted parts, projects and orders, kept so they can be brought back. Restoring writes `data` and `uses`

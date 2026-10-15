@@ -411,6 +411,9 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
 #location-list li > .row { flex-wrap: nowrap; margin-left: auto; }
 /* Order rows: details on their own line without splitting a part number, Arrived and Remove stacked the same on every row. */
 #order-list li > .row { flex-direction: column; align-items: stretch; flex-shrink: 0; }
+#order-list .order-text { cursor: pointer; }
+/* An order being changed keeps its item. */
+input[name="name"]:read-only { color: var(--muted); }
 .order-details { display: block; }
 .order-details > * { white-space: nowrap; }
 .order-notes { display: block; margin-top: 2px; white-space: pre-line; }
