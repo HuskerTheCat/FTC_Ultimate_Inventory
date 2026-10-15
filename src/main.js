@@ -1799,7 +1799,7 @@ function askDeleteTeam() {
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <label>Delete your team? Type your team number to confirm, e.g. FTC 26706.<input name="team" /></label>
-      <label>Why are you leaving? (optional)<textarea name="reason" rows="3" maxlength="1000" placeholder="This goes to the app's developer. Please don't include personal info."></textarea></label>
+      <label>Why are you leaving? (optional)<textarea name="reason" rows="3" maxlength="1000" placeholder="This is logged to a central server. Please don't include personal info."></textarea></label>
       <div class="row">
         <button value="ok">OK</button>
         <button value="cancel" formnovalidate class="secondary">Cancel</button>
