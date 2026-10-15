@@ -101,6 +101,8 @@ const inCategory = (part, category) => {
   const own = part.category.toLowerCase();
   return own === category.toLowerCase() || own.startsWith(category.toLowerCase() + '/');
 };
+// How a category is shown: "Hardware › Screws" for "Hardware/Screws".
+const categoryLabel = (category) => category.split('/').join(' › ');
 const cleanCategory = (text) => text.split('/').map((level) => level.trim()).filter(Boolean).join('/');
 // Spells a typed category the way the team already spells it, level by level.
 function canonicalCategory(text) {
@@ -394,7 +396,7 @@ function renderInventory() {
       <button id="edit-project" class="icon" aria-label="Rename or delete" title="Rename or delete">${ICON_EDIT}</button>
     </div>
     <div class="toolbar">
-      <input id="search" type="search" placeholder="Search name, part #, supplier, tag…" />
+      <input id="search" type="search" placeholder="Search parts…" />
       <button id="filters-toggle" class="secondary" aria-expanded="false" aria-controls="filters">${ICON_FILTER}<span>Filters</span><b id="filter-count" hidden></b></button>
       <div class="menuwrap">
         <button id="more-toggle" class="icon" aria-label="More" title="More" aria-haspopup="true" aria-expanded="false" aria-controls="more-menu">${ICON_MORE}</button>
@@ -525,10 +527,10 @@ function resetFilters() {
   renderRows();
 }
 
-function renderFilter(id, label, values, selected) {
+function renderFilter(id, label, values, selected, text = (v) => v) {
   const select = app.querySelector(`#${id}`);
   select.innerHTML = `<option value="">All ${label}</option>` +
-    values.map((v) => `<option ${v === selected ? 'selected' : ''}>${esc(v)}</option>`).join('');
+    values.map((v) => `<option value="${esc(v)}" ${v === selected ? 'selected' : ''}>${esc(text(v))}</option>`).join('');
 }
 
 // A button showing the current project, which opens a menu of every project grouped by type.
@@ -653,7 +655,7 @@ function renderRows() {
   const all = projectRows();
 
   renderProjectPicker();
-  renderFilter('category', 'categories', categoryPaths(all), state.category);
+  renderFilter('category', 'categories', categoryPaths(all), state.category, categoryLabel);
   renderFilter('location', 'locations', unique(all, 'location'), state.location);
   renderFilter('tag', 'tags', allTags(all), state.tag);
   app.querySelector('#reset-filters').hidden = Object.entries(DEFAULT_FILTERS).every(([key, value]) => state[key] === value);
@@ -694,7 +696,7 @@ function rowHtml(p, columns) {
       ${label('inUse') ? `<td data-label="In use">${usedIn(p)}</td>` : ''}
       <td data-label="Location">${esc(p.location)}${!label('inUse') && inventoryNote(p) ? `<div class="muted small">${esc(inventoryNote(p))}</div>` : ''}</td>
       <td data-label="Supplier">${esc(p.supplier)}</td>
-      <td data-label="Category">${esc(p.category.split('/').join(' › '))}</td>
+      <td data-label="Category">${esc(categoryLabel(p.category))}</td>
     </tr>`;
 }
 
@@ -706,7 +708,7 @@ function printList() {
   const headers = ['Item', 'Part #', columnsFor(current).find(([key]) => key === 'quantity')[1], 'Location', 'Category'];
   const groups = groupRows(visibleRows()).map(([name, rows]) => [
     name && `${name} (${countParts(rows.length)})`,
-    rows.map((p) => [p.name, p.partNumber, `${p.quantity} ${p.unit ?? ''}`.trim(), p.location, p.category.split('/').join(' › ')]),
+    rows.map((p) => [p.name, p.partNumber, `${p.quantity} ${p.unit ?? ''}`.trim(), p.location, categoryLabel(p.category)]),
   ]);
   printSheet(current.name, `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, groups);
 }
@@ -739,12 +741,25 @@ const partLabel = (part) => ({
   subtitle: [part.partNumber, part.location].filter(Boolean).join(' · '),
 });
 
-const locationLabel = (projectId, name) => ({
-  key: `bin-${projectId}-${encodeURIComponent(name)}`,
-  url: `${WEB_URL}#${new URLSearchParams({ project: projectId, location: name })}`,
-  title: name,
-  subtitle: project(projectId).name,
-});
+// The inventory a bin label opens: the one on screen, or while a project or packing list is on screen (they hold no
+// parts of their own), the inventory with the most parts in that bin.
+function binInventory(name) {
+  if (!currentProject().source) return state.projectId;
+  const counts = new Map();
+  for (const p of state.parts) if (p.location === name) counts.set(p.projectId, (counts.get(p.projectId) ?? 0) + 1);
+  const [most] = [...counts].sort((a, b) => b[1] - a[1]);
+  return most?.[0] ?? fb.MAIN_PROJECT;
+}
+
+const locationLabel = (name) => {
+  const projectId = binInventory(name);
+  return {
+    key: `bin-${projectId}-${encodeURIComponent(name)}`,
+    url: `${WEB_URL}#${new URLSearchParams({ project: projectId, location: name })}`,
+    title: name,
+    subtitle: project(projectId).name,
+  };
+};
 
 // Prints labels and remembers them as printed, so the labels dialog can pick out the ones still to print.
 function printAndMark(labels) {
@@ -824,7 +839,7 @@ function openLabelsDialog() {
   const dialog = app.querySelector('#dialog');
   const rows = visibleRows();
   const labels = [
-    ...unique(rows, 'location').map((name) => locationLabel(state.projectId, name)),
+    ...unique(rows, 'location').map((name) => locationLabel(name)),
     ...rows.map(partLabel),
   ];
   const bins = labels.length - rows.length;
@@ -956,7 +971,7 @@ function openLocationsDialog() {
   };
   list.onclick = (e) => {
     if (e.target.dataset.id) fb.deleteLocation(e.target.dataset.id).catch(showError);
-    if (e.target.dataset.label) printAndMark([locationLabel(state.projectId, e.target.dataset.label)]);
+    if (e.target.dataset.label) printAndMark([locationLabel(e.target.dataset.label)]);
     if (e.target.dataset.rename) renameLocation(state.locations.find((l) => l.id === e.target.dataset.rename)).catch(showError);
   };
   renderLocations();
@@ -1262,7 +1277,7 @@ function openPartDialog(part, carry = null, note = '') {
       <label>Category
         <select name="category">
           <option value="">No category</option>
-          ${categories.map((c) => `<option ${c === values?.category ? 'selected' : ''}>${esc(c)}</option>`).join('')}
+          ${categories.map((c) => `<option value="${esc(c)}" ${c === values?.category ? 'selected' : ''}>${esc(categoryLabel(c))}</option>`).join('')}
           <option value="${NEW_OPTION}">+ New category…</option>
         </select>
       </label>
@@ -1346,7 +1361,7 @@ function watchNewCategory(select) {
     if (select.value !== NEW_OPTION) return (category = select.value);
     const typed = await ask('New category. Use "/" for a subcategory, e.g. Electronics/Motors');
     const name = typed ? canonicalCategory(typed) : '';
-    if (name && ![...select.options].some((o) => o.value === name)) select.add(new Option(name), select.options.length - 1);
+    if (name && ![...select.options].some((o) => o.value === name)) select.add(new Option(categoryLabel(name), name), select.options.length - 1);
     select.value = name || category;
     category = select.value;
   };
@@ -1609,7 +1624,7 @@ function openBulkEditDialog() {
         <select name="category">
           <option value="${KEEP}">Keep each part's category</option>
           <option value="">No category</option>
-          ${categoryPaths(state.parts).map((c) => `<option>${esc(c)}</option>`).join('')}
+          ${categoryPaths(state.parts).map((c) => `<option value="${esc(c)}">${esc(categoryLabel(c))}</option>`).join('')}
           <option value="${NEW_OPTION}">+ New category…</option>
         </select>
       </label>
