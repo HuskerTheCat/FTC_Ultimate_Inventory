@@ -14,16 +14,19 @@ self.addEventListener('activate', (event) => {
     .then(() => self.clients.claim()));
 });
 
-// Network first, so the newest version shows whenever the device is online; the cached files only when it isn't.
+// Network first, so the newest version shows whenever the device is online; the cached files only when it isn't,
+// or when the server no longer has them: a page from just before a deploy asks for files that deploy replaced.
 // Requests that ask for no caching (the update check in status.js) and other sites (Firebase) are left alone.
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET' || request.cache === 'no-store' || new URL(request.url).origin !== location.origin) return;
+  const cached = () => caches.match(request, { ignoreSearch: true });
   event.respondWith(fetch(request)
     .then((response) => {
+      if (!response.ok) return cached().then((copy) => copy ?? response);
       const copy = response.clone();
-      if (response.ok) caches.open(CACHE).then((cache) => cache.put(request, copy));
+      caches.open(CACHE).then((cache) => cache.put(request, copy));
       return response;
     })
-    .catch(() => caches.match(request, { ignoreSearch: true })));
+    .catch(cached));
 });
