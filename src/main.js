@@ -1365,18 +1365,26 @@ function deleteMessage(part) {
 
 const UNDO_MS = 10000;
 let undoTimer;
+let undoKey = null;
 
 // Shows "what changed · Undo" for a few seconds. Only the latest change can be undone.
-function offerUndo(text, undo) {
+// key names the change while its Undo shows, so a repeat of the same change can be merged into it.
+function offerUndo(text, undo, key = null) {
   const bar = app.querySelector('#undo');
   bar.querySelector('span').textContent = text;
   bar.querySelector('button').onclick = () => {
-    bar.hidden = true;
+    hideUndo();
     undo();
   };
   bar.hidden = false;
+  undoKey = key;
   clearTimeout(undoTimer);
-  undoTimer = setTimeout(() => { bar.hidden = true; }, UNDO_MS);
+  undoTimer = setTimeout(hideUndo, UNDO_MS);
+}
+
+function hideUndo() {
+  app.querySelector('#undo').hidden = true;
+  undoKey = null;
 }
 
 // Everything a part stores apart from who changed it last and when.
@@ -1429,9 +1437,16 @@ function trashOrder(order) {
   offerUndo(`Removed ${order.name}`, () => restore(entry));
 }
 
+// Net change of the taps on one part while its Undo shows, so one Undo reverts them all.
+let quantityTotal = 0;
+
 function changeQuantity(part, delta, undoable = true) {
   logged(fb.changeQuantity(part.id, delta, state.user), 'quantity', part.name, `Quantity ${delta > 0 ? '+' : ''}${delta}`);
-  if (undoable) offerUndo(`${part.name} ${delta > 0 ? '+' : ''}${delta}`, () => changeQuantity(part, -delta, false));
+  if (!undoable) return;
+  const key = `quantity:${part.id}`;
+  const total = quantityTotal = (undoKey === key ? quantityTotal : 0) + delta;
+  if (!total) return hideUndo();
+  offerUndo(`${part.name} ${total > 0 ? '+' : ''}${total}`, () => changeQuantity(part, -total, false), key);
 }
 
 // "Quantity 4 → 6, Location Bin A → Bin B"
