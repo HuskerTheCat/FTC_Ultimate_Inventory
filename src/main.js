@@ -37,7 +37,6 @@ const VIEW_KEYS = ['projectId', 'search', 'category', 'location', 'tag', 'sort',
 
 // Small line icons that take the button's text color.
 const icon = (paths) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
-const ICON_INFO = icon('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>');
 const ICON_TRASH = icon('<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>');
 const ICON_CHEVRON = icon('<path d="m6 9 6 6 6-6"/>');
 const ICON_SCAN = icon('<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10"/>');
@@ -117,6 +116,8 @@ function canonicalCategory(text) {
 
 const parseTags = (text) =>
   [...new Set(text.split(',').map((tag) => tag.trim().toLowerCase().slice(0, 40)).filter(Boolean))].slice(0, 20);
+// The × on a removable tag chip.
+const TAG_X = '<span class="x" aria-hidden="true">×</span>';
 const tagChips = (tags) => tags.length
   ? `<div class="tags">${tags.map((t) => `<button type="button" class="tag" data-tag="${esc(t)}">${esc(t)}</button>`).join('')}</div>`
   : '';
@@ -371,10 +372,8 @@ function renderInventory() {
         <button id="project" class="secondary" aria-haspopup="true" aria-expanded="false" aria-controls="project-menu"></button>
         <div id="project-menu" class="menu" hidden></div>
       </div>
-      <button id="project-info-toggle" class="icon" aria-label="About this project" aria-expanded="false" aria-controls="project-info">${ICON_INFO}</button>
       <button id="delete-project" class="icon danger" aria-label="Delete project" title="Delete project">${ICON_TRASH}</button>
     </div>
-    <p id="project-info" class="muted small" hidden></p>
     <div class="toolbar">
       <input id="search" type="search" placeholder="Search name, part #, supplier, tag…" />
       <button id="filters-toggle" class="secondary" aria-expanded="false" aria-controls="filters">${ICON_FILTER}<span>Filters</span><b id="filter-count" hidden></b></button>
@@ -442,7 +441,6 @@ function renderInventory() {
   app.querySelector('#orders').onclick = openOrdersDialog;
   app.querySelector('#trash').onclick = openTrashDialog;
   app.querySelector('#delete-project').onclick = () => deleteCurrentProject().catch(showError);
-  app.querySelector('#project-info-toggle').onclick = toggleProjectInfo;
   app.querySelector('#search').oninput = (e) => { state.search = e.target.value; renderRows(); };
   app.querySelector('#category').onchange = (e) => { state.category = e.target.value; renderRows(); };
   app.querySelector('#location').onchange = (e) => { state.location = e.target.value; renderRows(); };
@@ -541,13 +539,6 @@ function renderProjectPicker() {
       `<button type="button" class="menu-item" data-project="${esc(p.id)}" ${p === current ? 'aria-current="true"' : ''}>${typeIcon}<span>${esc(p.name)}</span></button>`).join('') : '';
   }).join('') + `<hr /><button type="button" id="new-project" class="menu-item">${ICON_PLUS}<span>New inventory, project or list</span></button>`;
   app.querySelector('#delete-project').hidden = current.id === fb.MAIN_PROJECT;
-  const info = {
-    inventory: 'An inventory. "In use" shows which projects and packing lists are using each part.',
-    project: 'A project. It uses parts from any inventory, and quantities here are how many it uses.',
-    packing: 'A packing list. Check off parts as you pack them, and their inventory shows them as in use.',
-  }[typeOf(current)];
-  app.querySelector('#project-info').textContent = info;
-  app.querySelector('#project-info-toggle').title = info;
 }
 
 // Menus (the project picker, the header menu and More) open from their button.
@@ -572,13 +563,6 @@ function toggleFilters(e) {
   const filters = app.querySelector('#filters');
   filters.hidden = !filters.hidden;
   e.currentTarget.setAttribute('aria-expanded', String(!filters.hidden));
-}
-
-// The info icon shows or hides the description of the current project.
-function toggleProjectInfo(e) {
-  const info = app.querySelector('#project-info');
-  info.hidden = !info.hidden;
-  e.currentTarget.setAttribute('aria-expanded', String(!info.hidden));
 }
 
 // Rows for the current project: its own parts, or the inventory parts it uses with how many it uses.
@@ -1239,14 +1223,15 @@ function openPartDialog(part, carry = null, note = '') {
   const tagBox = dialog.querySelector('#part-tags');
   const addTag = dialog.querySelector('#add-tag');
   const renderTags = () => {
-    tagBox.innerHTML = tags.map((t) => `<button type="button" class="tag" data-tag="${esc(t)}" aria-label="Remove ${esc(t)}">${esc(t)} ×</button>`).join('');
+    tagBox.innerHTML = tags.map((t) => `<button type="button" class="tag" data-tag="${esc(t)}" aria-label="Remove ${esc(t)}">${esc(t)}${TAG_X}</button>`).join('');
     addTag.innerHTML = '<option value="">Add a tag…</option>' +
       allTags(state.parts).filter((t) => !tags.includes(t)).map((t) => `<option>${esc(t)}</option>`).join('') +
       `<option value="${NEW_OPTION}">+ New tag…</option>`;
   };
   tagBox.onclick = (e) => {
-    if (!e.target.dataset.tag) return;
-    tags = tags.filter((t) => t !== e.target.dataset.tag);
+    const tag = e.target.closest('[data-tag]')?.dataset.tag;
+    if (!tag) return;
+    tags = tags.filter((t) => t !== tag);
     renderTags();
   };
   addTag.onchange = () => {
@@ -1527,7 +1512,6 @@ function openBulkEditDialog() {
       <div class="field">Tags
         <div id="bulk-tags" class="tags"></div>
         <select id="add-tag" aria-label="Add a tag"></select>
-        <select id="remove-tag" aria-label="Remove a tag"></select>
       </div>
       <div class="row">
         <button value="save">Save</button>
@@ -1539,29 +1523,31 @@ function openBulkEditDialog() {
 
   const tagBox = dialog.querySelector('#bulk-tags');
   const addTag = dialog.querySelector('#add-tag');
-  const removeTag = dialog.querySelector('#remove-tag');
+  // Chips: tags the selected parts have (× removes it from all of them, struck through until saved), then tags being added.
   const renderTags = () => {
-    tagBox.innerHTML = [...add.map((t) => ['+', t]), ...remove.map((t) => ['−', t])].map(([sign, t]) =>
-      `<button type="button" class="tag" data-tag="${esc(t)}" aria-label="Don't change ${esc(t)}">${sign} ${esc(t)} ×</button>`).join('');
+    const chip = (t, label, text, extra = '') =>
+      `<button type="button" class="tag${extra}" data-tag="${esc(t)}" aria-label="${label} ${esc(t)}">${text}</button>`;
+    tagBox.innerHTML = [
+      ...allTags(parts).filter((t) => !add.includes(t)).map((t) => (remove.includes(t)
+        ? chip(t, 'Keep', esc(t), ' removed')
+        : chip(t, 'Remove from selected parts:', `${esc(t)}${TAG_X}`))),
+      ...add.map((t) => chip(t, "Don't add", `+ ${esc(t)}${TAG_X}`)),
+    ].join('');
     addTag.innerHTML = '<option value="">Add a tag…</option>' +
       allTags(state.parts).filter((t) => !add.includes(t) && !remove.includes(t)).map((t) => `<option>${esc(t)}</option>`).join('') +
       `<option value="${NEW_OPTION}">+ New tag…</option>`;
-    removeTag.innerHTML = '<option value="">Remove a tag…</option>' +
-      allTags(parts).filter((t) => !add.includes(t) && !remove.includes(t)).map((t) => `<option>${esc(t)}</option>`).join('');
   };
   tagBox.onclick = (e) => {
-    const tag = e.target.dataset.tag;
+    const tag = e.target.closest('[data-tag]')?.dataset.tag;
     if (!tag) return;
-    for (const list of [add, remove]) if (list.includes(tag)) list.splice(list.indexOf(tag), 1);
+    if (add.includes(tag)) add.splice(add.indexOf(tag), 1);
+    else if (remove.includes(tag)) remove.splice(remove.indexOf(tag), 1);
+    else remove.push(tag);
     renderTags();
   };
   addTag.onchange = () => {
     const picked = addTag.value === NEW_OPTION ? prompt('New tag') ?? '' : addTag.value;
     add.push(...parseTags(picked).filter((t) => !add.includes(t) && !remove.includes(t)));
-    renderTags();
-  };
-  removeTag.onchange = () => {
-    remove.push(removeTag.value);
     renderTags();
   };
   renderTags();

@@ -89,6 +89,15 @@ select {
   padding-right: 36px;
   background: var(--field) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238f98b5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center / 18px;
 }
+/* The open list matches the app's menus. Browsers without customizable selects (Safari, Firefox) keep their own list. */
+select, ::picker(select) { appearance: base-select; }
+select::picker-icon { display: none; }
+select { white-space: nowrap; overflow: hidden; }
+::picker(select) { margin-top: 6px; padding: 6px; background: var(--raised); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--float-shadow); }
+option { padding: 8px 10px; border-radius: 8px; color: var(--text); }
+option::checkmark { display: none; }
+option:is(:hover, :focus-visible) { background: var(--row-hover); outline: none; }
+option:checked { background: rgb(91 155 255 / 0.15); color: var(--accent); }
 input::placeholder, textarea::placeholder { color: #6b7493; }
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
 textarea { resize: vertical; font-family: ui-monospace, monospace; font-size: 0.85rem; }
@@ -131,7 +140,6 @@ button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised)
 .menu hr { border: none; border-top: 1px solid var(--border); margin: 6px 4px; }
 
 .projectpick { display: flex; gap: 8px; min-width: 0; margin-bottom: 20px; }
-.projectpick:has(+ #project-info:not([hidden])) { margin-bottom: 6px; }
 /* The project picker: a button with the current project's type icon, opening a menu grouped by type. */
 .projectmenu { position: relative; flex: 1 1 auto; min-width: 0; }
 #project {
@@ -203,11 +211,9 @@ button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised)
 .types input { position: absolute; opacity: 0; pointer-events: none; }
 .types label:has(input:checked) { border-color: var(--accent); background: rgb(91 155 255 / 0.15); color: var(--accent); }
 .types label:has(input:focus-visible) { box-shadow: var(--focus); }
-/* Square icon buttons next to the project picker: info and delete. */
+/* Square delete button next to the project picker. */
 .projectpick button.icon { width: 48px; min-height: 0; margin-left: 0; }
-.projectpick button.icon[aria-expanded="true"] { color: var(--accent); border-color: var(--accent); }
 .projectpick button.icon.danger:hover { background: rgb(255 107 125 / 0.1); color: var(--danger); border-color: rgb(255 107 125 / 0.5); }
-#project-info { margin-bottom: 20px; }
 
 .toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 8px; margin-bottom: 16px; }
 .toolbar:has(+ .filters:not([hidden])) { margin-bottom: 8px; }
@@ -294,6 +300,12 @@ button.step:hover:not(:disabled) { background: #2d3760; }
 .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
 button.tag { min-height: 0; padding: 2px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 500; background: rgb(91 155 255 / 0.12); color: #9cc2ff; }
 button.tag:hover { background: rgb(91 155 255 / 0.22); }
+/* Removable chips (in the part editors) are a little bigger, with a round × that is easy to tap. */
+button.tag:has(.x) { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 12px; font-size: 0.875rem; }
+.tag .x { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 999px; font-size: 1.15rem; line-height: 1; }
+button.tag:hover .x { background: rgb(91 155 255 / 0.25); }
+/* A tag that bulk edit will remove from the selected parts; tapping it keeps the tag. */
+button.tag.removed { padding: 3px 12px; font-size: 0.875rem; text-decoration: line-through; opacity: 0.55; }
 
 /* Dialogs */
 dialog { border: none; padding: 0; background: transparent; width: min(480px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; color: var(--text); }
@@ -316,7 +328,6 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   header { margin-bottom: 12px; gap: 8px; }
   #scan { padding: 4px 12px; }
   .projectpick { margin-bottom: 12px; }
-  #project-info { margin-bottom: 14px; }
   #filters-toggle { padding: 4px 12px; }
   /* Each filter row's label sits above it, and the selects share the width. */
   .filters .row > span { width: 100%; }
