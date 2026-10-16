@@ -199,6 +199,6 @@ Before anything is added, the app shows what it found. Parts already in the inve
 - **☰ → Team** shows the join QR code and code, lets you change **your name**, and lists the members. The team owner can remove members, **Reset join code** if it was shared by mistake, and delete the team.
 - **Works offline.** No wifi at the venue? Keep editing. Changes are saved on the device and sync when it's back online. The website opens offline too, after it has been used online once.
 - **Everyone sees changes live**, so two people can count parts at the same time from different devices.
-- **Blue banner saying your Firebase rules are out of date?** Your team's admin needs to [update the rules](../SETUP.md#updating-the-rules). The app keeps working in the meantime, but new features wait until they do.
+- **Blue banner saying your Firebase rules are out of date?** Your team's admin needs to [update the rules](../SETUP.md#updating-the-rules). The app will keep working in the meantime, but some new features may not work correctly until your Firebase rules are up to date.
 - **☰ → Report bug** logs a short description of the problem to a central server, with your team name and app version. Please don't include personal info.
 - **☰ → Sign out** also removes the team's data saved on that device, which is good practice on a shared computer.
