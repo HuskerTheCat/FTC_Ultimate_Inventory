@@ -9,7 +9,7 @@ const PARALLEL = 4;
 // A supplier with fewer parts than this means its store changed and this script needs updating.
 const MIN_PARTS = 50;
 
-// Each supplier's parts as { partNumber, upc, name, category }. Earlier suppliers win when two list the same part number,
+// Each supplier's parts as { partNumber, upc, name, category, url }. Earlier suppliers win when two list the same part number,
 // so goBILDA's own listing beats ServoCity's copy of it.
 const SUPPLIERS = {
   goBILDA: () => bigCommerce('https://www.gobilda.com'),
@@ -92,6 +92,7 @@ async function inParallel(items, fn) {
 
 // Every product page lists its SKU and UPC in the page's BCData. Family pages (one page, many parts) have no SKU of
 // their own; with `variants`, each choice on them is looked up the way the store's own page does when one is picked.
+// Each part links to the page it's listed on, so a family page's parts share its link.
 async function bigCommerce(site, { variants = false } = {}) {
   const urls = [];
   for (let page = 1; ; page++) {
@@ -103,12 +104,12 @@ async function bigCommerce(site, { variants = false } = {}) {
   console.log(`${site}: ${urls.length} product pages`);
   const pages = await inParallel(urls, async (url) => {
     const html = await fetchText(url);
-    return html && readBigCommercePage(site, html, variants);
+    return html && readBigCommercePage(site, url, html, variants);
   });
   return pages.flat().filter(Boolean);
 }
 
-async function readBigCommercePage(site, html, variants) {
+async function readBigCommercePage(site, url, html, variants) {
   // Some listed products now redirect to a category or other page instead.
   const bcData = html.match(/var BCData = (\{.*?\});\s*<\/script>/s);
   const attributes = bcData && JSON.parse(bcData[1]).product_attributes;
@@ -117,7 +118,7 @@ async function readBigCommercePage(site, html, variants) {
   const { sku, upc } = attributes;
   const name = cleanName(title[1]);
   const supplierCategory = [...(html.match(/\\"category\\":\[(.*?)\]/)?.[1] ?? '').matchAll(/\\"(.*?)\\"/g)].map((m) => m[1]).join(' ');
-  const part = (partNumber, code, partName) => ({ partNumber, upc: code ?? '', name: partName, category: categoryOf(partName, supplierCategory) });
+  const part = (partNumber, code, partName) => ({ partNumber, upc: code ?? '', name: partName, category: categoryOf(partName, supplierCategory), url });
   if (sku && !/^(rd-|parent_)/.test(sku)) return part(sku, upc, name);
   if (!variants) return null;
 
@@ -152,7 +153,8 @@ async function shopify(site, include = () => true) {
   console.log(`${site}: ${products.length} products`);
   return products.flatMap((product) => product.variants.filter((v) => v.sku).map((variant) => {
     const name = cleanName(variant.title === 'Default Title' ? product.title : `${product.title} (${variant.title})`);
-    return { partNumber: variant.sku.trim(), upc: '', name, category: categoryOf(name, `${product.product_type} ${product.tags.join(' ')}`) };
+    const url = `${site}/products/${product.handle}${variant.title === 'Default Title' ? '' : `?variant=${variant.id}`}`;
+    return { partNumber: variant.sku.trim(), upc: '', name, category: categoryOf(name, `${product.product_type} ${product.tags.join(' ')}`), url };
   }));
 }
 
@@ -180,7 +182,7 @@ const catalog = {};
 for (const [supplier, parts] of Object.entries(bySupplier)) {
   for (const part of parts) if (upcCounts.get(upcKey(part.upc)) > 1) part.upc = '';
   parts.sort((a, b) => a.partNumber.localeCompare(b.partNumber));
-  catalog[supplier] = parts.map((p) => [p.partNumber, p.upc, p.name, p.category]);
+  catalog[supplier] = parts.map((p) => [p.partNumber, p.upc, p.name, p.category, p.url]);
   console.log(`${supplier}: ${parts.length} parts, ${parts.filter((p) => p.upc).length} with UPCs, ${parts.filter((p) => p.category).length} with categories`);
 }
 

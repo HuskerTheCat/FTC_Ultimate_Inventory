@@ -11,8 +11,8 @@ export const codeKey = (code) => {
 function index(catalog) {
   const byCode = new Map();
   for (const [supplier, parts] of Object.entries(catalog)) {
-    for (const [partNumber, upc, name, category] of parts) {
-      const product = { supplier, partNumber, name, category };
+    for (const [partNumber, upc, name, category, link] of parts) {
+      const product = { supplier, partNumber, name, category, link };
       for (const code of [upc, partNumber].filter(Boolean)) {
         if (!byCode.has(codeKey(code))) byCode.set(codeKey(code), product);
       }

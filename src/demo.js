@@ -94,6 +94,17 @@ const SAMPLE_PARTS = [
   ['2.5mm hex driver', '', 3, 'Tool wall', 'goBILDA', 'Tools', []],
 ];
 
+// Product links for some of the sample parts, by part number.
+const SAMPLE_LINKS = {
+  '5203-2402-0019': 'https://www.gobilda.com/5203-series-yellow-jacket-planetary-gear-motor-19-2-1-ratio-24mm-length-8mm-rex-shaft-312-rpm-3-3-5v-encoder/',
+  'REV-41-1300': 'https://www.revrobotics.com/rev-41-1300/',
+  '2000-0025-0003': 'https://www.gobilda.com/2000-series-dual-mode-servo-25-3-speed/',
+  'REV-31-1595': 'https://www.revrobotics.com/rev-31-1595/',
+  'REV-31-1302': 'https://www.revrobotics.com/rev-31-1302/',
+  '3110-0002-0001': 'https://www.gobilda.com/pinpoint-odometry-computer-imu-sensor-fusion-for-2-wheel-odometry/',
+  '3213-3606-0001': 'https://www.gobilda.com/3606-series-mecanum-wheel-set-bearing-supported-rollers-100mm-diameter/',
+};
+
 // Same fields, for the second inventory.
 const SAMPLE_SPARES = [
   ['Control Hub (spare)', 'REV-31-1595', 1, 'Pit cabinet', 'REV Robotics', 'Electronics/Controllers', ['competition']],
@@ -127,7 +138,7 @@ function loadSamples() {
   for (const name of SAMPLE_LOCATIONS) add('locations', { name });
   const ids = new Map();
   const addParts = (rows, projectId) => rows.forEach(([name, partNumber, quantity, location, supplier, category, tags], i) => {
-    const part = { name, partNumber, quantity, location, supplier, category, tags, unit: 'pcs', condition: 'new', notes: '' };
+    const part = { name, partNumber, quantity, location, supplier, category, tags, unit: 'pcs', condition: 'new', notes: '', ...(SAMPLE_LINKS[partNumber] && { link: SAMPLE_LINKS[partNumber] }) };
     ids.set(name, add('parts', { ...part, projectId, updatedBy: 'coach@demo.team', updatedAt: hoursAgo(i + 1) }).id);
   });
   addParts(SAMPLE_PARTS, MAIN_PROJECT);

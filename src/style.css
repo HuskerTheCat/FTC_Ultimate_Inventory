@@ -281,6 +281,8 @@ td.qty .skeleton { width: 96px; height: 1.3em; }
 @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
 td.name { font-weight: 600; font-size: 1.05rem; }
 td[data-label="Part #"] { color: var(--muted); white-space: nowrap; }
+a.part-link { display: block; width: fit-content; text-decoration: none; font-weight: 500; }
+a.part-link:hover { text-decoration: underline; }
 td.qty { white-space: nowrap; }
 td.qty span { display: inline-block; min-width: 3ch; text-align: center; font-size: 1.3rem; font-weight: 700; vertical-align: middle; }
 td.qty small.unit { margin: 0 4px 0 0; font-size: 0.8rem; }

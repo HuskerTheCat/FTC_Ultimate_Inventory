@@ -4,7 +4,7 @@ service cloud.firestore {
     // Add 1 whenever these rules change. The app is built with this number (vite.config.js) and, after sign-in,
     // reads rulesVersion/<number>; if the team's published rules are older, that's denied and the app shows a
     // banner linking to "Updating the rules" in SETUP.md.
-    function rulesVersion() { return 1; }
+    function rulesVersion() { return 2; }
 
     function signedIn() {
       return request.auth != null;
@@ -35,13 +35,17 @@ service cloud.firestore {
     function validName(value) {
       return value is string && value.size() > 0 && value.size() <= 40;
     }
+    function webLink(value) {
+      return value is string && value.size() <= 1000 && value.matches('https://.+');
+    }
     function validPart() {
       let part = request.resource.data;
-      return part.keys().hasOnly(['projectId', 'name', 'partNumber', 'barcode', 'quantity', 'location', 'supplier', 'category', 'tags', 'unit', 'condition', 'notes', 'updatedBy', 'updatedAt'])
+      return part.keys().hasOnly(['projectId', 'name', 'partNumber', 'barcode', 'link', 'quantity', 'location', 'supplier', 'category', 'tags', 'unit', 'condition', 'notes', 'updatedBy', 'updatedAt'])
         && projectExists(part.projectId)
         && shortText(part.name) && part.name.size() > 0
         && shortText(part.partNumber)
         && (!('barcode' in part) || shortText(part.barcode))
+        && (!('link' in part) || webLink(part.link))
         && shortText(part.location)
         && shortText(part.supplier)
         && shortText(part.category)
@@ -66,7 +70,7 @@ service cloud.firestore {
       let order = request.resource.data;
       return order.keys().hasOnly(['name', 'partNumber', 'quantity', 'supplier', 'partId', 'link', 'notes'])
         && shortText(order.name) && order.name.size() > 0
-        && (!('link' in order) || (order.link is string && order.link.size() <= 1000 && order.link.matches('https://.+')))
+        && (!('link' in order) || webLink(order.link))
         && (!('notes' in order) || (order.notes is string && order.notes.size() <= 1000))
         && shortText(order.partNumber)
         && shortText(order.supplier)

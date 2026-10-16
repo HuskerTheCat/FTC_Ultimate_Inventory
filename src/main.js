@@ -491,6 +491,7 @@ function renderInventory() {
     renderRows();
   };
   app.querySelector('#rows').onclick = (e) => {
+    if (e.target.closest('a')) return;
     if (e.target.dataset.project) return switchProject(e.target.dataset.project);
     const row = e.target.closest('tr[data-id]');
     if (!row) return;
@@ -688,7 +689,7 @@ function rowHtml(p, columns) {
       ${label('packed') ? `<td data-label="Packed" class="packed"><input type="checkbox" data-packed="1" aria-label="Packed" ${p.packed ? 'checked' : ''} /></td>` : ''}
       <td data-label="Item" class="name">${esc(p.name)}${orderBadge(p.id)}${conditionBadge(p.condition)}${notesLine(p.notes)}${tagChips(p.tags)}</td>
       <td class="card-meta muted small">${esc(cardMeta(p, !label('inUse')))}</td>
-      <td data-label="Part #">${esc(p.partNumber)}</td>
+      <td data-label="Part #">${esc(p.partNumber)}${partLink(p)}</td>
       <td data-label="${label('quantity')}" class="qty">
         <button class="step" data-delta="-1" ${p.quantity > 0 ? '' : 'disabled'} aria-label="Remove one">−</button>
         <span>${esc(p.quantity)}</span>${p.unit ? `<small class="unit muted">${esc(p.unit)}</small>` : ''}
@@ -720,6 +721,8 @@ const conditionBadge = (condition) => ['used', 'broken'].includes(condition)
 // Phones show a part as a short card, with its location (and inventory, outside inventories) and part number on one
 // line under the name. Supplier and category are left to the part dialog there.
 const cardMeta = (p, withInventory) => [p.location, withInventory && inventoryNote(p), p.partNumber].filter(Boolean).join(' · ');
+// The part's link, in the Part # column, which phones' short cards leave out.
+const partLink = (p) => p.link ? `<a class="part-link small" href="${esc(p.link)}" target="_blank" rel="noopener">Link ↗</a>` : '';
 const notesLine = (notes) => notes ?`<div class="notes muted small">${esc(notes.split('\n')[0])}</div>` : '';
 
 // Free count plus a link to every project using this inventory part, one per line.
@@ -806,17 +809,17 @@ async function openBarcode(code) {
   // New parts go into the inventory on screen, or Main Inventory when a project is.
   if (currentProject().source) switchProject(fb.MAIN_PROJECT);
   if (product) {
-    const { name, partNumber, supplier } = product;
+    const { name, partNumber, supplier, link } = product;
     const category = product.category && canonicalCategory(product.category);
-    return openPartDialog(null, { name, partNumber, supplier, category, quantity: 1 }, `Filled in from the ${supplier} catalog.`);
+    return openPartDialog(null, { name, partNumber, supplier, link, category, quantity: 1 }, `Filled in from the ${supplier} catalog.`);
   }
   openPartDialog(null, { barcode: code, quantity: 1 }, 'This barcode isn’t in the supplier catalog. Fill in the part once, and scanning it again will find it.');
 }
 
-// Fills a form's item and supplier from the supplier catalog as its part number is typed. What it filled follows
+// Fills a form's item, supplier and link from the supplier catalog as its part number is typed. What it filled follows
 // the part number, so a partial number's match is replaced; whatever the user typed in those fields stays.
 function autofillFromCatalog(form) {
-  const filled = { name: '', supplier: '' };
+  const filled = { name: '', supplier: '', link: '' };
   form.partNumber.addEventListener('input', () => {
     findProduct(form.partNumber.value).then((product) => {
       for (const key of Object.keys(filled)) {
@@ -1059,7 +1062,7 @@ function openOrdersDialog() {
     const quantity = Number(form.quantity.value);
     if (!name) return showError(new Error('Enter the item to order.'));
     if (!Number.isInteger(quantity) || quantity < 1) return showError(new Error('Order at least 1.'));
-    const link = orderLink(form.link.value);
+    const link = webLink(form.link.value);
     if (link === null) return showError(new Error('That item link is not a web address.'));
     const notes = form.notes.value.trim();
     if (editing) {
@@ -1081,7 +1084,7 @@ function openOrdersDialog() {
       quantity,
       partId: part?.id ?? fb.newPartId(),
       // Left out when empty, so orders without them still pass older firestore.rules.
-      ...(link && { link }),
+      ...((link || part?.link) && { link: link || part.link }),
       ...(notes && { notes }),
     };
     // Something new is added to the inventory with none in stock, so it shows as on order and projects can use it.
@@ -1115,9 +1118,9 @@ function printOrders() {
   printSheet('Order list', `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, [['', rows]]);
 }
 
-// The typed item link as an https:// address ('' when empty, null when it isn't a web address).
+// A typed link as an https:// address ('' when empty, null when it isn't a web address).
 // The Windows app only opens https links, so http:// and missing schemes become https://.
-function orderLink(text) {
+function webLink(text) {
   const rest = text.trim().replace(/^https?:\/\//i, '');
   if (!rest) return '';
   try {
@@ -1132,6 +1135,7 @@ function orderLink(text) {
 const orderedPart = (order, quantity) => ({
   projectId: fb.MAIN_PROJECT, name: order.name, partNumber: order.partNumber, quantity, location: '',
   supplier: order.supplier, category: '', tags: [], unit: '', condition: 'new', notes: '',
+  ...(order.link && { link: order.link }),
 });
 
 // Adds an arrived order to the part it's for, or makes it a new part in Main Inventory
@@ -1303,6 +1307,7 @@ function openPartDialog(part, carry = null, note = '') {
         </select>
       </label>
       ${input('supplier', 'Supplier', 'list="supplier-list"')}
+      ${input('link', 'Link', 'maxlength="1000" inputmode="url" placeholder="Product page (optional)"')}
       <label>Category
         <select name="category">
           <option value="">No category</option>
@@ -1371,6 +1376,12 @@ function openPartDialog(part, carry = null, note = '') {
     data.projectId = part?.projectId ?? state.projectId;
     data.tags = tags;
     if (form.barcode.value.trim()) data.barcode = form.barcode.value.trim();
+    const link = webLink(form.link.value);
+    if (link === null) {
+      e.preventDefault();
+      return showError(new Error('That link is not a web address.'));
+    }
+    if (link) data.link = link;
     if (part) return editPart(part, data);
     if (!confirmDuplicate(data)) return e.preventDefault();
     addPart(data);
@@ -1442,12 +1453,13 @@ function hideUndo() {
 }
 
 // Everything a part stores apart from who changed it last and when.
-// A barcode is only stored when the part has one, so parts without one still save under rules from before barcodes.
+// A barcode or link is only stored when the part has one, so parts without them still save under rules from before them.
 const partData = (part) => ({
   ...Object.fromEntries([...FIELDS, ...DETAIL_FIELDS].map(([key]) => [key, part[key] ?? ''])),
   projectId: part.projectId,
   tags: part.tags,
   ...(part.barcode && { barcode: part.barcode }),
+  ...(part.link && { link: part.link }),
 });
 
 // Logs a change alongside its write rather than after the server confirms it, so an offline change
@@ -1518,7 +1530,7 @@ function changeQuantity(part, delta, undoable = true) {
 
 // "Quantity 4 → 6, Location Bin A → Bin B"
 function describeEdit(before, after) {
-  return [...FIELDS, ...DETAIL_FIELDS, ['barcode', 'Barcode'], ['tags', 'Tags']]
+  return [...FIELDS, ...DETAIL_FIELDS, ['barcode', 'Barcode'], ['link', 'Link'], ['tags', 'Tags']]
     .map(([key, label]) => [label, String(before[key] ?? ''), String(after[key] ?? '')])
     .filter(([, from, to]) => from !== to)
     .map(([label, from, to]) => `${label} ${from || '(blank)'} → ${to || '(blank)'}`)
