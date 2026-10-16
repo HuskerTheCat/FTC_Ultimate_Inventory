@@ -991,8 +991,8 @@ async function renameLocation(location) {
   if (!name || name === location.name) return;
   if (state.locations.some((l) => l.id !== location.id && sameName(l.name, name))) throw new Error(`${name} is already a location.`);
   fb.renameLocation(location.id, name).catch(showError);
-  const changes = state.parts.filter((p) => p.location === location.name).map((p) => [p.id, { ...partData(p), location: name }]);
-  if (changes.length) writeParts(changes, 'edited', countParts(changes.length), `Location ${location.name} → ${name}`);
+  const edits = state.parts.filter((p) => p.location === location.name).map((p) => [p.id, partData(p), { ...partData(p), location: name }]);
+  if (edits.length) editParts(edits, 'edited', countParts(edits.length), `Location ${location.name} → ${name}`);
 }
 
 // Parts the team is waiting on. "Arrived" moves an order into the inventory. Tapping an order loads it into the form below to change it.
@@ -1467,8 +1467,21 @@ const partData = (part) => ({
 const logged = (write, action, partName, details) =>
   Promise.all([write, fb.logChange(me(), action, partName, details)]).catch(showError);
 
-// Writes parts ([[id, data]]) and logs them as one entry.
+// Every field an edit can change, with its name for the change log.
+const EDIT_FIELDS = [...FIELDS, ...DETAIL_FIELDS, ['barcode', 'Barcode'], ['link', 'Link'], ['tags', 'Tags']];
+
+// The fields that differ from `before` to `after`, with their `after` values. A barcode or link that was taken off is null.
+const changedFields = (before, after) => Object.fromEntries(EDIT_FIELDS
+  .filter(([key]) => String(before[key] ?? '') !== String(after[key] ?? ''))
+  .map(([key]) => [key, after[key] ?? null]));
+
+// Writes new parts ([[id, data]]) and logs them as one entry.
 const writeParts = (changes, action, partName, details) => logged(fb.saveParts(changes, state.user), action, partName, details);
+
+// Writes only the changed fields of parts, from [[id, before, after]], and logs them as one entry.
+// So a teammate's change to another field in the meantime, like a quantity tap, isn't written over.
+const editParts = (edits, action, partName, details) => logged(
+  fb.updateParts(edits.map(([id, before, after]) => [id, changedFields(before, after)]), state.user), action, partName, details);
 
 function addPart(data) {
   const id = fb.newPartId();
@@ -1480,8 +1493,8 @@ function editPart(part, data) {
   const details = describeEdit(part, data);
   if (!details) return;
   const before = partData(part);
-  writeParts([[part.id, data]], 'edited', data.name, details);
-  offerUndo(`Edited ${data.name}`, () => writeParts([[part.id, before]], 'edited', part.name, `Undo: ${describeEdit(data, before)}`));
+  editParts([[part.id, before, data]], 'edited', data.name, details);
+  offerUndo(`Edited ${data.name}`, () => editParts([[part.id, data, before]], 'edited', part.name, `Undo: ${describeEdit(data, before)}`));
 }
 
 function deletePart(part) {
@@ -1530,7 +1543,7 @@ function changeQuantity(part, delta, undoable = true) {
 
 // "Quantity 4 → 6, Location Bin A → Bin B"
 function describeEdit(before, after) {
-  return [...FIELDS, ...DETAIL_FIELDS, ['barcode', 'Barcode'], ['link', 'Link'], ['tags', 'Tags']]
+  return EDIT_FIELDS
     .map(([key, label]) => [label, String(before[key] ?? ''), String(after[key] ?? '')])
     .filter(([, from, to]) => from !== to)
     .map(([label, from, to]) => `${label} ${from || '(blank)'} → ${to || '(blank)'}`)
@@ -1715,21 +1728,20 @@ function openBulkEditDialog() {
   form.onsubmit = (e) => {
     if (e.submitter.value !== 'save') return;
     const set = (key) => (form[key].value === KEEP ? {} : { [key]: form[key].value });
-    const changes = parts.map((p) => [p.id, {
+    const edits = parts.map((p) => [p.id, partData(p), {
       ...partData(p), ...set('location'), ...set('category'),
       tags: parseTags([...p.tags.filter((t) => !remove.includes(t)), ...add].join(',')),
-    }]).filter(([id, data]) => describeEdit(state.parts.find((p) => p.id === id), data));
-    if (!changes.length) return;
+    }]).filter(([, before, after]) => describeEdit(before, after));
+    if (!edits.length) return;
     const details = [
       form.location.value !== KEEP && `Location → ${form.location.value || '(blank)'}`,
       form.category.value !== KEEP && `Category → ${form.category.value || '(blank)'}`,
       add.length && `Tags + ${add.join(', ')}`,
       remove.length && `Tags − ${remove.join(', ')}`,
-    ].filter(Boolean).join('; ');
-    const before = changes.map(([id]) => [id, partData(state.parts.find((p) => p.id === id))]);
-    const name = countParts(changes.length);
-    writeParts(changes, 'edited', name, details);
-    offerUndo(`Edited ${name}`, () => writeParts(before, 'edited', name, `Undo: ${details}`));
+    ].filter(Boolean).join('; ').slice(0, 1990); // the rules' limit for log details, with room for "Undo: "
+    const name = countParts(edits.length);
+    editParts(edits, 'edited', name, details);
+    offerUndo(`Edited ${name}`, () => editParts(edits.map(([id, before, after]) => [id, after, before]), 'edited', name, `Undo: ${details}`));
     state.selected = null;
     renderRows();
   };

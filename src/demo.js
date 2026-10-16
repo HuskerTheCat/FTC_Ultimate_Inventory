@@ -226,9 +226,19 @@ export async function renameProject(id, name) {
 
 export const newPartId = () => `demo-${nextId++}`;
 
-// Writes whole parts ([[id, part]]).
+// Writes whole new parts ([[id, part]]).
 export async function saveParts(changes, user) {
   for (const [id, part] of changes) collections.parts.set(id, { ...part, updatedBy: user.email, updatedAt: Timestamp.now() });
+  changed('parts');
+}
+
+// Changes some fields of existing parts ([[id, fields]]). A field set to null is taken off the part.
+export async function updateParts(changes, user) {
+  for (const [id, fields] of changes) {
+    const part = { ...collections.parts.get(id), ...fields, updatedBy: user.email, updatedAt: Timestamp.now() };
+    for (const key of Object.keys(fields)) if (fields[key] === null) delete part[key];
+    collections.parts.set(id, part);
+  }
   changed('parts');
 }
 

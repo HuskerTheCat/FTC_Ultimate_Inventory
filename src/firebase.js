@@ -6,7 +6,7 @@ import {
 import {
   initializeFirestore, connectFirestoreEmulator, persistentLocalCache, persistentMultipleTabManager,
   doc, getDoc, getDocFromServer, getDocs, setDoc, addDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit, onSnapshot,
-  increment, serverTimestamp, writeBatch,
+  increment, serverTimestamp, writeBatch, deleteField,
 } from 'firebase/firestore';
 
 let auth;
@@ -124,12 +124,24 @@ export const renameProject = (id, name) => updateDoc(doc(db, 'projects', id), { 
 // Made on the device, so a new part can be undone before it reaches the server.
 export const newPartId = () => doc(collection(db, 'parts')).id;
 
-// Writes whole parts ([[id, part]]), so the same call adds, edits and brings back a deleted part under its old id.
+// Writes whole new parts ([[id, part]]).
 export async function saveParts(changes, user) {
   for (let i = 0; i < changes.length; i += 500) {
     const batch = writeBatch(db);
     for (const [id, part] of changes.slice(i, i + 500)) {
       batch.set(doc(db, 'parts', id), { ...part, updatedBy: user.email, updatedAt: serverTimestamp() });
+    }
+    await batch.commit();
+  }
+}
+
+// Changes some fields of existing parts ([[id, fields]]). A field set to null is taken off the part.
+export async function updateParts(changes, user) {
+  for (let i = 0; i < changes.length; i += 500) {
+    const batch = writeBatch(db);
+    for (const [id, fields] of changes.slice(i, i + 500)) {
+      const values = Object.fromEntries(Object.entries(fields).map(([key, value]) => [key, value ?? deleteField()]));
+      batch.update(doc(db, 'parts', id), { ...values, updatedBy: user.email, updatedAt: serverTimestamp() });
     }
     await batch.commit();
   }
