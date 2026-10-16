@@ -22,6 +22,21 @@ The ultimate inventory tool for FTC teams. Track each part's name, part number, 
 
 Every team stores its data in its own free Firebase project. Setting a team up takes one person about 10 minutes: see the **[team setup guide](SETUP.md)**.
 
+## Screenshots
+
+![Inventory on a computer](docs/screenshots/desktop-inventory.png)
+
+<p>
+  <img src="docs/screenshots/phone-inventory.png" alt="Inventory on a phone" width="260">
+  <img src="docs/screenshots/phone-packing.png" alt="Packing list on a phone" width="260">
+</p>
+
+![A robot project with the parts it uses](docs/screenshots/desktop-project.png)
+
+![Order list](docs/screenshots/desktop-orders.png)
+
+![Low stock filter and CSV export and import](docs/screenshots/desktop-low-stock-csv.png)
+
 ## How it works
 
 The app is one plain JavaScript web app (`src/`). Electron wraps it for Windows (`electron/`) and Capacitor wraps it for Android, so all three look and work the same. The app talks directly to the team's Firebase project: Firebase Auth for sign-in and Firestore for the parts list. [`firestore.rules`](firestore.rules) only lets team members read or write, and a teammate can only join with the team secret inside the join code.
