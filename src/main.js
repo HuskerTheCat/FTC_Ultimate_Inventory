@@ -1059,7 +1059,7 @@ function openLabelsDialog() {
         <button type="button" class="secondary" data-select="none">None</button>
       </div>
       <ul class="label-list">
-        ${bins ? '<li><h3>Bins</h3></li>' : ''}${labels.slice(0, bins).map(item).join('')}
+        ${bins ? '<li><h3>Storage</h3></li>' : ''}${labels.slice(0, bins).map(item).join('')}
         ${rows.length ? '<li><h3>Parts</h3></li>' : ''}${labels.slice(bins).map((l, i) => item(l, bins + i)).join('')}
       </ul>
       <div class="row">
