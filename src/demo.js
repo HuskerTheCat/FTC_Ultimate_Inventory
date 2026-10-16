@@ -92,15 +92,24 @@ const SAMPLE_PARTS = [
   ['2.5mm hex driver', '', 3, 'Tool wall', 'goBILDA', 'Tools', []],
 ];
 
-// Product links for some of the sample parts, by part number.
+// The product link the part catalog gives each sample part number, like autofill does in the app.
 const SAMPLE_LINKS = {
   '5203-2402-0019': 'https://www.gobilda.com/5203-series-yellow-jacket-planetary-gear-motor-19-2-1-ratio-24mm-length-8mm-rex-shaft-312-rpm-3-3-5v-encoder/',
+  '5203-2402-0014': 'https://www.gobilda.com/5203-series-yellow-jacket-planetary-gear-motor-13-7-1-ratio-24mm-length-8mm-rex-shaft-435-rpm-3-3-5v-encoder/',
   'REV-41-1300': 'https://www.revrobotics.com/rev-41-1300/',
   '2000-0025-0003': 'https://www.gobilda.com/2000-series-dual-mode-servo-25-3-speed/',
   'REV-31-1595': 'https://www.revrobotics.com/rev-31-1595/',
+  'REV-31-1153': 'https://www.revrobotics.com/rev-31-1153/',
   'REV-31-1302': 'https://www.revrobotics.com/rev-31-1302/',
+  'REV-31-1387': 'https://www.revrobotics.com/rev-31-1387/',
+  'REV-31-1557': 'https://www.revrobotics.com/rev-31-1557/',
+  'REV-31-1505': 'https://www.revrobotics.com/rev-31-1505/',
+  'REV-31-1462': 'https://www.revrobotics.com/rev-31-1462/',
   '3110-0002-0001': 'https://www.gobilda.com/pinpoint-odometry-computer-imu-sensor-fusion-for-2-wheel-odometry/',
+  '3110-0001-0001': 'https://www.gobilda.com/swingarm-odometry-pod-48mm-wheel/',
   '3213-3606-0001': 'https://www.gobilda.com/3606-series-mecanum-wheel-set-bearing-supported-rollers-100mm-diameter/',
+  '2802-0004-0008': 'https://www.gobilda.com/2802-series-zinc-plated-steel-button-head-screw-m4-x-0-7mm-8mm-length-25-pack/',
+  '2802-0004-0012': 'https://www.gobilda.com/2802-series-zinc-plated-steel-button-head-screw-m4-x-0-7mm-12mm-length-25-pack/',
 };
 
 // Same fields, for the second inventory.
@@ -124,11 +133,11 @@ const SAMPLE_PACKING = [
   ['Control Hub (spare)', 1, false], ['Battery charger', 1, true],
 ];
 
-// [name, part number, quantity, supplier, existing part name or '', item link or '', notes or '']
+// [name, part number, quantity, supplier, existing part name or '', notes or '']
 const SAMPLE_ORDERS = [
-  ['Yellow Jacket motor 312 RPM', '5203-2402-0019', 2, 'goBILDA', 'Yellow Jacket motor 312 RPM', 'https://www.gobilda.com/'],
-  ['Servo extension cable 300mm', '3802-0003-0300', 6, 'goBILDA', '', '', 'For the intake rebuild'],
-  ['Limit switch', 'REV-31-1462', 2, 'REV Robotics', '', 'https://www.revrobotics.com/'],
+  ['Yellow Jacket motor 312 RPM', '5203-2402-0019', 2, 'goBILDA', 'Yellow Jacket motor 312 RPM'],
+  ['Servo extension cable 300mm', '3802-0003-0300', 6, 'goBILDA', '', 'For the intake rebuild'],
+  ['Limit switch', 'REV-31-1462', 2, 'REV Robotics', ''],
 ];
 
 function loadSamples() {
@@ -150,9 +159,9 @@ function loadSamples() {
     write('uses', `${PACKING}_${partId}`, { projectId: PACKING, partId, quantity, packed });
   }
   // An order for something new comes with a part in Main Inventory that has none yet, like in the app.
-  for (const [name, partNumber, quantity, supplier, partName, link, notes] of SAMPLE_ORDERS) {
+  for (const [name, partNumber, quantity, supplier, partName, notes] of SAMPLE_ORDERS) {
     if (!partName) addParts([[name, partNumber, 0, '', supplier, '', []]], MAIN_PROJECT);
-    add('orders', { name, partNumber, quantity, supplier, partId: ids.get(partName || name), ...(link && { link }), ...(notes && { notes }) });
+    add('orders', { name, partNumber, quantity, supplier, partId: ids.get(partName || name), ...(SAMPLE_LINKS[partNumber] && { link: SAMPLE_LINKS[partNumber] }), ...(notes && { notes }) });
   }
   write('uses', `${ROBOT}_${ids.get('Limit switch')}`, { projectId: ROBOT, partId: ids.get('Limit switch'), quantity: 2 });
   add('log', { at: hoursAgo(2), by: USER.uid, byName: 'Husker', action: 'quantity', part: '12V Slim battery', details: 'Quantity +1' });
