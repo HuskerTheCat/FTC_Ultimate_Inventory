@@ -54,7 +54,7 @@ Then scan your team's join QR code with **Scan QR** in the app, or paste the joi
 
 ## Updating the rules
 
-When a new version of the app needs newer rules, it shows a blue **Your Firebase rules are out of date** banner. **Updating the rules must be done by your team's admin**, the person who set up the team's Firebase project. If that's not you, send your admin a link to this section. Updating the rules doesn't change any of your team's data, and the app keeps working with the old rules in the meantime, except for new features.
+When a new version of the app needs newer rules, it shows a blue **Your Firebase rules are out of date** banner. **Updating the rules must be done by your team's admin**, the person who set up the team's Firebase project. If that's not you, send your admin a link to this section. Updating the rules doesn't change any of your team's data, and the app keeps working with the old rules in the meantime. New features will not work until your rules are updated.
 
 On a computer:
 
