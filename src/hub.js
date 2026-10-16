@@ -38,11 +38,15 @@ async function moveTeam(from, to, data, ownerKey) {
 export const recordTeam = (name, program, number, projectId, ownerKey) =>
   moveTeam('deleted', 'teams', { name, program, number, projectId }, ownerKey);
 
+// The Firebase project a team is listed under, or undefined when it isn't on the list.
+export const teamProject = async (program, number) =>
+  (await getDoc(doc(db, 'teams', teamKey(program, number)))).data()?.projectId;
+
 // Lets teammates sign in on a new device with their team number instead of a join code.
 export async function findTeamProject(program, number) {
-  const team = await getDoc(doc(db, 'teams', teamKey(program, number)));
-  if (!team.data()?.projectId) throw new Error(`${program} team ${number} can't sign in by number yet. Join with your team's join code instead.`);
-  return team.data().projectId;
+  const projectId = await teamProject(program, number);
+  if (!projectId) throw new Error(`${program} team ${number} can't sign in by number yet. Join with your team's join code instead.`);
+  return projectId;
 }
 
 // The reason is optional text the owner typed about why they're leaving.

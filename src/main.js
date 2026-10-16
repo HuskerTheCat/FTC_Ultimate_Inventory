@@ -5,7 +5,7 @@ import { scanCode } from './scanner.js';
 import { codeKey, findProduct } from './catalog.js';
 import { printLabels, printSheet } from './labels.js';
 import { startStatusBanners, checkRules } from './status.js';
-import { PROGRAMS, recordTeam, recordDeletedTeam, findTeamProject, sendBugReport } from './hub.js';
+import { PROGRAMS, recordTeam, recordDeletedTeam, findTeamProject, teamProject, sendBugReport } from './hub.js';
 
 const WEB_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/';
 const PRIVACY_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/PRIVACY.md';
@@ -1911,7 +1911,9 @@ async function deleteTeam() {
   const match = form.team.value.trim().match(/^(?:(ftc|frc|fll|other)\s*)?([1-9][0-9]{0,5})$/i);
   if (!match) throw new Error('Enter your team number, e.g. FTC 26706.');
   const program = PROGRAMS.find((p) => p.toLowerCase() === (match[1] ?? 'ftc').toLowerCase());
-  await recordDeletedTeam(program, Number(match[2]), await fb.getOwnerKey(), form.reason.value.trim()).catch((error) => {
+  const ownerKey = await fb.getOwnerKey();
+  if (!ownerKey) throw new Error('This team isn’t on the central server’s list of active teams.');
+  await recordDeletedTeam(program, Number(match[2]), ownerKey, form.reason.value.trim()).catch((error) => {
     if (error.code !== 'permission-denied') throw error;
     throw new Error(`${program} team ${match[2]} isn't on the central server's list of active teams.`);
   });
@@ -1929,13 +1931,22 @@ async function deleteTeam() {
 
 // ---------- startup ----------
 
-// Adds a new team to the developer's team list (see hub.js), so teammates can sign in by team number.
+// Puts the team on the developer's team list (see hub.js), so teammates can sign in by team number.
+// Checked each time the app opens on the device that set up the team, so a try that failed (say, offline) is made again,
+// and the owner hears about it when the number is already taken.
 // The owner key is saved in the team's own project first, so the owner can always take the team off the list later.
 async function registerTeam() {
   const { teamName, program, teamNumber, config } = state.connection;
-  const ownerKey = newSecret();
-  await fb.saveOwnerKey(ownerKey);
-  await recordTeam(teamName, program, teamNumber, config.projectId, ownerKey);
+  if (!navigator.onLine || await teamProject(program, teamNumber) === config.projectId) return;
+  let ownerKey = await fb.getOwnerKey();
+  if (!ownerKey) {
+    ownerKey = newSecret();
+    await fb.saveOwnerKey(ownerKey);
+  }
+  await recordTeam(teamName, program, teamNumber, config.projectId, ownerKey).catch((error) => {
+    if (error.code !== 'permission-denied') throw error;
+    throw new Error(`${program} team ${teamNumber} is already on the central server's team list, so teammates can't sign in by team number. They can still join with the join code. Use Report bug to get it fixed.`);
+  });
 }
 
 async function joinFromLink() {
@@ -2007,11 +2018,9 @@ async function start() {
     if (!user) return renderSignIn();
     try {
       const createdTeam = await fb.ensureMembership(user, state.connection, state.newName || nameOf({ email: user.email }), state.acceptedPrivacy);
-      if (createdTeam) {
-        // Signing in by team number reads join/info, so it must exist before the owner ever opens Team.
-        fb.setJoinInfo(state.connection.config, state.connection.teamName).catch(showError);
-        registerTeam().catch(console.error);
-      }
+      // Signing in by team number reads join/info, so it must exist before the owner ever opens Team.
+      if (createdTeam) fb.setJoinInfo(state.connection.config, state.connection.teamName).catch(showError);
+      if (state.connection.role === 'owner') registerTeam().catch(showError);
       state.newName = null;
       await fb.ensureMainProject();
     } catch (error) {

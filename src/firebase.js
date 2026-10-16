@@ -221,11 +221,8 @@ export async function getTeam() {
 // The key that lets the owner take the team off the developer's team list (see hub.js). Only the owner can read it.
 export const saveOwnerKey = (ownerKey) => setDoc(doc(db, 'team', 'owner'), { ownerKey });
 
-export async function getOwnerKey() {
-  const ownerKey = (await getDoc(doc(db, 'team', 'owner'))).data()?.ownerKey;
-  if (!ownerKey) throw new Error('This team isn’t on the central server’s list of active teams.');
-  return ownerKey;
-}
+// Undefined until the team has been put on the list.
+export const getOwnerKey = async () => (await getDoc(doc(db, 'team', 'owner'))).data()?.ownerKey;
 
 export const setTeamSecret = (secret) => updateDoc(doc(db, 'team', 'info'), { secret });
 
