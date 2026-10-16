@@ -293,6 +293,8 @@ export async function clearTrash(before) {
   changed('trash');
 }
 
+export const getTeam = async () => ({ name: 'Demo Team', owner: USER.uid });
+
 export async function setMyName(uid, name) {
   write('members', uid, { ...collections.members.get(uid), name });
 }

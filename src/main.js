@@ -1622,7 +1622,10 @@ function deleteForever(entry) {
   else write.catch(showError);
 }
 
-function openTrashDialog() {
+// Only the team owner can delete something for good; everyone else's deletes can be undone for TRASH_DAYS days.
+// Offline, the team's info may not be on this device, so Delete forever waits until the device is back online.
+async function openTrashDialog() {
+  const owner = await fb.getTeam().then((team) => team.owner === state.user.uid, () => false);
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `
     <form method="dialog" class="card">
@@ -1642,7 +1645,7 @@ function openTrashDialog() {
         <span><strong>${esc(e.name)}</strong> <span class="muted small">${esc(details)}</span></span>
         <span class="row">
           <button type="button" data-restore="${i}">Restore</button>
-          <button type="button" class="danger" data-forever="${i}">Delete forever</button>
+          ${owner ? `<button type="button" class="danger" data-forever="${i}">Delete forever</button>` : ''}
         </span>
       </li>`;
     }).join('') || '<li class="muted">The trash is empty.</li>';

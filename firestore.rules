@@ -4,7 +4,7 @@ service cloud.firestore {
     // Add 1 whenever these rules change. The app is built with this number (vite.config.js) and, after sign-in,
     // reads rulesVersion/<number>; if the team's published rules are older, that's denied and the app shows a
     // banner linking to "Updating the rules" in SETUP.md.
-    function rulesVersion() { return 2; }
+    function rulesVersion() { return 3; }
 
     function signedIn() {
       return request.auth != null;
@@ -38,6 +38,17 @@ service cloud.firestore {
     function webLink(value) {
       return value is string && value.size() <= 1000 && value.matches('https://.+');
     }
+    // Rules can't loop, so each of the 20 places a tag can be is checked on its own.
+    function tagAt(tags, i) {
+      return tags.size() <= i || (tags[i] is string && tags[i].size() <= 40);
+    }
+    function validTags(tags) {
+      return tags is list && tags.size() <= 20
+        && tagAt(tags, 0) && tagAt(tags, 1) && tagAt(tags, 2) && tagAt(tags, 3) && tagAt(tags, 4)
+        && tagAt(tags, 5) && tagAt(tags, 6) && tagAt(tags, 7) && tagAt(tags, 8) && tagAt(tags, 9)
+        && tagAt(tags, 10) && tagAt(tags, 11) && tagAt(tags, 12) && tagAt(tags, 13) && tagAt(tags, 14)
+        && tagAt(tags, 15) && tagAt(tags, 16) && tagAt(tags, 17) && tagAt(tags, 18) && tagAt(tags, 19);
+    }
     function validPart() {
       let part = request.resource.data;
       return part.keys().hasOnly(['projectId', 'name', 'partNumber', 'barcode', 'link', 'quantity', 'location', 'supplier', 'category', 'tags', 'unit', 'condition', 'notes', 'updatedBy', 'updatedAt'])
@@ -49,7 +60,7 @@ service cloud.firestore {
         && shortText(part.location)
         && shortText(part.supplier)
         && shortText(part.category)
-        && part.tags is list && part.tags.size() <= 20
+        && validTags(part.tags)
         && (!('unit' in part) || shortText(part.unit))
         && (!('condition' in part) || part.condition in ['', 'new', 'used', 'broken'])
         && (!('notes' in part) || (part.notes is string && part.notes.size() <= 1000))
@@ -137,9 +148,15 @@ service cloud.firestore {
         && request.resource.data.details is string && request.resource.data.details.size() <= 2000;
     }
 
+    // Deleting a part or project only works by moving it to the trash in the same write (see trash below).
+    function trashedNow(kind, id) {
+      return existsAfter(/databases/$(database)/documents/trash/$(kind + '_' + id));
+    }
+
     match /parts/{partId} {
-      allow read, delete: if isMember();
+      allow read: if isMember();
       allow create, update: if isMember() && validPart();
+      allow delete: if isMember() && trashedNow('part', partId);
     }
 
     match /projects/{projectId} {
@@ -148,7 +165,7 @@ service cloud.firestore {
       allow update: if isMember()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
         && shortText(request.resource.data.name) && request.resource.data.name.size() > 0;
-      allow delete: if isMember() && projectId != 'main';
+      allow delete: if isMember() && projectId != 'main' && trashedNow('project', projectId);
     }
 
     match /locations/{locationId} {
@@ -177,8 +194,17 @@ service cloud.firestore {
 
     // Deleted parts, projects and orders, kept so they can be brought back. Restoring writes `data` and `uses`
     // through the rules above, so they're only checked for size here.
+    // An entry goes when it's old (a day short of the app's 30, so a device whose clock is a little fast can still clear
+    // the trash), when it's brought back, or when the owner deletes it for good. The age is checked first, so clearing many
+    // old entries in one write doesn't run into the rules' limit on reading other docs.
+    function restoredNow(entry) {
+      let collection = {'part': 'parts', 'project': 'projects', 'order': 'orders'}[entry.kind];
+      return existsAfter(/databases/$(database)/documents/$(collection)/$(entry.docId));
+    }
     match /trash/{entryId} {
-      allow read, delete: if isMember();
+      allow read: if isMember();
+      allow delete: if isMember()
+        && (resource.data.deletedAt < request.time - duration.value(29, 'd') || restoredNow(resource.data) || isOwner());
       allow create, update: if isMember()
         && request.resource.data.keys().hasOnly(['kind', 'docId', 'name', 'data', 'uses', 'deletedBy', 'deletedAt'])
         && request.resource.data.kind in ['part', 'project', 'order']
