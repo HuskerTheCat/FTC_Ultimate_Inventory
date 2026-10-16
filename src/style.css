@@ -481,6 +481,7 @@ button.add-to svg { width: 16px; height: 16px; }
 .status-banner.news:not([hidden]) + .status-banner { border-top: 1px solid rgb(255 255 255 / 30%); }
 .status-banner.news span { flex: 1; overflow-wrap: anywhere; }
 .status-banner.news button { flex: none; width: 32px; min-height: 32px; padding: 0; border: none; background: none; box-shadow: none; color: inherit; font-size: 1.4rem; line-height: 1; }
+.status-banner.danger { background: var(--danger); color: #1b0b10; }
 .status-banner.demo { background: var(--surface); color: var(--accent); border-bottom: 1px solid var(--border); }
 
 .toast {

@@ -58,6 +58,8 @@ Then scan your team's join QR code with **Scan QR** in the app, or paste the joi
 
 When a new version of the app needs newer rules, it shows a blue **Your Firebase rules are out of date** banner. **Updating the rules must be done by your team's admin**, the person who set up the team's Firebase project. If that's not you, send your admin a link to this section. Updating the rules doesn't change any of your team's data, and the app keeps working with the old rules in the meantime. New features will not work until your rules are updated.
 
+If the app shows a red **Your Firebase is configured incorrectly and your account is not secure** banner instead, your project isn't using the app's rules (for example, it was created in test mode), so anyone could read your inventory and your members' emails. Follow the same steps right away.
+
 On a computer:
 
 1. Open [`firestore.rules`](firestore.rules) and click the **Copy raw file** button (two overlapping squares) at the top right of the file.

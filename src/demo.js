@@ -189,6 +189,7 @@ export async function clearDeviceData() {}
 export async function ensureMembership() {}
 export async function ensureMainProject() {}
 export const rulesUpToDate = async () => true;
+export const rulesOpen = async () => false;
 
 const watchCollection = (name) => (callback) => watch(name, () => callback(docs(name)));
 

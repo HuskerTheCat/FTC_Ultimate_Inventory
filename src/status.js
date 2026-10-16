@@ -1,7 +1,7 @@
 import { getNews } from './hub.js';
 
 // Banners above the app: one while offline, one when a newer version is out, the developer's news message,
-// and one when the team's rules are old.
+// and one when the team's rules are old or let anyone in.
 // The website compares its build id with the deployed version.json; the Windows and Android apps compare their
 // version with the latest GitHub release.
 const RELEASES_API = 'https://api.github.com/repos/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest';
@@ -14,6 +14,7 @@ const offlineBanner = document.getElementById('offline-banner');
 const updateBanner = document.getElementById('update-banner');
 const newsBanner = document.getElementById('news-banner');
 const rulesBanner = document.getElementById('rules-banner');
+const openRulesBanner = document.getElementById('open-rules-banner');
 
 function showOffline() {
   offlineBanner.hidden = navigator.onLine;
@@ -53,9 +54,10 @@ async function showNews() {
 }
 
 // Checked once per sign-in. Only the team owner can publish new rules, so the banner links to the steps to send them.
-export async function checkRules(rulesUpToDate) {
-  if (!navigator.onLine) return addEventListener('online', () => checkRules(rulesUpToDate), { once: true });
-  rulesBanner.hidden = await rulesUpToDate();
+export async function checkRules(fb) {
+  if (!navigator.onLine) return addEventListener('online', () => checkRules(fb), { once: true });
+  openRulesBanner.hidden = !(await fb.rulesOpen());
+  rulesBanner.hidden = !openRulesBanner.hidden || await fb.rulesUpToDate();
 }
 
 export function startStatusBanners() {

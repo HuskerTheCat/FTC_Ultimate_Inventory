@@ -2250,7 +2250,7 @@ async function start() {
     }
     state.user = user;
     renderInventory();
-    checkRules(fb.rulesUpToDate).catch(showError);
+    checkRules(fb).catch(showError);
     fb.clearTrash(new Date(Date.now() - TRASH_DAYS * DAY_MS)).catch(showError);
     const onError = (error) => {
       if (error.code !== 'permission-denied') return showError(error);

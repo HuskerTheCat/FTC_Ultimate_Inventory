@@ -83,6 +83,18 @@ export async function rulesUpToDate() {
   }
 }
 
+// True when the team's published rules let anyone in, like Firebase's "test mode" rules or rules that allow any signed-in
+// user (anyone can make an account). No rule in firestore.rules matches rulesCheck/open, so reading it is only allowed then.
+export async function rulesOpen() {
+  try {
+    await getDocFromServer(doc(db, 'rulesCheck', 'open'));
+    return true;
+  } catch (error) {
+    if (error.code === 'permission-denied') return false;
+    throw error;
+  }
+}
+
 // Timestamps of edits that haven't reached the server yet are estimated, so sorting by them works offline.
 const watchCollection = (name, callback, onError) =>
   onSnapshot(collection(db, name), (snap) =>
