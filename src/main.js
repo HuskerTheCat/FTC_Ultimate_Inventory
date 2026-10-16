@@ -1983,7 +1983,11 @@ async function start() {
     if (!user) return renderSignIn();
     try {
       const createdTeam = await fb.ensureMembership(user, state.connection, state.newName || nameOf({ email: user.email }), state.acceptedPrivacy);
-      if (createdTeam) registerTeam().catch(console.error);
+      if (createdTeam) {
+        // Signing in by team number reads join/info, so it must exist before the owner ever opens Team.
+        fb.setJoinInfo(state.connection.config, state.connection.teamName).catch(showError);
+        registerTeam().catch(console.error);
+      }
       state.newName = null;
       await fb.ensureMainProject();
     } catch (error) {
