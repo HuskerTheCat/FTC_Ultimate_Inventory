@@ -495,6 +495,7 @@ function renderInventory() {
     const row = e.target.closest('tr[data-id]');
     if (!row) return;
     if (state.selected) return toggleSelected(row.dataset.id);
+    if (e.target.closest('[data-add-to]')) return openAddToDialog(state.parts.find((p) => p.id === row.dataset.id));
     if (e.target.dataset.packed) return setPacked(useOf(state.projectId, row.dataset.id), e.target.checked);
     if (e.target.dataset.tag) {
       state.tag = e.target.dataset.tag;
@@ -693,7 +694,7 @@ function rowHtml(p, columns) {
         <span>${esc(p.quantity)}</span>${p.unit ? `<small class="unit muted">${esc(p.unit)}</small>` : ''}
         <button class="step" data-delta="1" aria-label="Add one">+</button>
       </td>
-      ${label('inUse') ? `<td data-label="In use">${usedIn(p)}</td>` : ''}
+      ${label('inUse') ? `<td data-label="In use">${usedIn(p)}<button class="add-to" data-add-to="1">${ICON_PLUS}<span>Add to</span></button></td>` : ''}
       <td data-label="Location">${esc(p.location)}${!label('inUse') && inventoryNote(p) ? `<div class="muted small">${esc(inventoryNote(p))}</div>` : ''}</td>
       <td data-label="Supplier">${esc(p.supplier)}</td>
       <td data-label="Category">${esc(categoryLabel(p.category))}</td>
@@ -1215,6 +1216,34 @@ function openPicker() {
   };
   dialog.addEventListener('close', () => { state.picker = null; }, { once: true });
   state.picker();
+  dialog.showModal();
+}
+
+// Adds an inventory part to a project or packing list, straight from the inventory.
+function openAddToDialog(part) {
+  const dialog = app.querySelector('#dialog');
+  const targets = state.projects.filter((p) => p.source);
+  dialog.innerHTML = `
+    <form method="dialog" class="card">
+      <h2>Add ${esc(part.name)} to</h2>
+      <p class="muted">${esc(project(part.projectId).name)} has ${part.quantity}, and ${part.quantity - inUse(part.id)} are free.</p>
+      <label>How many<input name="quantity" type="number" min="1" step="1" required value="1" /></label>
+      <ul class="picker">${['project', 'packing'].map((key) => targets.filter((p) => typeOf(p) === key).map((p) => {
+        const using = useOf(p.id, part.id)?.quantity ?? 0;
+        return `<li><button type="button" class="secondary" data-target="${esc(p.id)}">
+          <span class="target">${TYPES[key].icon}<strong>${esc(p.name)}</strong></span>
+          ${using ? `<span class="small muted">using ${using}</span>` : ''}
+        </button></li>`;
+      }).join('')).join('') || '<li class="muted">No projects or packing lists yet. Make one with “New inventory, project or list” in the list picker.</li>'}</ul>
+      <div class="row"><button value="cancel" formnovalidate class="secondary">Cancel</button></div>
+    </form>`;
+  const form = dialog.querySelector('form');
+  form.querySelector('.picker').onclick = (e) => {
+    const id = e.target.closest('[data-target]')?.dataset.target;
+    if (!id || !form.reportValidity()) return;
+    setUse(id, part.id, (useOf(id, part.id)?.quantity ?? 0) + Number(form.quantity.value));
+    dialog.close();
+  };
   dialog.showModal();
 }
 
