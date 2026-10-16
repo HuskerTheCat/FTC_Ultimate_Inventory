@@ -194,6 +194,13 @@ function saveConnection(connection) {
   location.reload();
 }
 
+// The join secret is only needed to join. Once in, this device forgets it, so the next person to use it can't join with it.
+function forgetSecret() {
+  if (!state.connection.secret) return;
+  delete state.connection.secret;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.connection));
+}
+
 function forgetConnection() {
   localStorage.removeItem(STORAGE_KEY);
   location.hash = '';
@@ -309,7 +316,7 @@ function renderSignIn() {
   app.innerHTML = `
     <main class="center">
       <h1>${esc(state.connection.teamName)}</h1>
-      <p class="muted">${owner ? 'Create the admin account for your team.' : canJoin ? 'Sign in, or create an account if this is your first time.' : 'Sign in with your email and password.'}</p>
+      <p class="muted">${!canJoin ? 'Sign in with your email and password.' : owner ? 'Create the admin account for your team.' : 'Sign in, or create an account if this is your first time.'}</p>
       <p id="error" class="error" hidden></p>
       <form id="auth" class="card">
         ${canJoin ? '<input name="username" maxlength="40" autocomplete="nickname" placeholder="Your name (for new accounts)" />' : ''}
@@ -480,7 +487,9 @@ function renderInventory() {
   app.querySelector('#invite').onclick = () => openTeamDialog().catch(showError);
   app.querySelector('#log').onclick = openLogDialog;
   app.querySelector('#bug').onclick = openBugDialog;
-  app.querySelector('#signout').onclick = () => fb.logOut();
+  // Restarts the app, since wiping the data kept on this device shuts down its connection to Firebase.
+  app.querySelector('#signout').onclick = () => fb.logOut().then(fb.clearDeviceData)
+    .then(() => location.assign(location.pathname), showError);
   app.querySelector('#invite').hidden = DEMO;
   app.querySelector('#bug').hidden = DEMO;
   app.querySelector('thead').onclick = (e) => {
@@ -1955,7 +1964,8 @@ async function joinFromLink() {
   history.replaceState(null, '', location.pathname);
   const joining = await decodeJoinCode(code);
   const current = state.connection;
-  if (current?.secret === joining.secret) return;
+  // Already on this team: keep the secret, so someone new on this device can join with it.
+  if (current?.config.projectId === joining.config.projectId) return saveConnection({ ...current, secret: joining.secret });
   if (current && !confirm(`Switch from ${current.teamName} to ${joining.teamName}?`)) return;
   saveConnection({ ...joining, role: 'member' });
 }
@@ -2022,6 +2032,7 @@ async function start() {
       if (createdTeam) fb.setJoinInfo(state.connection.config, state.connection.teamName).catch(showError);
       if (state.connection.role === 'owner') registerTeam().catch(showError);
       state.newName = null;
+      forgetSecret();
       await fb.ensureMainProject();
     } catch (error) {
       state.signInError = new Error(error.code === "permission-denied"

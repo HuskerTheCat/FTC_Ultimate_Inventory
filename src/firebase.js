@@ -4,7 +4,7 @@ import {
   sendPasswordResetEmail, signOut,
 } from 'firebase/auth';
 import {
-  initializeFirestore, connectFirestoreEmulator, persistentLocalCache, persistentMultipleTabManager,
+  initializeFirestore, connectFirestoreEmulator, persistentLocalCache, persistentMultipleTabManager, terminate, clearIndexedDbPersistence,
   doc, getDoc, getDocFromServer, getDocs, setDoc, addDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit, onSnapshot,
   increment, serverTimestamp, writeBatch, deleteField,
 } from 'firebase/firestore';
@@ -29,6 +29,13 @@ export const signIn = (email, password) => signInWithEmailAndPassword(auth, emai
 export const signUp = (email, password) => createUserWithEmailAndPassword(auth, email, password);
 export const resetPassword = (email) => sendPasswordResetEmail(auth, email);
 export const logOut = () => signOut(auth);
+
+// Wipes the copy of the team's data this device keeps for offline use, so the next person to use it can't read it.
+// Firebase can't be used again until the app restarts.
+export async function clearDeviceData() {
+  await terminate(db);
+  await clearIndexedDbPersistence(db);
+}
 
 // Makes sure the signed-in user is on the team. The owner creates the team on first sign-in;
 // everyone else joins with the secret from their join code, which the security rules verify.

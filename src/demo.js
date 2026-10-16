@@ -171,11 +171,9 @@ export function watchUser(callback) {
   callback(USER);
 }
 
-// Signing out of the demo goes back to the welcome screen.
-export function logOut() {
-  location.assign(location.pathname);
-}
+export async function logOut() {}
 
+export async function clearDeviceData() {}
 export async function ensureMembership() {}
 export async function ensureMainProject() {}
 export const rulesUpToDate = async () => true;
