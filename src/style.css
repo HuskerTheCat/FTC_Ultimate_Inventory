@@ -191,6 +191,7 @@ button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised)
   text-align: left;
   white-space: normal;
 }
+.menu-item[hidden] { display: none; }
 .menu-item svg { flex: none; color: var(--muted); }
 .menu-item:hover { background: var(--row-hover); }
 .menu-item[aria-current="true"] { background: rgb(91 155 255 / 0.15); color: var(--accent); }

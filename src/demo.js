@@ -4,16 +4,14 @@ import { Timestamp } from 'firebase/firestore';
 
 export const MAIN_PROJECT = 'main';
 
-const USER = { uid: 'demo', email: 'you@demo.team' };
+const USER = { uid: 'demo', email: 'husker@example.com' };
 const ROBOT = 'robot';
 const PACKING = 'packing';
 const SPARES = 'spares';
 
 const collections = {
   members: new Map([
-    ['demo', { email: USER.email, name: 'You' }],
-    ['coach', { email: 'coach@demo.team', name: 'Coach Rivera' }],
-    ['maya', { email: 'maya@demo.team', name: 'Maya' }],
+    ['demo', { email: USER.email, name: 'Husker' }],
   ]),
   projects: new Map([
     [MAIN_PROJECT, { name: 'Main Inventory', source: '' }],
@@ -139,7 +137,7 @@ function loadSamples() {
   const ids = new Map();
   const addParts = (rows, projectId) => rows.forEach(([name, partNumber, quantity, location, supplier, category, tags], i) => {
     const part = { name, partNumber, quantity, location, supplier, category, tags, unit: 'pcs', condition: 'new', notes: '', ...(SAMPLE_LINKS[partNumber] && { link: SAMPLE_LINKS[partNumber] }) };
-    ids.set(name, add('parts', { ...part, projectId, updatedBy: 'coach@demo.team', updatedAt: hoursAgo(i + 1) }).id);
+    ids.set(name, add('parts', { ...part, projectId, updatedBy: USER.email, updatedAt: hoursAgo(i + 1) }).id);
   });
   addParts(SAMPLE_PARTS, MAIN_PROJECT);
   addParts(SAMPLE_SPARES, SPARES);
@@ -157,10 +155,10 @@ function loadSamples() {
     add('orders', { name, partNumber, quantity, supplier, partId: ids.get(partName || name), ...(link && { link }), ...(notes && { notes }) });
   }
   write('uses', `${ROBOT}_${ids.get('Limit switch')}`, { projectId: ROBOT, partId: ids.get('Limit switch'), quantity: 2 });
-  add('log', { at: hoursAgo(2), by: 'maya', byName: 'Maya', action: 'quantity', part: '12V Slim battery', details: 'Quantity +1' });
-  add('log', { at: hoursAgo(1), by: 'coach', byName: 'Coach Rivera', action: 'added', part: 'Pinpoint odometry computer', details: '' });
+  add('log', { at: hoursAgo(2), by: USER.uid, byName: 'Husker', action: 'quantity', part: '12V Slim battery', details: 'Quantity +1' });
+  add('log', { at: hoursAgo(1), by: USER.uid, byName: 'Husker', action: 'added', part: 'Pinpoint odometry computer', details: '' });
   const oldServo = { projectId: MAIN_PROJECT, name: 'Servo horn (old style)', partNumber: '', quantity: 3, location: 'Bin 1', supplier: 'goBILDA', category: 'Hardware', tags: [], unit: 'pcs', condition: 'used', notes: '' };
-  write('trash', 'part_demo-old-servo', { kind: 'part', docId: 'demo-old-servo', name: oldServo.name, data: oldServo, uses: [], deletedBy: 'maya@demo.team', deletedAt: hoursAgo(72) });
+  write('trash', 'part_demo-old-servo', { kind: 'part', docId: 'demo-old-servo', name: oldServo.name, data: oldServo, uses: [], deletedBy: USER.email, deletedAt: hoursAgo(72) });
 }
 
 loadSamples();
