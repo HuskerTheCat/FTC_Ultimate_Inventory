@@ -139,10 +139,11 @@ const inUse = (partId) => usesOfPart(partId).filter(holdsPart).reduce((sum, u) =
 const onOrder = (partId) => state.orders.filter((o) => o.partId === partId).reduce((sum, o) => sum + o.quantity, 0);
 // None of the part has arrived yet: the team has none and some are on order.
 const waiting = (partId) => onOrder(partId) > 0 && !state.parts.find((p) => p.id === partId).quantity;
-// The inventory part is down to its "Low stock at" quantity or below. Parts without one are never low.
+// The inventory part's free count (what projects and packed lists aren't using) is down to its "Low stock at" quantity
+// or below. Parts without one are never low.
 const lowStock = (partId) => {
   const part = state.parts.find((p) => p.id === partId);
-  return part.minQuantity != null && part.quantity <= part.minQuantity;
+  return part.minQuantity != null && part.quantity - inUse(partId) <= part.minQuantity;
 };
 // Numeric so "Bin 2" sorts before "Bin 10".
 const naturalCompare = (a, b) => a.localeCompare(b, undefined, { numeric: true });
@@ -1501,7 +1502,7 @@ function openPartDialog(part, carry = null, note = '') {
         </div>
       </label>
       ${input('quantity', 'Quantity', 'type="number" min="0" step="1" required')}
-      ${input('minQuantity', 'Low stock at', 'type="number" min="0" max="1000000" step="1" placeholder="Flag at this many or fewer (optional)"')}
+      ${input('minQuantity', 'Low stock at', 'type="number" min="0" max="1000000" step="1" placeholder="Flag at this many free or fewer (optional)"')}
       <label>Location
         <select name="location">
           <option value="">No location</option>
