@@ -17,6 +17,7 @@ const SUPPLIERS = {
   AndyMark: () => shopify('https://andymark.com'),
   ServoCity: () => bigCommerce('https://www.servocity.com'),
   TETRIX: () => shopify('https://www.pitsco.com', (product) => product.vendor.startsWith('TETRIX')),
+  'Studica Robotics': () => nopCommerce('https://www.studica.com', 'studica-robotics-2'),
 };
 
 // First match wins, tried on the part's name and then on the supplier's own category.
@@ -156,6 +157,36 @@ async function shopify(site, include = () => true) {
     const url = `${site}/products/${product.handle}${variant.title === 'Default Title' ? '' : `?variant=${variant.id}`}`;
     return { partNumber: variant.sku.trim(), upc: '', name, category: categoryOf(name, `${product.product_type} ${product.tags.join(' ')}`), url };
   }));
+}
+
+// ---------- nopCommerce stores (Studica) ----------
+
+// The brand's listing pages link to every part (the store also sells other brands and software), and each part's page
+// has its SKU and UPC in its schema.org product data.
+async function nopCommerce(site, listing) {
+  const urls = [];
+  for (let page = 1; ; page++) {
+    const html = await fetchText(`${site}/${listing}?pagesize=48&pagenumber=${page}`);
+    const found = [...html.matchAll(/<h2 class="product-title">\s*<a href="([^"]+)"/g)].map((m) => `${site}${m[1]}`);
+    // Past the last page the store shows no parts, or the last page again.
+    const fresh = found.filter((url) => !urls.includes(url));
+    if (!fresh.length) break;
+    urls.push(...fresh);
+  }
+  console.log(`${site}: ${urls.length} product pages`);
+  const parts = await inParallel(urls, async (url) => {
+    const html = await fetchText(url);
+    if (!html) return null;
+    // Descriptions can hold raw line breaks, which JSON doesn't allow inside strings.
+    const data = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+      .map((m) => JSON.parse(m[1].replace(/[\u0000-\u001f]+/g, ' ')));
+    const product = data.find((d) => d['@type'] === 'Product');
+    if (!product?.sku) return null;
+    const name = cleanName(product.name);
+    const supplierCategory = data.find((d) => d['@type'] === 'BreadcrumbList').itemListElement.map((i) => i.item.name).join(' ');
+    return { partNumber: product.sku.trim(), upc: product.gtin12 ?? product.gtin13 ?? '', name, category: categoryOf(name, supplierCategory), url };
+  });
+  return parts.filter(Boolean);
 }
 
 // ---------- catalog ----------
