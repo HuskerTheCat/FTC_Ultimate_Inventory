@@ -91,9 +91,12 @@ select {
   padding-right: 36px;
   background: var(--field) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238f98b5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center / 18px;
 }
-/* The open list matches the app's menus. Browsers without customizable selects (Safari, Firefox) keep their own list. */
-select, ::picker(select) { appearance: base-select; }
-select::picker-icon { display: none; }
+/* The open list matches the app's menus. Only browsers that can also hide their own arrow (::picker-icon) opt in:
+   Firefox can accept base-select before that works, and then draws a second arrow. Safari and Firefox keep their own list. */
+@supports selector(::picker-icon) {
+  select, ::picker(select) { appearance: base-select; }
+  select::picker-icon { display: none; }
+}
 select { white-space: nowrap; overflow: hidden; }
 ::picker(select) { margin-top: 6px; padding: 6px; background: var(--raised); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--float-shadow); }
 option { padding: 8px 10px; border-radius: 8px; color: var(--text); }
