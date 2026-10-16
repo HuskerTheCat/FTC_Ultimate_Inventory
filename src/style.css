@@ -137,7 +137,8 @@ header .row { flex-wrap: nowrap; }
 button.icon { width: 42px; padding: 0; background: var(--surface); color: var(--muted); border-color: var(--border); }
 button.icon svg { display: block; margin: 0 auto; }
 button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised); color: var(--text); }
-.menuwrap { position: relative; }
+/* Flex, so the button inside isn't lifted by the text line around it and every icon button lines up. */
+.menuwrap { position: relative; display: flex; }
 .menu.right { left: auto; right: 0; width: max-content; min-width: 200px; }
 .menu hr { border: none; border-top: 1px solid var(--border); margin: 6px 4px; }
 
@@ -146,11 +147,10 @@ button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised)
 .projectmenu { position: relative; flex: 1 1 auto; min-width: 0; }
 #project {
   width: 100%;
-  min-height: 48px;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
+  padding: 4px 12px;
   background: var(--surface);
   border-color: var(--border);
   font-size: 1.25rem;
@@ -214,9 +214,6 @@ button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised)
 .types input { position: absolute; opacity: 0; pointer-events: none; }
 .types label:has(input:checked) { border-color: var(--accent); background: rgb(91 155 255 / 0.15); color: var(--accent); }
 .types label:has(input:focus-visible) { box-shadow: var(--focus); }
-/* Square rename/delete button next to the project picker. */
-.projectpick button.icon { width: 48px; min-height: 0; margin-left: 0; }
-
 .toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 8px; margin-bottom: 16px; }
 .toolbar:has(+ .filters:not([hidden])) { margin-bottom: 8px; }
 #filters-toggle.active { color: var(--accent); border-color: var(--accent); }
@@ -342,6 +339,8 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   /* Each filter row's label sits above it, and the selects share the width. */
   .filters .row > span { width: 100%; }
   .filters select { flex: 1 1 120px; }
+  /* Add floats, so the toolbar ends at More and lines up with the buttons above it. */
+  .toolbar { grid-template-columns: minmax(0, 1fr) auto auto; }
   .toolbar #add {
     position: fixed;
     right: 16px;
@@ -382,13 +381,11 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   td.qty span { font-size: 1.3rem; }
   button.step { width: 40px; min-height: 40px; font-size: 1.25rem; }
   td.card-meta:not(:empty) { display: block; grid-column: 2 / -1; grid-row: 2; }
-  /* Free count and the projects using the part, on one wrapping line. */
-  td[data-label="In use"] { grid-column: 2 / -1; grid-row: 3; }
-  td[data-label="In use"] .in-use { flex-flow: row wrap; align-items: baseline; gap: 0 8px; font-size: 0.85rem; }
-  /* Add to sits under the stepper, or at the end of the "Used in" line once something uses the part. */
-  td[data-label="In use"] { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; }
-  td[data-label="In use"]:not(:has(.in-use)) { grid-column: 3; grid-row: 2; justify-self: end; margin-left: 8px; }
-  tr:has(td[data-label="In use"]):not(:has(.in-use)) td.card-meta { grid-column: 2; }
+  /* Add to always sits under the stepper, beside location and part #. The free count and the projects using the part get the full width below. */
+  td[data-label="In use"] { display: contents; }
+  td[data-label="In use"] .in-use { grid-column: 2 / -1; grid-row: 3; flex-flow: row wrap; align-items: baseline; gap: 0 8px; font-size: 0.85rem; }
+  td[data-label="In use"] .add-to { grid-column: 3; grid-row: 2; justify-self: end; margin: 4px 0 0 8px; }
+  tr:has(td[data-label="In use"]) td.card-meta { grid-column: 2; }
   tbody tr.waiting { border: 1px dashed var(--pending); box-shadow: none; }
   td.qty .skeleton { height: 40px; width: 120px; border-radius: 999px; }
   tbody tr.group { background: none; margin: 18px 0 8px; }
@@ -400,7 +397,7 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
 @media screen and (max-width: 360px) {
   header h1 { font-size: 1.3rem; }
   :is(#scan, #filters-toggle) > span { display: none; }
-  #scan { width: 42px; padding: 0; justify-content: center; }
+  :is(#scan, #filters-toggle) { padding: 0 10px; justify-content: center; }
   button.step { width: 36px; min-height: 36px; }
 }
 
