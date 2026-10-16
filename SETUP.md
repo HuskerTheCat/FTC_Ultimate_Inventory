@@ -1,6 +1,6 @@
 # Team setup guide
 
-One person per team does this once, in about 10 minutes. Everyone else only needs the join link.
+One person per team does this once, in about 10 minutes. Everyone else only needs the join link. Once your team is set up, the [how-to guide](docs/HOW-TO.md) shows everyone how to use the app.
 
 Your team gets its own free Firebase project, so your inventory, logins and usage are completely separate from every other team. The free plan (Spark) has no credit card attached, so it can never charge you.
 
@@ -40,6 +40,8 @@ These rules are what keep your inventory private: only people who joined with yo
 Click **Team**. Teammates can scan the QR code or open the link on any device, or in the Windows, Android or iPhone app choose **Scan QR** under **Join a team** (or type the short join code, for example `thunder-lab-26706-k7qm3x9p2r`). Then they create an account and they're in. To use the same account on another phone or computer, choose **Sign in to your team**, pick your program and enter your team number, then sign in with the same email and password.
 
 Only share the join code with your team: anyone who has it can join. As the team owner, you can remove people from the same **Team** screen. Removing someone also makes a new join code, so their old one stops working. If a code ever gets shared by mistake, use **Reset join code**.
+
+Then send your team the [how-to guide](docs/HOW-TO.md). It walks through every main feature with pictures.
 
 ## Install on iPhone or iPad
 
