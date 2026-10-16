@@ -20,7 +20,7 @@ The ultimate inventory tool for FTC teams. Track each part's name, part number, 
 - **Android:** [download the app](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest/download/FTC-Ultimate-Inventory.apk)
 - **iPhone and iPad:** [add the website to your Home Screen](SETUP.md#install-on-iphone-or-ipad)
 
-Every team stores its data in its own free Firebase project. Setting a team up takes one person about 10 minutes: see the **[team setup guide](SETUP.md)**.
+Every team stores its data in its own free Firebase project. Setting a team up takes one person about 10 minutes: see the **[team setup guide](SETUP.md)**. Then share the **[how-to guide](docs/HOW-TO.md)** with your team: it walks through every main feature with pictures.
 
 ## Screenshots
 
