@@ -169,6 +169,7 @@ export function logOut() {
 
 export async function ensureMembership() {}
 export async function ensureMainProject() {}
+export const rulesUpToDate = async () => true;
 
 const watchCollection = (name) => (callback) => watch(name, () => callback(docs(name)));
 

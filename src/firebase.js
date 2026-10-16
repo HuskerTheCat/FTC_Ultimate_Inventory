@@ -5,7 +5,7 @@ import {
 } from 'firebase/auth';
 import {
   initializeFirestore, connectFirestoreEmulator, persistentLocalCache, persistentMultipleTabManager,
-  doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit, onSnapshot,
+  doc, getDoc, getDocFromServer, getDocs, setDoc, addDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit, onSnapshot,
   increment, serverTimestamp, writeBatch,
 } from 'firebase/firestore';
 
@@ -59,6 +59,17 @@ async function createTeam(user, connection) {
 async function isMember(memberRef) {
   try {
     return (await getDoc(memberRef)).exists();
+  } catch (error) {
+    if (error.code === 'permission-denied') return false;
+    throw error;
+  }
+}
+
+// False when the team's published rules are older than the ones this app was built with (see the top of firestore.rules).
+export async function rulesUpToDate() {
+  try {
+    await getDocFromServer(doc(db, 'rulesVersion', String(__RULES_VERSION__)));
+    return true;
   } catch (error) {
     if (error.code === 'permission-denied') return false;
     throw error;

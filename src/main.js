@@ -4,7 +4,7 @@ import { parseFirebaseConfig, encodeJoinCode, decodeJoinCode, findTeam, newSecre
 import { scanCode } from './scanner.js';
 import { codeKey, findProduct } from './catalog.js';
 import { printLabels, printSheet } from './labels.js';
-import { startStatusBanners } from './status.js';
+import { startStatusBanners, checkRules } from './status.js';
 import { PROGRAMS, recordTeam, recordDeletedTeam, findTeamProject, sendBugReport } from './hub.js';
 
 const WEB_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/';
@@ -1995,6 +1995,7 @@ async function start() {
     }
     state.user = user;
     renderInventory();
+    checkRules(fb.rulesUpToDate).catch(showError);
     fb.clearTrash(new Date(Date.now() - TRASH_DAYS * DAY_MS)).catch(showError);
     const onError = (error) => {
       if (error.code !== 'permission-denied') return showError(error);

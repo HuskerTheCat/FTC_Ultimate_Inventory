@@ -1,6 +1,11 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Add 1 whenever these rules change. The app is built with this number (vite.config.js) and, after sign-in,
+    // reads rulesVersion/<number>; if the team's published rules are older, that's denied and the app shows a
+    // banner linking to "Updating the rules" in SETUP.md.
+    function rulesVersion() { return 1; }
+
     function signedIn() {
       return request.auth != null;
     }
@@ -67,6 +72,11 @@ service cloud.firestore {
         && shortText(order.supplier)
         && order.quantity is int && order.quantity > 0 && order.quantity <= 1000000
         && (order.partId == '' || exists(/databases/$(database)/documents/parts/$(order.partId)));
+    }
+
+    // Never holds a doc: reading it only checks the rules version (see rulesVersion above).
+    match /rulesVersion/{version} {
+      allow get: if int(version) <= rulesVersion();
     }
 
     match /team/info {

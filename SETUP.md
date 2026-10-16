@@ -54,6 +54,15 @@ Then scan your team's join QR code with **Scan QR** in the app, or paste the joi
 
 ## Updating the rules
 
-If the app's [`firestore.rules`](firestore.rules) change in a new version, paste the new rules into **Firestore → Rules** and click **Publish** again.
+When a new version of the app needs newer rules, it shows a blue **Your Firebase rules are out of date** banner. **Updating the rules must be done by your team's admin**, the person who set up the team's Firebase project. If that's not you, send your admin a link to this section. Updating the rules doesn't change any of your team's data, and the app keeps working with the old rules in the meantime, except for new features.
+
+On a computer:
+
+1. Open [`firestore.rules`](firestore.rules) and click the **Copy raw file** button (two overlapping squares) at the top right of the file.
+2. Go to [console.firebase.google.com](https://console.firebase.google.com), sign in with the Google account that owns your team's project, and open the project.
+3. In the left menu, open **Databases & Storage → Firestore** and click the **Rules** tab.
+4. Click in the rules editor, select everything (Ctrl+A, or Cmd+A on a Mac), and press Delete.
+5. Paste the rules you copied (Ctrl+V, or Cmd+V) and click **Publish**.
+6. Wait a minute, then close and reopen the app (or refresh the web page). The banner is gone once the new rules are in use.
 
 Teams set up before short join codes: after publishing the new rules, open **Team** and use **Reset join code** once to get a short code. People already on the team stay signed in.
