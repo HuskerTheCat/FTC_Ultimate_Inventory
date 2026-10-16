@@ -112,6 +112,9 @@ const SAMPLE_LINKS = {
   '2802-0004-0012': 'https://www.gobilda.com/2802-series-zinc-plated-steel-button-head-screw-m4-x-0-7mm-12mm-length-25-pack/',
 };
 
+// The "Low stock at" quantity of a few sample parts. Zip ties and batteries are at or below theirs, so they show as low.
+const SAMPLE_MINIMUMS = { '12V Slim battery': 4, 'Zip ties (100 pack)': 2, 'M4 x 8mm socket head screw (25 pack)': 5 };
+
 // Same fields, for the second inventory.
 const SAMPLE_SPARES = [
   ['Control Hub (spare)', 'REV-31-1595', 1, 'Pit cabinet', 'REV Robotics', 'Electronics/Controllers', ['competition']],
@@ -145,7 +148,7 @@ function loadSamples() {
   for (const name of SAMPLE_LOCATIONS) add('locations', { name });
   const ids = new Map();
   const addParts = (rows, projectId) => rows.forEach(([name, partNumber, quantity, location, supplier, category, tags], i) => {
-    const part = { name, partNumber, quantity, location, supplier, category, tags, unit: 'pcs', condition: 'new', notes: '', ...(SAMPLE_LINKS[partNumber] && { link: SAMPLE_LINKS[partNumber] }) };
+    const part = { name, partNumber, quantity, location, supplier, category, tags, unit: 'pcs', condition: 'new', notes: '', ...(SAMPLE_LINKS[partNumber] && { link: SAMPLE_LINKS[partNumber] }), ...(name in SAMPLE_MINIMUMS && { minQuantity: SAMPLE_MINIMUMS[name] }) };
     ids.set(name, add('parts', { ...part, projectId, updatedBy: USER.email, updatedAt: hoursAgo(i + 1) }).id);
   });
   addParts(SAMPLE_PARTS, MAIN_PROJECT);

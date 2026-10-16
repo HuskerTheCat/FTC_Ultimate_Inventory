@@ -8,6 +8,7 @@ The ultimate inventory tool for FTC teams. Track each part's name, part number, 
 - **QR labels:** print labels for bins and parts, all at once or just the ones you pick. The app remembers which labels are printed, so new parts are easy to find. Scanning one with the app or a phone camera opens that bin or part.
 - **Package barcodes:** scan the barcode on a goBILDA, REV, AndyMark, ServoCity or TETRIX package and the app fills in the part's name, part number, supplier, category and product link from a built-in catalog of their parts (works offline). Typing one of their part numbers fills in the rest the same way. Scanning a part you already have opens it. A barcode the catalog doesn't know is remembered on the part you add for it.
 - **Organizing:** a fixed list of locations, units, condition, notes and a link on each part, a warning before adding a duplicate, grouping, sorting and a printable inventory sheet.
+- **Low-stock alerts:** give a part a **Low stock at** number and it's flagged once its quantity drops to that number. The **Low stock** filter lists just those parts.
 - **Subcategories and tags:** write categories like `Hardware/Screws` and tag parts (`spare`, `competition`) to filter by them.
 - **Trash:** deleted parts, projects, packing lists and orders wait in **Trash** for 30 days, so they can be brought back.
 - **CSV export and import:** save an inventory as a CSV file for a backup or a spreadsheet, or bring parts in from one. Import only adds parts and skips ones already there.

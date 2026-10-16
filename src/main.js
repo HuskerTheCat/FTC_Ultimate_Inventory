@@ -63,7 +63,7 @@ const TYPES = {
 };
 
 // The unfiltered view that "Reset filters" returns to.
-const DEFAULT_FILTERS = { search: '', category: '', location: '', tag: '', sort: 'name', sortDir: 1, group: '' };
+const DEFAULT_FILTERS = { search: '', category: '', location: '', tag: '', low: false, sort: 'name', sortDir: 1, group: '' };
 
 let fb = firebase;
 const app = document.getElementById('app');
@@ -139,6 +139,11 @@ const inUse = (partId) => usesOfPart(partId).filter(holdsPart).reduce((sum, u) =
 const onOrder = (partId) => state.orders.filter((o) => o.partId === partId).reduce((sum, o) => sum + o.quantity, 0);
 // None of the part has arrived yet: the team has none and some are on order.
 const waiting = (partId) => onOrder(partId) > 0 && !state.parts.find((p) => p.id === partId).quantity;
+// The inventory part is down to its "Low stock at" quantity or below. Parts without one are never low.
+const lowStock = (partId) => {
+  const part = state.parts.find((p) => p.id === partId);
+  return part.minQuantity != null && part.quantity <= part.minQuantity;
+};
 // Numeric so "Bin 2" sorts before "Bin 10".
 const naturalCompare = (a, b) => a.localeCompare(b, undefined, { numeric: true });
 const sameName = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
@@ -424,6 +429,7 @@ function renderInventory() {
         <select id="category"></select>
         <select id="location"></select>
         <select id="tag"></select>
+        <button id="low" class="secondary" aria-pressed="false">Low stock</button>
       </div>
       <div class="row">
         <span class="muted small">Sort</span>
@@ -474,6 +480,7 @@ function renderInventory() {
   app.querySelector('#category').onchange = (e) => { state.category = e.target.value; renderRows(); };
   app.querySelector('#location').onchange = (e) => { state.location = e.target.value; renderRows(); };
   app.querySelector('#tag').onchange = (e) => { state.tag = e.target.value; renderRows(); };
+  app.querySelector('#low').onclick = () => { state.low = !state.low; renderRows(); };
   app.querySelector('#reset-filters').onclick = resetFilters;
   app.querySelector('#print-labels').onclick = openLabelsDialog;
   app.querySelector('#sort').onchange = (e) => { Object.assign(state, { sort: e.target.value, sortDir: 1 }); renderRows(); };
@@ -532,7 +539,7 @@ function renderInventory() {
 }
 
 function switchProject(id) {
-  Object.assign(state, { projectId: id, search: '', category: '', location: '', tag: '', sort: 'name', sortDir: 1, selected: null });
+  Object.assign(state, { projectId: id, search: '', category: '', location: '', tag: '', low: false, sort: 'name', sortDir: 1, selected: null });
   app.querySelector('#search').value = '';
   renderRows();
 }
@@ -612,6 +619,7 @@ function visibleRows() {
     .filter((p) => !state.category || inCategory(p, state.category))
     .filter((p) => !state.location || p.location === state.location)
     .filter((p) => !state.tag || p.tags.includes(state.tag))
+    .filter((p) => !state.low || lowStock(p.id))
     .filter((p) => !query || matches(p, query))
     .sort(compareRows);
 }
@@ -655,7 +663,7 @@ function renderViewBar(columns) {
 
 // The Filters button counts the filters that hide parts, so a hidden filter is never forgotten.
 function renderFilterCount() {
-  const count = ['category', 'location', 'tag'].filter((key) => state[key] !== DEFAULT_FILTERS[key]).length;
+  const count = ['category', 'location', 'tag', 'low'].filter((key) => state[key] !== DEFAULT_FILTERS[key]).length;
   const badge = app.querySelector('#filter-count');
   badge.hidden = !count;
   badge.textContent = count;
@@ -674,6 +682,8 @@ function renderRows() {
   renderFilter('category', 'categories', categoryPaths(all), state.category, categoryLabel);
   renderFilter('location', 'locations', unique(all, 'location'), state.location);
   renderFilter('tag', 'tags', allTags(all), state.tag);
+  app.querySelector('#low').classList.toggle('active', state.low);
+  app.querySelector('#low').setAttribute('aria-pressed', String(state.low));
   app.querySelector('#reset-filters').hidden = Object.entries(DEFAULT_FILTERS).every(([key, value]) => state[key] === value);
   renderFilterCount();
   renderViewBar(columns);
@@ -703,7 +713,7 @@ function rowHtml(p, columns) {
     <tr data-id="${esc(p.id)}" class="${selected ? 'selected' : ''} ${p.packed ? 'packed' : ''} ${waiting(p.id) ? 'waiting' : ''}">
       ${state.selected ? `<td class="check"><input type="checkbox" aria-label="Select ${esc(p.name)}" ${selected ? 'checked' : ''} /></td>` : ''}
       ${label('packed') ? `<td data-label="Packed" class="packed"><input type="checkbox" data-packed="1" aria-label="Packed" ${p.packed ? 'checked' : ''} /></td>` : ''}
-      <td data-label="Item" class="name">${esc(p.name)}${orderBadge(p.id)}${conditionBadge(p.condition)}${notesLine(p.notes)}${tagChips(p.tags)}</td>
+      <td data-label="Item" class="name">${esc(p.name)}${lowBadge(p.id)}${orderBadge(p.id)}${conditionBadge(p.condition)}${notesLine(p.notes)}${tagChips(p.tags)}</td>
       <td class="card-meta muted small">${esc(cardMeta(p, !label('inUse')))}</td>
       <td data-label="Part #">${esc(p.partNumber)}${partLink(p)}</td>
       <td data-label="${label('quantity')}" class="qty">
@@ -738,6 +748,7 @@ const CSV_COLUMNS = [
   ['name', 'Item', ['name', 'item name', 'part name']],
   ['partNumber', 'Part #', ['part number', 'part no', 'part no.', 'sku']],
   ['quantity', 'Qty', ['quantity', 'count']],
+  ['minQuantity', 'Low stock at', ['minimum', 'min quantity', 'min qty']],
   ['unit', 'Unit', []],
   ['location', 'Location', ['bin']],
   ['supplier', 'Supplier', ['vendor']],
@@ -789,6 +800,10 @@ function csvPart(values, projectId) {
   if (!text('name')) return { problem: 'no item name' };
   const quantity = text('quantity') ? Number(text('quantity')) : 0;
   if (!Number.isInteger(quantity) || quantity < 0 || quantity > 1000000) return { problem: 'quantity not a whole number' };
+  const minQuantity = text('minQuantity') ? Number(text('minQuantity')) : null;
+  if (minQuantity !== null && (!Number.isInteger(minQuantity) || minQuantity < 0 || minQuantity > 1000000)) {
+    return { problem: 'low stock at not a whole number' };
+  }
   const condition = text('condition').toLowerCase();
   const link = webLink(text('link', 1000));
   return {
@@ -806,6 +821,7 @@ function csvPart(values, projectId) {
       tags: parseTags(text('tags')),
       ...(text('barcode') && { barcode: text('barcode') }),
       ...(link && { link }),
+      ...(minQuantity !== null && { minQuantity }),
     },
   };
 }
@@ -876,6 +892,7 @@ function importParts(parts, newLocations, fileName) {
     fb.moveToTrash({ kind: 'part', docId: id, name: data.name, data, uses: [] }, state.user))), 'deleted', name, 'Undo: removed after import'));
 }
 
+const lowBadge = (partId) => lowStock(partId) ? '<small class="badge low">Low stock</small>' : '';
 const orderBadge = (partId) => onOrder(partId) ? `<small class="badge on-order">${onOrder(partId)} on order</small>` : '';
 const conditionBadge = (condition) => ['used', 'broken'].includes(condition)
   ? `<small class="badge ${condition}">${CONDITIONS[condition]}</small>` : '';
@@ -1461,6 +1478,7 @@ function openPartDialog(part, carry = null, note = '') {
       ${input('partNumber', 'Part number')}
       ${input('barcode', 'Barcode', 'maxlength="200" placeholder="Scan a package to fill in"')}
       ${input('quantity', 'Quantity', 'type="number" min="0" step="1" required')}
+      ${input('minQuantity', 'Low stock at', 'type="number" min="0" max="1000000" step="1" placeholder="Flag at this many or fewer (optional)"')}
       <label>Location
         <select name="location">
           <option value="">No location</option>
@@ -1543,6 +1561,7 @@ function openPartDialog(part, carry = null, note = '') {
       return showError(new Error('That link is not a web address.'));
     }
     if (link) data.link = link;
+    if (form.minQuantity.value !== '') data.minQuantity = Number(form.minQuantity.value);
     if (part) return editPart(part, data);
     if (!confirmDuplicate(data)) return e.preventDefault();
     addPart(data);
@@ -1614,13 +1633,15 @@ function hideUndo() {
 }
 
 // Everything a part stores apart from who changed it last and when.
-// A barcode or link is only stored when the part has one, so parts without them still save under rules from before them.
+// A barcode, link or low-stock quantity is only stored when the part has one, so parts without them still save under
+// rules from before them.
 const partData = (part) => ({
   ...Object.fromEntries([...FIELDS, ...DETAIL_FIELDS].map(([key]) => [key, part[key] ?? ''])),
   projectId: part.projectId,
   tags: part.tags,
   ...(part.barcode && { barcode: part.barcode }),
   ...(part.link && { link: part.link }),
+  ...(part.minQuantity != null && { minQuantity: part.minQuantity }),
 });
 
 // Logs a change alongside its write rather than after the server confirms it, so an offline change
@@ -1629,9 +1650,10 @@ const logged = (write, action, partName, details) =>
   Promise.all([write, fb.logChange(me(), action, partName, details)]).catch(showError);
 
 // Every field an edit can change, with its name for the change log.
-const EDIT_FIELDS = [...FIELDS, ...DETAIL_FIELDS, ['barcode', 'Barcode'], ['link', 'Link'], ['tags', 'Tags']];
+const EDIT_FIELDS = [...FIELDS, ...DETAIL_FIELDS, ['barcode', 'Barcode'], ['link', 'Link'], ['minQuantity', 'Low stock at'], ['tags', 'Tags']];
 
-// The fields that differ from `before` to `after`, with their `after` values. A barcode or link that was taken off is null.
+// The fields that differ from `before` to `after`, with their `after` values. A barcode, link or low-stock quantity that
+// was taken off is null.
 const changedFields = (before, after) => Object.fromEntries(EDIT_FIELDS
   .filter(([key]) => String(before[key] ?? '') !== String(after[key] ?? ''))
   .map(([key]) => [key, after[key] ?? null]));
@@ -1822,7 +1844,7 @@ function toggleSelected(id) {
 // Value of the "Keep" option in the bulk edit pickers.
 const KEEP = '+keep';
 
-// Sets the location or category of every selected part, and adds or removes tags.
+// Sets the location, category or low-stock quantity of every selected part, and adds or removes tags.
 function openBulkEditDialog() {
   const dialog = app.querySelector('#dialog');
   const parts = state.parts.filter((p) => state.selected.has(p.id));
@@ -1845,6 +1867,9 @@ function openBulkEditDialog() {
           ${categoryPaths(state.parts).map((c) => `<option value="${esc(c)}">${esc(categoryLabel(c))}</option>`).join('')}
           <option value="${NEW_OPTION}">+ New category…</option>
         </select>
+      </label>
+      <label>Low stock at
+        <input name="minQuantity" type="number" min="0" max="1000000" step="1" placeholder="Keep each part's" />
       </label>
       <div class="field">Tags
         <div id="bulk-tags" class="tags"></div>
@@ -1894,12 +1919,14 @@ function openBulkEditDialog() {
     const set = (key) => (form[key].value === KEEP ? {} : { [key]: form[key].value });
     const edits = parts.map((p) => [p.id, partData(p), {
       ...partData(p), ...set('location'), ...set('category'),
+      ...(form.minQuantity.value !== '' && { minQuantity: Number(form.minQuantity.value) }),
       tags: parseTags([...p.tags.filter((t) => !remove.includes(t)), ...add].join(',')),
     }]).filter(([, before, after]) => describeEdit(before, after));
     if (!edits.length) return;
     const details = [
       form.location.value !== KEEP && `Location → ${form.location.value || '(blank)'}`,
       form.category.value !== KEEP && `Category → ${form.category.value || '(blank)'}`,
+      form.minQuantity.value !== '' && `Low stock at → ${form.minQuantity.value}`,
       add.length && `Tags + ${add.join(', ')}`,
       remove.length && `Tags − ${remove.join(', ')}`,
     ].filter(Boolean).join('; ').slice(0, 1990); // the rules' limit for log details, with room for "Undo: "
