@@ -75,7 +75,7 @@ Tap **+ Add part** and fill in what you know. Only the item name and quantity ar
 
 ![The Add part dialog, filled in from the part number](how-to/add-part.png)
 
-- **Type a goBILDA, REV, AndyMark, ServoCity or TETRIX part number** and the item name, supplier and product link fill in by themselves. Even faster: tap **Scan** and scan the barcode on the package.
+- **Type a goBILDA, REV, AndyMark, ServoCity or TETRIX part number** and the item name, supplier and product link fill in by themselves. Even faster: tap **Scan** next to Barcode and scan the barcode on the package.
 - **Low stock at** flags the part once its quantity drops to that number or below (optional).
 - **Location** comes from your team's list of locations (see [section 5](#5-locations-and-qr-labels)).
 - **Category** can have subcategories: `Electronics/Sensors` shows as Electronics › Sensors.

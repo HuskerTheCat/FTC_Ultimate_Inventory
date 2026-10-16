@@ -13,11 +13,13 @@ const loadDecoder = () => (decoder ??= prepareZXingModule({ overrides: { locateF
   }));
 loadDecoder().catch(() => {});
 
-// The app's own QR labels, and the barcodes suppliers print on packages (UPC/EAN numbers or part numbers).
-const READER_OPTIONS = { formats: ['QRCode', 'EANUPC', 'Code128', 'Code39'], tryHarder: true, maxNumberOfSymbols: 1 };
+// The barcodes suppliers print on packages (UPC/EAN numbers or part numbers).
+export const BARCODES = ['EANUPC', 'Code128', 'Code39'];
 
-// Shows the camera in the dialog and resolves with the text of the first QR code or barcode it sees, or null if cancelled.
-export function scanCode(dialog, title = 'Scan a label or barcode', hint = 'Point the camera at a QR label or the barcode on a part\'s package.') {
+// Shows the camera in the dialog and resolves with the text of the first code it sees, or null if cancelled.
+// By default it reads the app's own QR labels and package barcodes.
+export function scanCode(dialog, title = 'Scan a label or barcode', hint = 'Point the camera at a QR label or the barcode on a part\'s package.', formats = ['QRCode', ...BARCODES]) {
+  const options = { formats, tryHarder: true, maxNumberOfSymbols: 1 };
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>${title}</h2>
@@ -46,7 +48,7 @@ export function scanCode(dialog, title = 'Scan a label or barcode', hint = 'Poin
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           context.drawImage(video, 0, 0);
-          const [code] = await readBarcodes(context.getImageData(0, 0, canvas.width, canvas.height), READER_OPTIONS);
+          const [code] = await readBarcodes(context.getImageData(0, 0, canvas.width, canvas.height), options);
           if (code && open) {
             resolve(code.text);
             return dialog.close();

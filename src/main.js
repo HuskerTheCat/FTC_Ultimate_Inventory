@@ -1,7 +1,7 @@
 import QRCode from 'qrcode';
 import * as firebase from './firebase.js';
 import { parseFirebaseConfig, encodeJoinCode, decodeJoinCode, findTeam, newSecret } from './joincode.js';
-import { scanCode } from './scanner.js';
+import { scanCode, BARCODES } from './scanner.js';
 import { codeKey, findProduct } from './catalog.js';
 import { printLabels, printSheet } from './labels.js';
 import { toCsv, parseCsv } from './csv.js';
@@ -1008,6 +1008,24 @@ function autofillFromCatalog(form) {
   });
 }
 
+// Scans a package barcode into the part form, and fills the form's empty fields from the supplier catalog.
+async function scanBarcodeInto(form) {
+  const code = (await scanCode(app.querySelector('#ask'), 'Scan a barcode', 'Point the camera at the barcode on the part’s package.', BARCODES))?.trim();
+  if (!code) return;
+  form.barcode.value = code;
+  const product = await findProduct(code);
+  if (!product) return;
+  for (const key of ['name', 'partNumber', 'supplier', 'link']) {
+    if (!form[key].value) form[key].value = product[key] ?? '';
+  }
+  const category = product.category && canonicalCategory(product.category);
+  if (category && !form.category.value) {
+    if (![...form.category.options].some((o) => o.value === category)) form.category.add(new Option(categoryLabel(category), category), form.category.options.length - 1);
+    form.category.value = category;
+    form.category.dispatchEvent(new Event('change')); // so "+ New category…" falls back to it
+  }
+}
+
 // The part a code is saved on as its barcode or part number. Prefers the inventory on screen.
 function partWithCode(code) {
   const key = codeKey(code);
@@ -1476,7 +1494,12 @@ function openPartDialog(part, carry = null, note = '') {
       ${part && onOrder(part.id) ? `<p class="muted small">${onOrder(part.id)} on order. Tap Arrived in Orders when they come in.</p>` : ''}
       ${input('name', 'Item', 'required')}
       ${input('partNumber', 'Part number')}
-      ${input('barcode', 'Barcode', 'maxlength="200" placeholder="Scan a package to fill in"')}
+      <label>Barcode
+        <div class="password">
+          <input name="barcode" value="${esc(values?.barcode ?? '')}" maxlength="200" placeholder="Scan a package to fill in" />
+          <button type="button" id="scan-barcode" class="secondary" aria-label="Scan barcode">${ICON_SCAN}<span>Scan</span></button>
+        </div>
+      </label>
       ${input('quantity', 'Quantity', 'type="number" min="0" step="1" required')}
       ${input('minQuantity', 'Low stock at', 'type="number" min="0" max="1000000" step="1" placeholder="Flag at this many or fewer (optional)"')}
       <label>Location
@@ -1524,6 +1547,7 @@ function openPartDialog(part, carry = null, note = '') {
 
   watchNewCategory(form.category);
   autofillFromCatalog(form);
+  dialog.querySelector('#scan-barcode').onclick = () => scanBarcodeInto(form).catch(showError);
 
   const tagBox = dialog.querySelector('#part-tags');
   const addTag = dialog.querySelector('#add-tag');

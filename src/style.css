@@ -131,8 +131,8 @@ button:disabled { opacity: 0.4; cursor: default; }
 header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
 header h1 { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 header .row { flex-wrap: nowrap; }
-/* Buttons with an icon and a label: Scan and Filters. */
-:is(#scan, #filters-toggle) { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border-color: var(--border); }
+/* Buttons with an icon and a label: Scan, Filters and the part form's barcode Scan. */
+:is(#scan, #filters-toggle, #scan-barcode) { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border-color: var(--border); }
 /* Square icon buttons that open a menu: the header menu and More. */
 button.icon { width: 42px; padding: 0; background: var(--surface); color: var(--muted); border-color: var(--border); }
 button.icon svg { display: block; margin: 0 auto; }
