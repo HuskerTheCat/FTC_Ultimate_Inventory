@@ -10,6 +10,7 @@ The ultimate inventory tool for FTC teams. Track each part's name, part number, 
 - **Organizing:** a fixed list of locations, units, condition, notes and a link on each part, a warning before adding a duplicate, grouping, sorting and a printable inventory sheet.
 - **Subcategories and tags:** write categories like `Hardware/Screws` and tag parts (`spare`, `competition`) to filter by them.
 - **Trash:** deleted parts, projects, packing lists and orders wait in **Trash** for 30 days, so they can be brought back.
+- **CSV export and import:** save an inventory as a CSV file for a backup or a spreadsheet, or bring parts in from one. Import only adds parts and skips ones already there.
 - **Works offline:** no wifi at the venue? Keep editing. Changes are saved on the device and sync when it's back online. The website opens offline too, after it has been used online once.
 
 - **Try it:** [live demo with sample parts](https://huskerthecat.github.io/FTC_Ultimate_Inventory/?demo), no setup needed. Changes aren't saved.

@@ -4,6 +4,7 @@ import { parseFirebaseConfig, encodeJoinCode, decodeJoinCode, findTeam, newSecre
 import { scanCode } from './scanner.js';
 import { codeKey, findProduct } from './catalog.js';
 import { printLabels, printSheet } from './labels.js';
+import { toCsv, parseCsv } from './csv.js';
 import { startStatusBanners, checkRules } from './status.js';
 import { PROGRAMS, recordTeam, recordDeletedTeam, findTeamProject, teamProject, sendBugReport } from './hub.js';
 
@@ -411,6 +412,8 @@ function renderInventory() {
           <button id="select" class="menu-item">Select parts</button>
           <button id="print-labels" class="menu-item">Print QR labels</button>
           <button id="print-list" class="menu-item">Print list</button>
+          <button id="export-csv" class="menu-item">Export CSV</button>
+          <button id="import-csv" class="menu-item">Import CSV</button>
         </div>
       </div>
       <button id="add" disabled>+ Add part</button>
@@ -477,6 +480,8 @@ function renderInventory() {
   app.querySelector('#sort-dir').onclick = () => { state.sortDir = -state.sortDir; renderRows(); };
   app.querySelector('#group').onchange = (e) => { state.group = e.target.value; renderRows(); };
   app.querySelector('#print-list').onclick = printList;
+  app.querySelector('#export-csv').onclick = exportCsv;
+  app.querySelector('#import-csv').onclick = pickCsv;
   app.querySelector('#select').onclick = () => { state.selected = new Set(); renderRows(); };
   app.querySelector('#select-shown').onclick = () => { visibleRows().forEach((p) => state.selected.add(p.id)); renderRows(); };
   app.querySelector('#select-none').onclick = () => { state.selected.clear(); renderRows(); };
@@ -673,6 +678,8 @@ function renderRows() {
   renderFilterCount();
   renderViewBar(columns);
   app.querySelector('#add').textContent = usesParts ? '+ Add parts' : '+ Add part';
+  app.querySelector('#export-csv').hidden = usesParts;
+  app.querySelector('#import-csv').hidden = usesParts;
   app.querySelector('#add').disabled = false;
   app.querySelector('thead tr').innerHTML = (state.selected ? '<th aria-label="Selected"></th>' : '') + columns.map(([key, label]) =>
     `<th data-sort="${key}" class="${key === state.sort ? `sorted${state.sortDir < 0 ? ' desc' : ''}` : ''}">${label}</th>`).join('');
@@ -722,6 +729,151 @@ function printList() {
     rows.map((p) => [p.name, p.partNumber, `${p.quantity} ${p.unit ?? ''}`.trim(), p.location, categoryLabel(p.category)]),
   ]);
   printSheet(current.name, `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, groups);
+}
+
+// ---------- CSV export and import ----------
+
+// The columns of an export, which an import reads back. Import also takes a column under one of the other names.
+const CSV_COLUMNS = [
+  ['name', 'Item', ['name', 'item name', 'part name']],
+  ['partNumber', 'Part #', ['part number', 'part no', 'part no.', 'sku']],
+  ['quantity', 'Qty', ['quantity', 'count']],
+  ['unit', 'Unit', []],
+  ['location', 'Location', ['bin']],
+  ['supplier', 'Supplier', ['vendor']],
+  ['category', 'Category', []],
+  ['tags', 'Tags', []],
+  ['condition', 'Condition', []],
+  ['barcode', 'Barcode', []],
+  ['link', 'Link', ['url']],
+  ['notes', 'Notes', []],
+];
+
+// Saves every part of the inventory on screen as a CSV file, as a backup or to open in a spreadsheet.
+function exportCsv() {
+  // The Android app's web view can't save files.
+  if (window.Capacitor?.isNativePlatform()) return showError(new Error('The Android app can’t save files. Export from the website or the Windows app.'));
+  const current = currentProject();
+  const rows = inventoryParts(current.id).sort((a, b) => naturalCompare(a.name, b.name))
+    .map((p) => CSV_COLUMNS.map(([key]) => (key === 'tags' ? p.tags.join(', ') : p[key])));
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([toCsv([CSV_COLUMNS.map(([, label]) => label), ...rows])], { type: 'text/csv' }));
+  link.download = `${current.name} ${new Date().toISOString().slice(0, 10)}.csv`.replace(/[\\/:*?"<>|]/g, '-');
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
+function pickCsv() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.csv,text/csv';
+  input.onchange = () => input.files[0].text().then((text) => openImportDialog(input.files[0].name, parseCsv(text))).catch(showError);
+  input.click();
+}
+
+// Which CSV_COLUMNS key each column of the file is, by its name in the first row; null for columns the app doesn't know.
+function csvKeys(headers) {
+  const taken = new Set();
+  return headers.map((header) => {
+    const name = header.trim().toLowerCase();
+    const column = CSV_COLUMNS.find(([key, label, others]) => !taken.has(key) && [label.toLowerCase(), ...others].includes(name));
+    if (!column) return null;
+    taken.add(column[0]);
+    return column[0];
+  });
+}
+
+// A new part from a row of the file, or the reason the row can't be one.
+function csvPart(values, projectId) {
+  const text = (key, max = 200) => (values[key] ?? '').trim().slice(0, max);
+  if (!text('name')) return { problem: 'no item name' };
+  const quantity = text('quantity') ? Number(text('quantity')) : 0;
+  if (!Number.isInteger(quantity) || quantity < 0 || quantity > 1000000) return { problem: 'quantity not a whole number' };
+  const condition = text('condition').toLowerCase();
+  const link = webLink(text('link', 1000));
+  return {
+    part: {
+      projectId,
+      name: text('name'),
+      partNumber: text('partNumber'),
+      quantity,
+      location: text('location'),
+      supplier: text('supplier'),
+      category: canonicalCategory(text('category')).slice(0, 200),
+      unit: text('unit'),
+      condition: Object.hasOwn(CONDITIONS, condition) ? condition : '',
+      notes: text('notes', 1000),
+      tags: parseTags(text('tags')),
+      ...(text('barcode') && { barcode: text('barcode') }),
+      ...(link && { link }),
+    },
+  };
+}
+
+// Shows what a CSV file will add to the inventory on screen, then adds it. Parts already there (same name or part number) are
+// left out, so importing the same file twice adds nothing, and nothing already in the inventory is changed.
+function openImportDialog(fileName, rows) {
+  const current = currentProject();
+  const keys = csvKeys(rows[0] ?? []);
+  if (!keys.includes('name')) {
+    throw new Error(`The first row of ${fileName} needs column names, with one called Item. Export CSV shows the columns the app reads.`);
+  }
+  const existing = inventoryParts(current.id);
+  const parts = [];
+  const problems = {};
+  const skip = (problem) => { problems[problem] = (problems[problem] ?? 0) + 1; };
+  for (const row of rows.slice(1)) {
+    const { part, problem } = csvPart(Object.fromEntries(keys.map((key, i) => [key, row[i]]).filter(([key]) => key)), current.id);
+    if (problem) skip(problem);
+    else if (existing.some((p) => sameName(p.name, part.name) || (part.partNumber && p.partNumber === part.partNumber))) skip(`already in ${current.name}`);
+    else parts.push(part);
+  }
+  // A location is spelled the way the team (or the file's first row with it) spells it, ignoring capitals.
+  const spellings = new Map(state.locations.map((l) => [l.name.toLowerCase(), l.name]));
+  const newLocations = [];
+  for (const part of parts.filter((p) => p.location)) {
+    const key = part.location.toLowerCase();
+    if (!spellings.has(key)) {
+      spellings.set(key, part.location);
+      newLocations.push(part.location);
+    }
+    part.location = spellings.get(key);
+  }
+  const ignored = rows[0].filter((header, i) => !keys[i] && header.trim());
+
+  const dialog = app.querySelector('#dialog');
+  dialog.innerHTML = `
+    <form method="dialog" class="card">
+      <h2>Import ${countParts(parts.length)}</h2>
+      <p class="muted small">From ${esc(fileName)} into ${esc(current.name)}. Nothing already in ${esc(current.name)} is changed.</p>
+      <ul class="small">
+        <li>Columns read: ${esc(keys.filter(Boolean).map((key) => CSV_COLUMNS.find(([k]) => k === key)[1]).join(', '))}</li>
+        ${ignored.length ? `<li>Columns left out: ${esc(ignored.join(', '))}</li>` : ''}
+        ${Object.entries(problems).map(([problem, count]) => `<li>Skipped ${count}: ${esc(problem)}</li>`).join('')}
+        ${newLocations.length ? `<li>New locations: ${esc(newLocations.join(', '))}</li>` : ''}
+      </ul>
+      <ul class="members">${parts.slice(0, 5).map((p) => `<li><strong>${esc(p.name)}</strong>
+        <span class="muted small">${esc([`qty ${p.quantity}`, p.location, p.partNumber].filter(Boolean).join(' · '))}</span></li>`).join('')}
+        ${parts.length > 5 ? `<li class="muted small">and ${parts.length - 5} more</li>` : ''}</ul>
+      <div class="row">
+        <button value="import" ${parts.length ? '' : 'disabled'}>Import</button>
+        <button value="cancel" formnovalidate class="secondary">Cancel</button>
+      </div>
+    </form>`;
+  dialog.querySelector('form').onsubmit = (e) => {
+    if (e.submitter.value === 'import') importParts(parts, newLocations, fileName);
+  };
+  dialog.showModal();
+}
+
+// Adds the parts, and the locations they name that the team doesn't have yet. Undo moves the parts to the trash.
+function importParts(parts, newLocations, fileName) {
+  newLocations.forEach((name) => fb.addLocation(name).catch(showError));
+  const changes = parts.map((part) => [fb.newPartId(), part]);
+  const name = countParts(parts.length);
+  writeParts(changes, 'added', name, `Imported from ${fileName}`.slice(0, 1990));
+  offerUndo(`Imported ${name}`, () => logged(Promise.all(changes.map(([id, data]) =>
+    fb.moveToTrash({ kind: 'part', docId: id, name: data.name, data, uses: [] }, state.user))), 'deleted', name, 'Undo: removed after import'));
 }
 
 const orderBadge = (partId) => onOrder(partId) ? `<small class="badge on-order">${onOrder(partId)} on order</small>` : '';
