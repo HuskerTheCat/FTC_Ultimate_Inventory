@@ -104,7 +104,7 @@ The Filters button shows how many filters are on, so you never forget one. **Res
 
 ## 5. Locations and QR labels
 
-Your team keeps one list of locations (bins, shelves, drawers). Open **☰ → Locations** to add, rename or delete them, or print one bin's label. A location can only be deleted once no parts are in it.
+Your team keeps one list of locations (bins, shelves, drawers). Open **☰ → Locations** to add, rename or delete them, or print one bin's label. A location can only be deleted if there are no parts assigned to it.
 
 ![The Locations list](how-to/locations.png)
 
