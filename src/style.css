@@ -121,7 +121,6 @@ button {
   white-space: nowrap;
   cursor: pointer;
 }
-button:not([class]) { box-shadow: 0 6px 18px rgb(61 111 242 / 0.35); }
 button:not([class]):hover { filter: brightness(1.08); }
 button.secondary { background: var(--raised); color: var(--text); }
 button.secondary:hover { background: #283152; }
