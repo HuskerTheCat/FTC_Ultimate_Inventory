@@ -1,12 +1,17 @@
-// Banners above the app: one while offline, one when a newer version is out.
+import { getNews } from './hub.js';
+
+// Banners above the app: one while offline, one when a newer version is out, and the developer's news message.
 // The website compares its build id with the deployed version.json; the Windows and Android apps compare their
 // version with the latest GitHub release.
 const RELEASES_API = 'https://api.github.com/repos/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest';
 const RELEASES_PAGE = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest';
 const WEB_CHECK_MS = 15 * 60 * 1000;
+// The last news message this device closed, so it stays closed until the developer writes a new one.
+const CLOSED_NEWS_KEY = 'ftc-inventory-closed-news';
 
 const offlineBanner = document.getElementById('offline-banner');
 const updateBanner = document.getElementById('update-banner');
+const newsBanner = document.getElementById('news-banner');
 
 function showOffline() {
   offlineBanner.hidden = navigator.onLine;
@@ -34,7 +39,19 @@ async function checkApp() {
   if (tag_name !== `v${__APP_VERSION__}`) showUpdate(`Update available (${tag_name}), tap to download`, RELEASES_PAGE, '_blank');
 }
 
+async function showNews() {
+  const text = await getNews();
+  if (!text || text === localStorage.getItem(CLOSED_NEWS_KEY)) return;
+  newsBanner.querySelector('span').textContent = text;
+  newsBanner.querySelector('button').onclick = () => {
+    localStorage.setItem(CLOSED_NEWS_KEY, text);
+    newsBanner.hidden = true;
+  };
+  newsBanner.hidden = false;
+}
+
 export function startStatusBanners() {
+  showNews().catch(console.error);
   showOffline();
   addEventListener('online', showOffline);
   addEventListener('offline', showOffline);

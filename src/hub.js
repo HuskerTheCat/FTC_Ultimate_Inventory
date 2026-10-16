@@ -49,5 +49,12 @@ export async function findTeamProject(program, number) {
 export const recordDeletedTeam = (program, number, ownerKey, reason) =>
   moveTeam('teams', 'deleted', { program, number, ...(reason && { reason }) }, ownerKey);
 
+// A message from the developer for every user, like a planned outage. The developer writes it in the Firebase console
+// as the text field of news/current. Reading it sends nothing about the user.
+export async function getNews() {
+  const news = await getDoc(doc(db, 'news', 'current'));
+  return news.data()?.text?.trim() ?? '';
+}
+
 export const sendBugReport = (team, text) =>
   addDoc(collection(db, 'reports'), { team, text, version: __APP_VERSION__, at: serverTimestamp() });

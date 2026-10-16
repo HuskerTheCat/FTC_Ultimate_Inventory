@@ -1,7 +1,7 @@
 rules_version = '2';
 // Rules for the app developer's hub project (src/hub.js), not for team projects.
-// The app can only add teams, move them between lists, add bug reports, and look up one team by its number to find
-// its Firebase project. Nobody can list teams or read reports except in the Firebase console.
+// The app can only add teams, move them between lists, add bug reports, look up one team by its number to find
+// its Firebase project, and read the news message. Nobody can list teams or read reports except in the Firebase console.
 service cloud.firestore {
   match /databases/{database}/documents {
     function text(value, max) {
@@ -59,6 +59,11 @@ service cloud.firestore {
         && request.resource.data.ownerKey == get(owner(key)).data.ownerKey
         && !existsAfter(owner(key));
       allow delete: if existsAfter(team(key));
+    }
+
+    // The developer's message for every user, written in the Firebase console.
+    match /news/current {
+      allow get: if true;
     }
 
     match /reports/{reportId} {

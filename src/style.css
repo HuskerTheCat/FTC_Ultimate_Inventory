@@ -475,6 +475,10 @@ button.add-to svg { width: 16px; height: 16px; }
 .status-banner[hidden] { display: none; }
 .status-banner.offline { background: var(--surface); color: var(--muted); border-bottom: 1px solid var(--border); }
 .status-banner.update { background: var(--accent-gradient); color: var(--accent-text); }
+.status-banner.news { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 48px; background: var(--accent-gradient); color: var(--accent-text); }
+.status-banner.news[hidden] { display: none; }
+.status-banner.news span { flex: 1; overflow-wrap: anywhere; }
+.status-banner.news button { flex: none; width: 32px; min-height: 32px; padding: 0; border: none; background: none; box-shadow: none; color: inherit; font-size: 1.4rem; line-height: 1; }
 .status-banner.demo { background: var(--surface); color: var(--accent); border-bottom: 1px solid var(--border); }
 
 .toast {
