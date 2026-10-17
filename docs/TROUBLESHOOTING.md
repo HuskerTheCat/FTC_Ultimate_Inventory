@@ -81,7 +81,13 @@ The team admin skipped [step 2 of the setup guide](../SETUP.md#2-turn-on-email-s
 Only the admin sees this, when creating the team. Publish the app's rules ([step 3 of the setup guide](../SETUP.md#3-create-the-database)), then tap **Sign in** with the email and password you just used.
 
 **"Couldn't join 26706 Thunder Lab. Ask your team admin for a fresh join code."**
-That join code is old. The code changes whenever the admin resets it or removes someone from the team. Get the current one from the **Team** screen.
+That join code is old. The code changes whenever the admin resets it or removes someone from the team. Get the current one from the **Team** screen. If the code is current, update the app: older versions can't join teams whose rules check emails.
+
+**"Check your email" won't go away, or the email never came.**
+New members confirm their email once, when they join. Look in your spam or junk folder: the email comes from your team's Firebase project, not from the app. Tap **Send it again** if it's not there. Once you've opened the link, tap **I opened the link**. If the address shown is wrong, tap **Use a different email** and create the account again.
+
+**"Not confirmed yet. Open the link in the email, then try again."**
+The link hasn't been opened yet. Open the link in the email, then tap **I opened the link**.
 
 **"You no longer have access to 26706 Thunder Lab."**
 The team admin removed you from the team. If that was a mistake, ask them for the current join code, join again, and use **Sign in** (not **Create account**) with your old email and password.

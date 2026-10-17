@@ -412,7 +412,8 @@ function renderSignIn() {
         if (password.value.length < 8) throw new Error('Use a password with at least 8 characters.');
         if (!form.privacy.checked) throw new Error('Accept the privacy policy to create an account.');
         state.newName = username.value.trim();
-        await fb.signUp(email.value, password.value);
+        const { user } = await fb.signUp(email.value, password.value);
+        await fb.sendVerification(user);
       }
       else await fb.signIn(email.value, password.value);
     } catch (error) {
@@ -432,6 +433,41 @@ function renderSignIn() {
     }
   };
   app.querySelector('#switch').onclick = forgetConnection;
+}
+
+// Shown to someone joining with an email they haven't confirmed yet. Members who already joined never see it.
+function renderVerify(user, onVerified) {
+  app.innerHTML = `
+    <main class="center">
+      <h1>Check your email</h1>
+      <p>We sent a link to <strong class="email">${esc(user.email)}</strong>. Open it to confirm it’s your email, then come back here.</p>
+      <p class="muted">Not there? Check your spam or junk folder.</p>
+      <p id="error" class="error" hidden></p>
+      <div class="card">
+        <button id="verified">I opened the link</button>
+        <button id="resend" class="secondary">Send it again</button>
+      </div>
+      <button id="different" class="link">Use a different email</button>
+    </main>`;
+  app.querySelector('#verified').onclick = async (e) => {
+    try {
+      await fb.refreshUser(user);
+    } catch (error) {
+      return showError(error);
+    }
+    if (!user.emailVerified) return showError(new Error('Not confirmed yet. Open the link in the email, then try again.'));
+    e.target.disabled = true;
+    onVerified();
+  };
+  app.querySelector('#resend').onclick = async () => {
+    try {
+      await fb.sendVerification(user);
+      showError(new Error(`Sent again to ${user.email}.`));
+    } catch (error) {
+      showError(error);
+    }
+  };
+  app.querySelector('#different').onclick = () => fb.logOut();
 }
 
 function renderInventory() {
@@ -2472,7 +2508,7 @@ async function start() {
   fb.connect(state.connection.config);
   renderLoading();
   let stopWatching = [];
-  fb.watchUser(async (user) => {
+  const enterTeam = async (user) => {
     stopWatching.forEach((stop) => stop());
     state.user = null;
     state.loaded.clear();
@@ -2486,6 +2522,7 @@ async function start() {
       forgetSecret();
       await fb.ensureMainProject();
     } catch (error) {
+      if (error.code === 'unverified') return renderVerify(user, () => enterTeam(user));
       const creating = state.connection.role === 'owner' && state.connection.secret;
       state.signInError = error.code !== 'permission-denied' ? error
         // The owner's first sign-in creates the team, which only the app's rules allow.
@@ -2525,7 +2562,8 @@ async function start() {
       }, onError),
       fb.watchPrinted((docs) => { state.printed = new Set(docs.map((d) => d.id)); }, onError),
     ];
-  });
+  };
+  fb.watchUser(enterTeam);
 }
 
 // The website keeps its own files on the device so it opens offline (see sw.js). The apps ship with theirs.

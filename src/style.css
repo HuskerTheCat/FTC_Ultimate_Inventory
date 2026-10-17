@@ -51,6 +51,7 @@ a { color: var(--accent); }
   background: url(../public/icon.svg) center / contain no-repeat;
 }
 .center > .card { box-shadow: none; }
+.email { overflow-wrap: anywhere; }
 .center-text { text-align: center; padding: 32px 0; }
 /* Computers and tablets: the first screens sit in the middle of the window, with the logo beside the title
    and the welcome and setup cards two across, so they fit without scrolling. */

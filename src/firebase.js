@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import {
   getAuth, connectAuthEmulator, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  sendPasswordResetEmail, signOut,
+  sendPasswordResetEmail, sendEmailVerification, signOut,
 } from 'firebase/auth';
 import {
   initializeFirestore, connectFirestoreEmulator, persistentLocalCache, persistentMultipleTabManager, terminate, clearIndexedDbPersistence,
@@ -28,6 +28,12 @@ export const watchUser = (callback) => onAuthStateChanged(auth, callback);
 export const signIn = (email, password) => signInWithEmailAndPassword(auth, email, password);
 export const signUp = (email, password) => createUserWithEmailAndPassword(auth, email, password);
 export const resetPassword = (email) => sendPasswordResetEmail(auth, email);
+export const sendVerification = (user) => sendEmailVerification(user);
+// Picks up a verification link the user just opened, and refreshes the sign-in token the rules check it in.
+export async function refreshUser(user) {
+  await user.reload();
+  await user.getIdToken(true);
+}
 export const logOut = () => signOut(auth);
 
 // Wipes the copy of the team's data this device keeps for offline use, so the next person to use it can't read it.
@@ -47,6 +53,8 @@ export async function ensureMembership(user, connection, name, acceptedPrivacy) 
   if (await isMember(memberRef)) return false;
   if (!connection.secret) throw new Error(`You're not on ${connection.teamName}. Ask your team admin for the join code.`);
   if (!acceptedPrivacy) throw new Error(`Accept the privacy policy to join ${connection.teamName}.`);
+  // New members confirm their email first, so a mistyped one can't be taken over later with Forgot password?.
+  if (!user.emailVerified) throw Object.assign(new Error('Confirm your email to join.'), { code: 'unverified' });
   const created = connection.role === 'owner' && await createTeam(user, connection);
   await setDoc(memberRef, { email: user.email, name, secret: connection.secret, joinedAt: serverTimestamp() });
   return created;

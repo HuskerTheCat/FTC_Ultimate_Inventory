@@ -33,7 +33,7 @@ Open **☰ → Team**. New teammates scan the QR code on your screen, or you sen
 Check the Members list every so often, and at least at the end of each season:
 
 - **Remove people who've left**, especially graduates who signed up with a school email.
-- **Remove emails that look wrong**, like `jordan@gmial.com` above. The app doesn't check that an email is real, so whoever ends up with that inbox (a typo'd address someone else registers, or a school address given to a new student later) could use **Forgot password?** and get into your team. If the person is real, ask them to join again with the right email.
+- **Remove emails that look wrong**, like `jordan@gmial.com` above. New members confirm their email when they join, but people who joined before the app checked emails didn't. Whoever ends up with a wrong or old inbox (a typo'd address someone else registers, or a school address given to a new student later) could use **Forgot password?** and get into your team. If the person is real, ask them to join again with the right email.
 
 To remove someone, tap **Remove** next to their name. This:
 
