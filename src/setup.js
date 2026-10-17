@@ -58,7 +58,8 @@ async function databaseProblem(projectId) {
   const join = await readDoc(projectId, 'join/info');
   if (join === 'no-database') return { step: 3, text: 'There’s no Firestore database yet.', page: DATABASE_PAGE };
   if (join === 'denied') return { step: 3, text: 'The app’s rules aren’t published yet.', page: RULES_PAGE };
-  if (join === 'exists') return { text: 'This Firebase project already has a team. Use Sign in to your team or Join a team instead.' };
+  // The owner can sign in to it from here, which also puts it back on the central team list if it went missing (see main.js).
+  if (join === 'exists') return { text: 'This Firebase project already has a team.', existingTeam: true };
   if (await readDoc(projectId, 'rulesCheck/open') !== 'denied') {
     return { step: 3, text: 'The published rules let anyone read your inventory (test mode). Publish the app’s rules instead.', page: RULES_PAGE };
   }

@@ -43,9 +43,13 @@ service cloud.firestore {
     }
 
     // Never read by anyone; only these rules compare it.
+    // If a team goes missing from the list but its owner key stays, the owner can put the team back by showing the same key.
     match /owners/{key} {
       allow create: if request.resource.data.keys().hasOnly(['ownerKey'])
         && text(request.resource.data.ownerKey, 100) && request.resource.data.ownerKey.size() >= 10
+        && !exists(team(key)) && existsAfter(team(key));
+      allow update: if request.resource.data.keys().hasOnly(['ownerKey'])
+        && request.resource.data.ownerKey == resource.data.ownerKey
         && !exists(team(key)) && existsAfter(team(key));
       allow delete: if !exists(deleted(key)) && existsAfter(deleted(key));
     }

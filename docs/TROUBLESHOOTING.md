@@ -68,8 +68,10 @@ The code was mistyped or cut off. Ask your admin to use the **Copy** button next
 **"No team found. Ask your team admin for the join code."**
 The app couldn't find a team for that code or number. Check the code with your admin. If you're the admin and this happens right after setup, make sure you finished [creating the team in the app](../SETUP.md#5-create-your-team-in-the-app) and [published the rules](../SETUP.md#3-create-the-database).
 
-**"FTC team 26706 can't sign in by number yet. Join with your team's join code instead."**
-Your team isn't on the central team list yet. It gets added the next time the admin opens the app online on the device they set the team up on. Until then, use **Join a team** with the join code, then **Sign in** with your existing email and password.
+**"FTC team 26706 can't sign in by number yet. Join with your team's join code instead. Team admins can sign in from Set up a new team."**
+Your team isn't on the central team list. It gets added (or added back) the next time the admin opens the app online on a device where they set up the team or signed in by team number. Until then, use **Join a team** with the join code, then **Sign in** with your existing email and password.
+
+If you're the admin and no device is signed in to the team, choose **Start setup**, fill in your team number and paste your team's `firebaseConfig` again, then click **Create team**. The app sees the team already exists: click **Sign in to it** and sign in with your admin email and password. Your team goes back on the list, so teammates can sign in by number again.
 
 **"You're not on 26706 Thunder Lab. Ask your team admin for the join code."**
 **Sign in to your team** is only for people already on the team. If you're new, choose **Use a different team**, then **Join a team** with the join code and create your account.
@@ -118,7 +120,7 @@ Before creating the team, the app checks your Firebase project. Each line names 
 - **The app's rules aren't published yet:** on the setup screen, click **Copy rules**, then paste them in the database's **Rules** tab and click **Publish**.
 - **The published rules let anyone read your inventory (test mode):** same fix. Test mode leaves the inventory open to anyone.
 - **The pasted connection info doesn't match a Firebase project:** copy the `firebaseConfig` block again ([step 4](../SETUP.md#4-copy-your-connection-info)).
-- **This Firebase project already has a team:** the team was already created. Use **Sign in to your team** or **Join a team** instead.
+- **This Firebase project already has a team:** the team was already created. Click **Sign in to it** and sign in with your email and password.
 
 Then click **Create team** again.
 

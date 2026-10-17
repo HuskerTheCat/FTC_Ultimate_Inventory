@@ -292,7 +292,8 @@ function renderWelcome() {
     e.preventDefault();
     try {
       const { program, teamNumber } = e.target;
-      saveConnection({ ...await findTeam(await findTeamProject(program.value, Number(teamNumber.value))), role: 'member' });
+      const number = Number(teamNumber.value);
+      saveConnection({ ...await findTeam(await findTeamProject(program.value, number)), program: program.value, teamNumber: number, role: 'member' });
     } catch (error) {
       showError(error);
     }
@@ -354,11 +355,15 @@ function renderSetup() {
       const config = parseFirebaseConfig(form.config.value);
       const problems = await setupProblems(config);
       list.hidden = !problems.length;
-      list.innerHTML = problems.map(({ step, text, page }) => `<li>
+      list.innerHTML = problems.map(({ step, text, page, existingTeam }) => `<li>
         ${step ? `<strong>Step ${step}:</strong> ` : ''}${esc(text)}
         ${page ? `<a href="${esc(consolePage(config.projectId, page))}" target="_blank" rel="noopener">Fix it in Firebase</a>` : ''}
+        ${existingTeam ? '<button type="button" id="signin-existing" class="link inline">Sign in to it</button>' : ''}
       </li>`).join('') + (problems.some((problem) => problem.step) ? '<li class="muted">Then click Create team again.</li>' : '');
-      if (!problems.length) saveConnection({ config, secret: newSecret(), teamName: form.teamName.value.trim(), program: form.program.value, teamNumber: Number(form.teamNumber.value), role: 'owner' });
+      const team = { program: form.program.value, teamNumber: Number(form.teamNumber.value) };
+      const signInExisting = list.querySelector('#signin-existing');
+      if (signInExisting) signInExisting.onclick = () => findTeam(config.projectId).then((found) => saveConnection({ ...found, ...team, role: 'member' })).catch(showError);
+      if (!problems.length) saveConnection({ config, secret: newSecret(), teamName: form.teamName.value.trim(), ...team, role: 'owner' });
     } catch (error) {
       showError(error);
     } finally {
@@ -2435,14 +2440,16 @@ async function deleteTeam() {
 // ---------- startup ----------
 
 // Puts the team on the developer's team list (see hub.js), so teammates can sign in by team number.
-// Checked each time the app opens on the device that set up the team, so a try that failed (say, offline) is made again,
-// and the owner hears about it when the number is already taken.
+// Checked each time the owner opens the app on a device that knows the team number (set up there, signed in by number,
+// or signed in from Set up a new team), so a try that failed (say, offline) is made again, a team that went missing
+// from the list is put back, and the owner hears about it when the number is already taken.
 // The owner key is saved in the team's own project first, so the owner can always take the team off the list later.
 // Test teams on the local emulators ("demo-" project IDs) stay off the real list.
-async function registerTeam() {
+async function registerTeam(user) {
   const { teamName, program, teamNumber, config } = state.connection;
-  if (config.projectId.startsWith('demo-')) return;
-  if (!navigator.onLine || await teamProject(program, teamNumber) === config.projectId) return;
+  if (!teamNumber || config.projectId.startsWith('demo-') || !navigator.onLine) return;
+  if ((await fb.getTeam()).owner !== user.uid) return;
+  if (await teamProject(program, teamNumber) === config.projectId) return;
   let ownerKey = await fb.getOwnerKey();
   if (!ownerKey) {
     ownerKey = newSecret();
@@ -2526,7 +2533,7 @@ async function start() {
       const createdTeam = await fb.ensureMembership(user, state.connection, state.newName || nameOf({ email: user.email }), state.acceptedPrivacy);
       // Signing in by team number reads join/info, so it must exist before the owner ever opens Team.
       if (createdTeam) fb.setJoinInfo(state.connection.config, state.connection.teamName).catch(showError);
-      if (state.connection.role === 'owner') registerTeam().catch(showError);
+      registerTeam(user).catch(showError);
       state.newName = null;
       forgetSecret();
       await fb.ensureMainProject();

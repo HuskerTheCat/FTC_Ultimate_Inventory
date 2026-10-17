@@ -34,7 +34,8 @@ async function moveTeam(from, to, data, ownerKey) {
   await batch.commit();
 }
 
-// A new team, or a deleted team signing up again under the same number. The rules refuse a team that's active.
+// A new team, a deleted team signing up again under the same number, or a team put back after it went missing from
+// the list (its owner key is the same, so the rules let it be written again). The rules refuse a team that's active.
 export const recordTeam = (name, program, number, projectId, ownerKey) =>
   moveTeam('deleted', 'teams', { name, program, number, projectId }, ownerKey);
 
@@ -45,7 +46,7 @@ export const teamProject = async (program, number) =>
 // Lets teammates sign in on a new device with their team number instead of a join code.
 export async function findTeamProject(program, number) {
   const projectId = await teamProject(program, number);
-  if (!projectId) throw new Error(`${program} team ${number} can't sign in by number yet. Join with your team's join code instead.`);
+  if (!projectId) throw new Error(`${program} team ${number} can't sign in by number yet. Join with your team's join code instead. Team admins can sign in from Set up a new team.`);
   return projectId;
 }
 
