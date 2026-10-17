@@ -9,7 +9,7 @@ const PARALLEL = 4;
 // A supplier with fewer parts than this means its store changed and this script needs updating.
 const MIN_PARTS = 50;
 
-// Each supplier's parts as { partNumber, upc, name, category, url }. Earlier suppliers win when two list the same part number,
+// Each supplier's parts as { partNumber, upc, name, category, url, image }, where image is the link to the supplier's photo. Earlier suppliers win when two list the same part number,
 // so goBILDA's own listing beats ServoCity's copy of it.
 const SUPPLIERS = {
   goBILDA: () => bigCommerce('https://www.gobilda.com'),
@@ -119,7 +119,11 @@ async function readBigCommercePage(site, url, html, variants) {
   const { sku, upc } = attributes;
   const name = cleanName(title[1]);
   const supplierCategory = [...(html.match(/\\"category\\":\[(.*?)\]/)?.[1] ?? '').matchAll(/\\"(.*?)\\"/g)].map((m) => m[1]).join(' ');
-  const part = (partNumber, code, partName) => ({ partNumber, upc: code ?? '', name: partName, category: categoryOf(partName, supplierCategory), url });
+  // The page's preview photo is already small (about 500 pixels), so it's used as is. A family page's parts share it.
+  // Read through URL so it's a new string: a piece cut from the page would keep the whole page in memory.
+  const photo = html.match(/<meta property="og:image" content="([^"]+)"/)?.[1];
+  const image = photo ? new URL(photo.replaceAll('&amp;', '&')).href : '';
+  const part = (partNumber, code, partName) => ({ partNumber, upc: code ?? '', name: partName, category: categoryOf(partName, supplierCategory), url, image });
   if (sku && !/^(rd-|parent_)/.test(sku)) return part(sku, upc, name);
   if (!variants) return null;
 
@@ -155,7 +159,10 @@ async function shopify(site, include = () => true) {
   return products.flatMap((product) => product.variants.filter((v) => v.sku).map((variant) => {
     const name = cleanName(variant.title === 'Default Title' ? product.title : `${product.title} (${variant.title})`);
     const url = `${site}/products/${product.handle}${variant.title === 'Default Title' ? '' : `?variant=${variant.id}`}`;
-    return { partNumber: variant.sku.trim(), upc: '', name, category: categoryOf(name, `${product.product_type} ${product.tags.join(' ')}`), url };
+    // Shopify's photos are full size; its image server sends a 320 pixel wide copy when asked.
+    const photo = (variant.featured_image ?? product.images[0])?.src;
+    const image = photo ? `${photo}${photo.includes('?') ? '&' : '?'}width=320` : '';
+    return { partNumber: variant.sku.trim(), upc: '', name, category: categoryOf(name, `${product.product_type} ${product.tags.join(' ')}`), url, image };
   }));
 }
 
@@ -184,7 +191,8 @@ async function nopCommerce(site, listing) {
     if (!product?.sku) return null;
     const name = cleanName(product.name);
     const supplierCategory = data.find((d) => d['@type'] === 'BreadcrumbList').itemListElement.map((i) => i.item.name).join(' ');
-    return { partNumber: product.sku.trim(), upc: product.gtin12 ?? product.gtin13 ?? '', name, category: categoryOf(name, supplierCategory), url };
+    const image = [product.image ?? ''].flat()[0];
+    return { partNumber: product.sku.trim(), upc: product.gtin12 ?? product.gtin13 ?? '', name, category: categoryOf(name, supplierCategory), url, image };
   });
   return parts.filter(Boolean);
 }
@@ -213,8 +221,8 @@ const catalog = {};
 for (const [supplier, parts] of Object.entries(bySupplier)) {
   for (const part of parts) if (upcCounts.get(upcKey(part.upc)) > 1) part.upc = '';
   parts.sort((a, b) => a.partNumber.localeCompare(b.partNumber));
-  catalog[supplier] = parts.map((p) => [p.partNumber, p.upc, p.name, p.category, p.url]);
-  console.log(`${supplier}: ${parts.length} parts, ${parts.filter((p) => p.upc).length} with UPCs, ${parts.filter((p) => p.category).length} with categories`);
+  catalog[supplier] = parts.map((p) => [p.partNumber, p.upc, p.name, p.category, p.url, p.image]);
+  console.log(`${supplier}: ${parts.length} parts, ${parts.filter((p) => p.upc).length} with UPCs, ${parts.filter((p) => p.category).length} with categories, ${parts.filter((p) => p.image).length} with photos`);
 }
 
 // One part per line, so updates show up as readable diffs.

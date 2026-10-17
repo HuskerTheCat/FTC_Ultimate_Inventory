@@ -79,7 +79,7 @@ Tap **+ Add part**. The quickest way to fill it in is **Search the parts catalog
 
 <img src="how-to/catalog-search.png" alt="Searching the parts catalog in Add part" width="480">
 
-The part's name, part number, supplier, category and product link fill in. Add how many you have and where they are, and **Save**. Only the item name and quantity are required, so parts that aren't in the catalog are just typed in.
+The part's name, part number, supplier, category and product link fill in, and the supplier's photo of the part shows at the top when you're online. Add how many you have and where they are, and **Save**. Only the item name and quantity are required, so parts that aren't in the catalog are just typed in.
 
 <img src="how-to/add-part.png" alt="The Add part dialog, filled in from the catalog" width="480">
 

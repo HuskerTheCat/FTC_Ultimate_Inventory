@@ -12,8 +12,8 @@ function index(catalog) {
   const byCode = new Map();
   const all = [];
   for (const [supplier, parts] of Object.entries(catalog)) {
-    for (const [partNumber, upc, name, category, link] of parts) {
-      const product = { supplier, partNumber, name, category, link };
+    for (const [partNumber, upc, name, category, link, image] of parts) {
+      const product = { supplier, partNumber, name, category, link, image };
       all.push({ product, text: `${name} ${partNumber} ${supplier}`.toLowerCase() });
       for (const code of [upc, partNumber].filter(Boolean)) {
         if (!byCode.has(codeKey(code))) byCode.set(codeKey(code), product);

@@ -1344,7 +1344,20 @@ async function scanBarcodeInto(form) {
     if (!form[key].value) form[key].value = product[key] ?? '';
   }
   if (product.category && !form.category.value) setCategory(form.category, canonicalCategory(product.category));
+  showCatalogPhoto(form);
 }
+
+// Shows the supplier's photo of the part number in the part form, when the catalog has one.
+// Photos load from the supplier's website, so offline they're left out.
+async function showCatalogPhoto(form) {
+  const photo = form.querySelector('.part-photo');
+  const image = (await findProduct(form.partNumber.value).catch(() => null))?.image;
+  photo.hidden = !image;
+  if (image) photo.src = image;
+}
+
+// A catalog part's photo for the catalog search results. It sends the supplier's website no address of the page it's on.
+const catalogThumb = (image) => `<img class="thumb" src="${esc(image)}" alt="" loading="lazy" referrerpolicy="no-referrer" />`;
 
 // Lists catalog parts matching what's typed in the part form's catalog search, from every supplier or the one picked.
 // Picking a part fills in its name, part number, supplier, link and category, leaving quantity and location to the user.
@@ -1358,6 +1371,7 @@ function searchCatalogInto(form, field) {
   const pick = (product) => {
     for (const key of ['name', 'partNumber', 'supplier', 'link']) form[key].value = product[key] ?? '';
     if (product.category) setCategory(form.category, canonicalCategory(product.category));
+    showCatalogPhoto(form);
     search.value = '';
     list.hidden = true;
     form.quantity.focus();
@@ -1372,6 +1386,7 @@ function searchCatalogInto(form, field) {
     if (results instanceof Error) return (list.innerHTML = `<li class="muted small">${esc(results.message)}</li>`);
     found = results;
     list.innerHTML = found.map((p, i) => `<li><button type="button" class="secondary" data-index="${i}">
+        ${p.image ? catalogThumb(p.image) : '<span class="thumb"></span>'}
         <span><strong>${esc(p.name)}</strong><span class="muted small">${esc(p.supplier)} · ${esc(p.partNumber)}</span></span>
       </button></li>`).join('') || '<li class="muted small">No catalog parts match. Fill in the part yourself below.</li>';
   };
@@ -1385,6 +1400,8 @@ function searchCatalogInto(form, field) {
     const index = e.target.closest('button')?.dataset.index;
     if (index !== undefined) pick(found[index]);
   };
+  // A photo that can't load (offline) leaves an empty space, so the names stay lined up.
+  list.addEventListener('error', (e) => (e.target.style.visibility = 'hidden'), true);
 }
 
 // Picks a category in a form's category picker, adding it to the picker when no part uses it yet.
@@ -1898,7 +1915,10 @@ function openPartDialog(part, carry = null, note = '') {
 
   dialog.innerHTML = `
     <form method="dialog" class="card part-form">
-      <h2>${part ? 'Edit part' : 'Add part'}</h2>
+      <div class="part-head">
+        <h2>${part ? 'Edit part' : 'Add part'}</h2>
+        <img class="part-photo" alt="" referrerpolicy="no-referrer" hidden />
+      </div>
       ${carry?.added ? `<p class="muted small">${carry.added} added so far. Location, category and tags are kept from the last part.</p>` : ''}
       ${note ? `<p class="muted small">${esc(note)}</p>` : ''}
       ${part && onOrder(part.id) ? `<p class="muted small">${onOrder(part.id)} on order. Tap Arrived in Orders when they come in.</p>` : ''}
@@ -1975,6 +1995,10 @@ function openPartDialog(part, carry = null, note = '') {
   watchNewCategory(form.category);
   watchNewLocation(form.location);
   autofillFromCatalog(form);
+  const photo = dialog.querySelector('.part-photo');
+  photo.onerror = () => (photo.hidden = true);
+  form.partNumber.addEventListener('input', () => showCatalogPhoto(form));
+  showCatalogPhoto(form);
   if (!part) searchCatalogInto(form, dialog.querySelector('.catalog-search'));
   dialog.querySelector('#scan-barcode').onclick = () => scanBarcodeInto(form).catch(showError);
 

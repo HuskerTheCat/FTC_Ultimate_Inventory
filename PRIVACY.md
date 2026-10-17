@@ -12,6 +12,10 @@ That's all. Users names, emails, passwords, accounts, parts lists, projects, and
 
 **Firebase is run by Google under [Google's privacy policy](https://policies.google.com/privacy).**
 
+## Supplier photos
+
+Part photos from the parts catalog load straight from the supplier's own website (goBILDA, REV, AndyMark, ServoCity, TETRIX or Studica). Like any website, the supplier can see your device's IP address when one of its photos loads. The app sends them nothing else about you or your team.
+
 ## Removal and questions
 
 To have your team's name and number removed, or to ask anything about this policy, open an issue at [github.com/HuskerTheCat/FTC_Ultimate_Inventory/issues](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/issues) or send a bug report from the app.
