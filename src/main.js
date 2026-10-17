@@ -272,14 +272,14 @@ function renderWelcome() {
         </div>
       </form>
       <div class="card">
-        <h2>Just looking?</h2>
-        <p class="muted">Try the app with sample parts. Nothing is saved.</p>
-        <button id="demo" class="secondary">Try the demo</button>
-      </div>
-      <div class="card">
         <h2>Set up a new team</h2>
         <p class="muted">For one person per team, once. Your team gets its own free Firebase project.</p>
         <button id="setup" class="secondary">Start setup</button>
+      </div>
+      <div class="card">
+        <h2>Just looking?</h2>
+        <p class="muted">Try the app with sample parts. Nothing is saved.</p>
+        <button id="demo" class="secondary">Try the demo</button>
       </div>
     </main>
     <dialog id="dialog"></dialog>`;
