@@ -52,9 +52,9 @@ A brand-new team's inventory is empty, so it shows **Add your first parts** with
 
 1. **List picker.** Switch between inventories, projects and packing lists, or make a new one.
 2. **Rename or delete** the inventory, project or list you're looking at.
-3. **Scan.** Scan a QR label to open that bin or part, or a supplier package barcode to find or add that part.
+3. **Scan.** Scan a QR label to open that bin or part, or a supplier package barcode to find or add that part. A part you already have opens with big **−** and **+** buttons, so taking one or putting some back is two taps; **Edit part** opens everything else.
 4. **☰ menu.** Orders, Locations, Change log, Trash, Team, Report bug and Sign out.
-5. **Search** by name, part number, barcode, supplier, location, category, condition or notes.
+5. **Search** by name, part number, barcode, supplier, location, category, condition or notes. Each word can match anywhere, so `m4 screw` finds *M4 x 8mm socket head screw*.
 6. **Filters.** Filter, sort and group the list.
 7. **⋯ menu.** Select parts, Print QR labels, Print list, Export CSV and Import CSV.
 8. **Add part.**
@@ -84,7 +84,9 @@ Tap **+ Add part** and fill in what you know. Only the item name and quantity ar
 - **Location** comes from your team's list of locations (see [section 5](#5-locations-and-qr-labels)). Pick **+ New location…** to add one without leaving the part.
 - **Category** can have subcategories: `Electronics/Sensors` shows as Electronics › Sensors.
 - **Tags** are short labels like `spare` or `competition`. Tap a tag on any part to show only parts with that tag.
+- **More details** holds the unit, condition and notes. It opens by itself on parts that have any of them.
 - **Save and add another** keeps the location, category and tags for the next part, which is handy when you're entering a whole bin.
+- If you're filtered to one location (or just scanned a bin's label), **+ Add part** starts in that location.
 
 The app warns you before adding a part with the same name or part number as one you already have.
 
@@ -94,7 +96,7 @@ To change a part, tap it, edit, and **Save**. To change just the quantity, use *
 
 ## 4. Find parts fast
 
-Type in **Search** to narrow the list as you type. **Filters** opens more options:
+Type in **Search** to narrow the list as you type. If parts in your other inventories match too, a line under the list says where (for example *Also found in Pit spares (2)*); tap it to search there. **Filters** opens more options:
 
 - **Filter** by category, location or tag, or tap **Low stock** to see only parts that need restocking.
 - **Sort** by any column, or by **Recently changed**.
@@ -112,7 +114,7 @@ Your team keeps one list of locations (bins, shelves, drawers). Open **☰ → L
 
 ![The Locations list](how-to/locations.png)
 
-**QR labels** are printed from **⋯ → Print QR labels**. Stick them on bins and parts. Scanning one with the app's **Scan** button, or with any phone camera, opens that bin (showing just its parts) or that part.
+**QR labels** are printed from **⋯ → Print QR labels**. Stick them on bins and parts. Scanning one with the app's **Scan** button, or with any phone camera, opens that bin (showing just its parts) or that part, ready to take one with **−**.
 
 The app remembers which labels you've printed, so only new ones are checked. The list follows your filters, so filter to one location first to print just its labels. A single part's label can also be printed from its dialog with **Print label**.
 
@@ -131,7 +133,7 @@ Open the **list picker** at the top to switch views or make a new one with **New
 
 - **Inventory**: holds parts. Every team starts with **Main Inventory**, and you can add more (for example *Pit spares*).
 - **Project**: the parts a robot or build uses, picked from any inventory. Parts used by a project stay in their inventory but show as **in use**, so the inventory shows how many are still free.
-- **Packing list**: what to bring to a competition. Check parts off as you pack them. Only checked parts count as in use, so unchecking them when you get home frees them again.
+- **Packing list**: what to bring to a competition. Check parts off as you pack them. Only checked parts count as in use, so unchecking them when you get home frees them again. The list shows how many are packed (*Packed 3 of 7*), and **⋯ → Unpack all** unchecks everything at once after an event (it asks first, and **Undo** packs them again).
 
 In a project or packing list, **+ Add parts** opens a list of every part in every inventory; tap a part to add one more. Use **−** and **+** to change how many it uses, or tap the part to type a number or remove it.
 

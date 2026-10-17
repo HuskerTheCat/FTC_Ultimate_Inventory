@@ -89,8 +89,9 @@ const nameByUid = (uid, fallback) => state.members.find((m) => m.uid === uid)?.n
 const sorted = (values) => [...new Set(values)].filter(Boolean).sort((a, b) => a.localeCompare(b));
 const unique = (rows, key) => sorted(rows.map((p) => p[key]));
 const allTags = (rows) => sorted(rows.flatMap((p) => p.tags));
-const matches = (part, query) => SEARCH_KEYS.some((key) => String(part[key] ?? '').toLowerCase().includes(query))
-  || part.tags.some((t) => t.includes(query));
+// Every word of the search has to be in some field or tag, so "m4 screw" finds "M4 x 8mm socket head screw".
+const matches = (part, query) => query.split(/\s+/).filter(Boolean).every((word) =>
+  SEARCH_KEYS.some((key) => String(part[key] ?? '').toLowerCase().includes(word)) || part.tags.some((t) => t.includes(word)));
 
 // A "/" in a category separates levels, so "Hardware/Screws" also lists (and filters as) "Hardware".
 // Capitalization is ignored, so "electronics" and "Electronics" are one category (the first spelling wins).
@@ -462,6 +463,7 @@ function renderInventory() {
       </div>
       <button id="edit-project" class="icon" aria-label="Rename or delete" title="Rename or delete">${ICON_EDIT}</button>
     </div>
+    <p id="packed-count" class="muted small" hidden></p>
     <div class="toolbar">
       <input id="search" type="search" placeholder="Search parts…" />
       <button id="filters-toggle" class="secondary" aria-expanded="false" aria-controls="filters">${ICON_FILTER}<span>Filters</span><b id="filter-count" hidden></b></button>
@@ -471,6 +473,7 @@ function renderInventory() {
           <button id="select" class="menu-item">Select parts</button>
           <button id="print-labels" class="menu-item">Print QR labels</button>
           <button id="print-list" class="menu-item">Print list</button>
+          <button id="unpack-all" class="menu-item" hidden>Unpack all</button>
           <button id="export-csv" class="menu-item">Export CSV</button>
           <button id="import-csv" class="menu-item">Import CSV</button>
         </div>
@@ -510,6 +513,7 @@ function renderInventory() {
       <tbody id="rows">${skeletonRows()}</tbody>
     </table>
     <p id="empty" class="muted center-text" hidden></p>
+    <p id="elsewhere" class="muted center-text" hidden></p>
     <div id="getting-started" class="card getting-started" hidden>
       <h2>Add your first parts</h2>
       <p class="muted">Scanning a goBILDA, REV, AndyMark, ServoCity, TETRIX or Studica package fills in the part for you. Parts in a spreadsheet can come in as a CSV file.</p>
@@ -543,6 +547,10 @@ function renderInventory() {
   app.querySelector('#trash').onclick = openTrashDialog;
   app.querySelector('#edit-project').onclick = openListDialog;
   app.querySelector('#search').oninput = (e) => { state.search = e.target.value; renderRows(); };
+  app.querySelector('#elsewhere').onclick = (e) => {
+    const id = e.target.dataset.searchIn;
+    if (id) switchProject(id, state.search);
+  };
   app.querySelector('#category').onchange = (e) => { state.category = e.target.value; renderRows(); };
   app.querySelector('#location').onchange = (e) => { state.location = e.target.value; renderRows(); };
   app.querySelector('#tag').onchange = (e) => { state.tag = e.target.value; renderRows(); };
@@ -553,6 +561,7 @@ function renderInventory() {
   app.querySelector('#sort-dir').onclick = () => { state.sortDir = -state.sortDir; renderRows(); };
   app.querySelector('#group').onchange = (e) => { state.group = e.target.value; renderRows(); };
   app.querySelector('#print-list').onclick = printList;
+  app.querySelector('#unpack-all').onclick = unpackAll;
   app.querySelector('#export-csv').onclick = exportCsv;
   app.querySelector('#import-csv').onclick = pickCsv;
   app.querySelector('#select').onclick = () => { state.selected = new Set(); renderRows(); };
@@ -560,7 +569,7 @@ function renderInventory() {
   app.querySelector('#select-none').onclick = () => { state.selected.clear(); renderRows(); };
   app.querySelector('#bulk-edit').onclick = openBulkEditDialog;
   app.querySelector('#select-done').onclick = () => { state.selected = null; renderRows(); };
-  app.querySelector('#add').onclick = () => (currentProject().source ? openPicker() : openPartDialog(null));
+  app.querySelector('#add').onclick = () => (currentProject().source ? openPicker() : openPartDialog(null, { location: state.location }));
   app.querySelector('#scan').onclick = () => scanCode(dialog).then((text) => text && openScanned(text)).catch(showError);
   app.querySelector('#invite').onclick = () => openTeamDialog().catch(showError);
   app.querySelector('#log').onclick = openLogDialog;
@@ -612,9 +621,9 @@ function renderInventory() {
   renderRows();
 }
 
-function switchProject(id) {
-  Object.assign(state, { projectId: id, search: '', category: '', location: '', tag: '', low: false, sort: 'name', sortDir: 1, selected: null });
-  app.querySelector('#search').value = '';
+function switchProject(id, search = '') {
+  Object.assign(state, { projectId: id, search, category: '', location: '', tag: '', low: false, sort: 'name', sortDir: 1, selected: null });
+  app.querySelector('#search').value = search;
   renderRows();
 }
 
@@ -781,6 +790,45 @@ function renderRows() {
   empty.textContent = all.length ? 'No parts match your filters.'
     : usesParts ? 'No parts yet. Tap “+ Add parts” to pick parts this project uses.'
       : 'No parts yet. Tap “+ Add part” to add the first one.';
+  renderElsewhere(usesParts);
+  renderPacked();
+}
+
+// A packing list shows how much of it is packed.
+function renderPacked() {
+  const packing = isPacking(state.projectId);
+  const rows = packing ? projectRows() : [];
+  const packed = rows.filter((row) => row.packed).length;
+  const count = app.querySelector('#packed-count');
+  count.hidden = !rows.length;
+  count.textContent = `Packed ${packed} of ${rows.length}`;
+  app.querySelector('#unpack-all').hidden = !packing;
+  app.querySelector('#unpack-all').disabled = !packed;
+}
+
+// Unchecks every packed item of the packing list on screen, putting them back in the inventory, with one Undo.
+function unpackAll() {
+  const list = currentProject();
+  const packed = state.uses.filter((u) => u.projectId === list.id && u.packed);
+  if (!confirm(`Unpack all ${packed.length} packed items in ${list.name}? They count as back in the inventory.`)) return;
+  const write = (packedNow, details) => logged(
+    Promise.all(packed.map((u) => fb.setUse(u.projectId, u.partId, u.quantity, packedNow))), 'used', list.name, details);
+  write(false, `Unpacked all ${packed.length} items`);
+  offerUndo(`Unpacked ${packed.length} items`, () => write(true, `Undo: packed ${packed.length} items again`));
+}
+
+// While searching an inventory, names the team's other inventories with matching parts. Tapping one opens it with the
+// same search.
+function renderElsewhere(usesParts) {
+  const query = state.search.toLowerCase();
+  const others = usesParts || !query.trim() ? [] : state.projects
+    .filter((p) => !p.source && p.id !== state.projectId)
+    .map((p) => [p, inventoryParts(p.id).filter((part) => matches(part, query)).length])
+    .filter(([, count]) => count);
+  const elsewhere = app.querySelector('#elsewhere');
+  elsewhere.hidden = !others.length;
+  elsewhere.innerHTML = 'Also found in ' + others.map(([p, count]) =>
+    `<button class="link inline" data-search-in="${esc(p.id)}">${esc(p.name)} (${count})</button>`).join(', ');
 }
 
 function rowHtml(p, columns) {
@@ -1038,7 +1086,7 @@ function openLink(params) {
     const part = state.parts.find((p) => p.id === params.get('part'));
     if (!part) throw new Error('That label’s part isn’t in this team’s inventory anymore.');
     switchProject(part.projectId);
-    return openPartDialog(part);
+    return openTakeDialog(part);
   }
   if (params.has('location')) {
     if (!project(params.get('project'))) throw new Error('That label’s project isn’t in this team anymore.');
@@ -1059,7 +1107,7 @@ async function openBarcode(code) {
   if (product) part = partWithCode(product.partNumber);
   if (part) {
     switchProject(part.projectId);
-    return openPartDialog(part);
+    return openTakeDialog(part);
   }
   // New parts go into the inventory on screen, or Main Inventory when a project is.
   if (currentProject().source) switchProject(fb.MAIN_PROJECT);
@@ -1111,6 +1159,48 @@ function partWithCode(code) {
 }
 
 // ---------- dialogs ----------
+
+// A scanned part opens with its count and − / +, for taking some or putting some back. Edit part opens the full form.
+function openTakeDialog(part) {
+  const dialog = app.querySelector('#dialog');
+  let quantity = part.quantity;
+  dialog.innerHTML = `
+    <form method="dialog" class="card take">
+      <h2>${esc(part.name)}</h2>
+      <p class="muted small">${esc([part.location, inventoryNote(part), part.partNumber].filter(Boolean).join(' · '))}</p>
+      <div class="take-qty">
+        <button type="button" class="step" data-delta="-1" aria-label="Remove one">−</button>
+        <span></span>
+        <button type="button" class="step" data-delta="1" aria-label="Add one">+</button>
+      </div>
+      <p id="take-free" class="muted small"></p>
+      <div class="row">
+        <button value="done">Done</button>
+        <button value="edit" class="secondary">Edit part</button>
+      </div>
+    </form>`;
+  const render = () => {
+    dialog.querySelector('.take-qty span').textContent = `${quantity}${part.unit ? ` ${part.unit}` : ''}`;
+    dialog.querySelector('[data-delta="-1"]').disabled = !quantity;
+    const used = inUse(part.id);
+    const free = quantity - used;
+    dialog.querySelector('#take-free').textContent = used ? `${free < 0 ? `${-free} short` : `${free} free`}, ${used} in use` : '';
+  };
+  dialog.querySelector('.take-qty').onclick = (e) => {
+    const delta = Number(e.target.dataset.delta);
+    if (!delta) return;
+    quantity += delta;
+    changeQuantity(part, delta);
+    render();
+  };
+  dialog.querySelector('form').onsubmit = (e) => {
+    if (e.submitter.value !== 'edit') return;
+    e.preventDefault();
+    openPartDialog(state.parts.find((p) => p.id === part.id));
+  };
+  render();
+  if (!dialog.open) dialog.showModal();
+}
 
 function openLabelsDialog() {
   const dialog = app.querySelector('#dialog');
@@ -1595,18 +1685,23 @@ function openPartDialog(part, carry = null, note = '') {
           <option value="${NEW_OPTION}">+ New category…</option>
         </select>
       </label>
-      ${input('unit', 'Unit', 'list="unit-list" placeholder="e.g. pcs"')}
-      <label>Condition
-        <select name="condition">
-          ${Object.entries(CONDITIONS).map(([value, label]) =>
-            `<option value="${value}" ${value === (values?.condition ?? '') ? 'selected' : ''}>${label}</option>`).join('')}
-        </select>
-      </label>
-      <label>Notes<textarea name="notes" rows="3" maxlength="1000">${esc(part?.notes ?? '')}</textarea></label>
       <div class="field">Tags
         <div id="part-tags" class="tags"></div>
         <select id="add-tag" aria-label="Add a tag"></select>
       </div>
+      <details class="more-details" ${DETAIL_FIELDS.some(([key]) => values?.[key]) ? 'open' : ''}>
+        <summary>More details</summary>
+        <div class="more-fields">
+        ${input('unit', 'Unit', 'list="unit-list" placeholder="e.g. pcs"')}
+        <label>Condition
+          <select name="condition">
+            ${Object.entries(CONDITIONS).map(([value, label]) =>
+              `<option value="${value}" ${value === (values?.condition ?? '') ? 'selected' : ''}>${label}</option>`).join('')}
+          </select>
+        </label>
+        <label>Notes<textarea name="notes" rows="3" maxlength="1000">${esc(part?.notes ?? '')}</textarea></label>
+        </div>
+      </details>
       ${suggestions('supplier')}
       <datalist id="unit-list">${sorted([...UNITS, ...state.parts.map((p) => p.unit)]).map((v) => `<option value="${esc(v)}">`).join('')}</datalist>
       ${part?.updatedBy ? `<p class="muted small">Last changed by ${esc(nameByEmail(part.updatedBy))}</p>` : ''}
@@ -1622,6 +1717,9 @@ function openPartDialog(part, carry = null, note = '') {
   const form = dialog.querySelector('form');
   if (!part) form.quantity.value = values?.quantity ?? 0;
   if (part) dialog.querySelector('#label').onclick = () => printAndMark([partLabel(part)]);
+  // Opening More details scrolls its fields into view, since on a phone they open below the bottom of the screen.
+  const more = dialog.querySelector('.more-details');
+  more.querySelector('summary').onclick = () => more.open || requestAnimationFrame(() => more.scrollIntoView({ block: 'start', behavior: 'smooth' }));
 
   watchNewCategory(form.category);
   watchNewLocation(form.location);
@@ -1675,6 +1773,8 @@ function openPartDialog(part, carry = null, note = '') {
   };
   if (!dialog.open) dialog.showModal();
   if (carry) form.name.focus();
+  // Opening a part to look at it doesn't bring up the phone keyboard; tapping a field does.
+  if (part) document.activeElement.blur();
 }
 
 // Lets a category picker's "+ New category…" option ask for the new name.
