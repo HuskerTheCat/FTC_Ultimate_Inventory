@@ -16,6 +16,7 @@ The ultimate inventory tool for FTC teams. Track each part's name, part number, 
 
 - **Try it:** [live demo with sample parts](https://huskerthecat.github.io/FTC_Ultimate_Inventory/?demo), no setup needed. Changes aren't saved.
 - **How to use it:** the [how-to guide](docs/HOW-TO.md) walks through every main feature with pictures.
+- **Help:** [troubleshooting and FAQ](docs/TROUBLESHOOTING.md), a one-page [quick start](docs/QUICK-START.md) to print for the shop, and the [team admin guide](docs/ADMIN.md).
 - **Web:** [huskerthecat.github.io/FTC_Ultimate_Inventory](https://huskerthecat.github.io/FTC_Ultimate_Inventory/) (works on ChromeOS, Mac, Linux and phones, and can be installed from Chrome or Edge)
 - **Windows:** [download the installer](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest/download/FTC-Ultimate-Inventory-Setup.exe)
 - **Android:** [download the app](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest/download/FTC-Ultimate-Inventory.apk)

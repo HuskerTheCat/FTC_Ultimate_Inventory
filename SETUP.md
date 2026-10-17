@@ -41,7 +41,7 @@ Click **Team**. Teammates can scan the QR code or open the link on any device, o
 
 Only share the join code with your team: anyone who has it can join. As the team owner, you can remove people from the same **Team** screen. Removing someone also makes a new join code, so their old one stops working. If a code ever gets shared by mistake, use **Reset join code**.
 
-Then send your team the [how-to guide](docs/HOW-TO.md). It walks through every main feature with pictures.
+Then send your team the [how-to guide](docs/HOW-TO.md). It walks through every main feature with pictures. Keep the [team admin guide](docs/ADMIN.md) for later: it covers removing members, backups and handing the team to a new admin.
 
 ## Install on iPhone or iPad
 

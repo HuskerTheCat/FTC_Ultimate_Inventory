@@ -1,0 +1,169 @@
+# Troubleshooting and FAQ
+
+What each banner and message in the app means, and how to fix it. The app shows two kinds of messages:
+
+- **Banners** stay across the top of the screen until the problem is fixed (or you close them).
+- **Messages** show in red at the top for about 10 seconds after something goes wrong.
+
+The examples use the team **26706 Thunder Lab**; your app shows your own team's name and number.
+
+**Contents**
+
+1. [Banners](#banners)
+2. [Joining and signing in](#joining-and-signing-in)
+3. [Using the app](#using-the-app)
+4. [Installing and updating](#installing-and-updating)
+5. [Still stuck?](#still-stuck)
+
+---
+
+## Banners
+
+### Offline
+
+![Offline, changes will sync when you reconnect](help/offline-banner.png)
+
+The device has no internet connection. Keep working: changes are saved on the device and sent to your team as soon as it's back online. A few things need the internet, like signing in and joining a team.
+
+### New version available
+
+![New version available, tap to refresh](help/update-banner.png)
+
+- On the website it says **New version available, tap to refresh**. Tap it to load the new version.
+- In the Windows and Android apps it says **Update available (v0.6.0), tap to download** (with the newest version number). Tap it, download the new installer or APK, and install it over the old app. See [Installing and updating](#installing-and-updating).
+
+Your inventory is stored in your team's Firebase project, not in the app, so updating never loses it.
+
+### News
+
+![A news message from the app's developer](help/news-banner.png)
+
+A message from the app's developer to every team, for example planned downtime. Tap **×** to close it. It stays closed on that device until there's a new message.
+
+### Your Firebase rules are out of date
+
+![Your Firebase rules are out of date, click for update instructions](help/rules-banner.png)
+
+This version of the app has new features that need newer security rules in your team's Firebase project. Only your team's admin (the person who set up the Firebase project) can fix it: send them the [steps to update the rules](../SETUP.md#updating-the-rules). Updating the rules doesn't change any of your data.
+
+The app keeps working in the meantime, but new features may fail with **The server didn't allow that change** until the rules are updated.
+
+### Your Firebase is configured incorrectly
+
+![Your Firebase is configured incorrectly and your account is not secure. Click here to fix](help/open-rules-banner.png)
+
+Your team's Firebase project isn't using the app's security rules (for example, it was created in test mode), so anyone on the internet could read your inventory and your members' emails. Your admin should [publish the app's rules](../SETUP.md#updating-the-rules) right away. The banner goes away once they're in use.
+
+### Demo only
+
+**Demo only. Click to set up an account** means you're in the demo. It shows sample parts and nothing you change is saved. Tap the banner to go back to the first screen and join or set up your team.
+
+---
+
+## Joining and signing in
+
+**"That join code is not valid. Ask your team admin to copy it again."**
+The code was mistyped or cut off. Ask your admin to use the **Copy** button next to the join code on the **Team** screen, or scan the team's QR code with **Scan QR** instead of typing.
+
+**"No team found. Ask your team admin for the join code."**
+The app couldn't find a team for that code or number. Check the code with your admin. If you're the admin and this happens right after setup, make sure you finished [creating the team in the app](../SETUP.md#5-create-your-team-in-the-app) and [published the rules](../SETUP.md#3-create-the-database).
+
+**"FTC team 26706 can't sign in by number yet. Join with your team's join code instead."**
+Your team isn't on the central team list yet. It gets added the next time the admin opens the app online on the device they set the team up on. Until then, use **Join a team** with the join code, then **Sign in** with your existing email and password.
+
+**"You're not on 26706 Thunder Lab. Ask your team admin for the join code."**
+**Sign in to your team** is only for people already on the team. If you're new, choose **Use a different team**, then **Join a team** with the join code and create your account.
+
+**"Couldn't join 26706 Thunder Lab. Ask your team admin for a fresh join code."**
+That join code is old. The code changes whenever the admin resets it or removes someone from the team. Get the current one from the **Team** screen.
+
+**"You no longer have access to 26706 Thunder Lab."**
+The team admin removed you from the team. If that was a mistake, ask them for the current join code, join again, and use **Sign in** (not **Create account**) with your old email and password.
+
+**"There's already an account with that email. Sign in instead."**
+You already have an account on this team, maybe from an earlier season. Tap **Sign in** with the same email and password. Forgot it? See the next one.
+
+**"Wrong email or password."**
+Check for typos (tap **Show** to see the password). To reset it, type your email and tap **Forgot password?**. The email comes from your team's Firebase project, so check your spam or junk folder if it doesn't arrive.
+
+**"Too many tries. Wait a few minutes, then try again."**
+Firebase pauses sign-in after several wrong passwords. Wait, then try again or use **Forgot password?**.
+
+**"Can't reach the server. Check your internet connection."**
+Signing in and joining need the internet. If other websites work, the network may be blocking Firebase (some school networks do), so try another network.
+
+**"Accept the privacy policy to create an account."**
+Tick the box under the password. Everyone ticks it once when they join a team.
+
+**"FTC team 26706 is already on the central server's team list, so teammates can't sign in by team number."**
+Only the admin sees this. Another team already registered that number, or the wrong number was typed at setup. Join codes still work for everyone. Use **☰ → Report bug** with your team number to get it fixed.
+
+**"Couldn't find "apiKey" in the pasted Firebase config."**
+When setting up a team, paste the whole `firebaseConfig = { ... }` block from [step 4 of the setup guide](../SETUP.md#4-copy-your-connection-info), not just part of it.
+
+**I joined from the link in Safari, but the Home Screen app asks me to join again.**
+The iPhone Home Screen app keeps its own sign-in. Join from inside the Home Screen app with **Scan QR** or the join code. See [Install on iPhone or iPad](../SETUP.md#install-on-iphone-or-ipad).
+
+**I'm on the wrong team, or want to switch teams.**
+Use **☰ → Sign out**, then **Use a different team**.
+
+---
+
+## Using the app
+
+**"The server didn't allow that change. If the app was just updated, ask your team admin to publish the latest firestore.rules."**
+Your team's Firebase rules are older than the app. Your admin needs to [update the rules](../SETUP.md#updating-the-rules).
+
+**"That needs an internet connection. Try again once you're back online."**
+That action needs data this device hasn't saved for offline use yet. Try again once the Offline banner is gone.
+
+**"Couldn't open the camera"**
+Allow camera access when the browser or app asks. If you said no before, turn it back on: in Chrome or Edge, tap the icon left of the web address; on Android, open **Settings → Apps → FTC Ultimate Inventory → Permissions**; on Windows, open **Settings → Privacy & security → Camera**. Close other apps that might be using the camera.
+
+**"Couldn't load the scanner. Check your internet connection and try again."**
+The scanner loads when the app opens. Get back online and tap **Scan** again.
+
+**"That label's part isn't in this team's inventory anymore."**
+The part was deleted, or the label was printed by another team. Look in **☰ → Trash** to bring a deleted part back. A bin label for a deleted inventory or project says **That label's project isn't in this team anymore.**
+
+**"The Android app can't save files. Export from the website or the Windows app."**
+Export CSV only works on the website and in the Windows app. Sign in to the website on a computer to export.
+
+**"Delete the parts in Pit spares first."**
+An inventory can only be deleted once it's empty. Move its parts somewhere else or delete them first.
+
+**"The first row of parts.csv needs column names, with one called Item."**
+The CSV file needs a header row. Export a CSV first to see every column the app reads. See [CSV export and import](HOW-TO.md#9-csv-export-and-import).
+
+**A teammate's changes aren't showing up.**
+Changes show on every device within a few seconds. If they don't, one of the two devices is probably offline (look for the Offline banner). Its changes are sent once it reconnects.
+
+**I deleted or changed something by mistake.**
+Tap **Undo** at the bottom of the screen right away. Deleted parts, projects, packing lists and orders stay in **☰ → Trash** for 30 days. See [Change log, Undo and Trash](HOW-TO.md#10-change-log-undo-and-trash).
+
+**I can't find Team or Report bug in the menu.**
+They're hidden in the demo. Join or set up a real team to use them.
+
+---
+
+## Installing and updating
+
+**Windows says "Windows protected your PC".**
+The installer isn't code-signed (that costs money each year), so Windows doesn't recognize it yet. Click **More info**, then **Run anyway**. To update, download the [newest installer](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest/download/FTC-Ultimate-Inventory-Setup.exe) and run it.
+
+**Android won't install the app.**
+Android asks before installing apps from outside the Play Store. When it does, allow your browser to install apps. To update, download the [newest APK](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest/download/FTC-Ultimate-Inventory.apk) and open it. If Android says the app can't be installed over the old one, open the old app online once so any offline changes are sent, uninstall it, install the new one, and sign in again.
+
+**The website still shows the old version after an update.**
+New versions can take a few minutes to reach everyone. Wait a few minutes, then refresh the page (Ctrl+Shift+R on a computer).
+
+**Do I lose my data when I update or reinstall?**
+No. Your team's inventory lives in its Firebase project. Only changes made offline and not yet sent are stored on the device, so open the app online before uninstalling.
+
+---
+
+## Still stuck?
+
+- Team admins: the [team admin guide](ADMIN.md) covers members, join codes, rules, backups and handing the team on.
+- Use **☰ → Report bug** to tell the app's developer what went wrong. It's logged to a central server with your team name and app version. Please don't include personal info.
+- Or open an issue on [GitHub](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/issues).

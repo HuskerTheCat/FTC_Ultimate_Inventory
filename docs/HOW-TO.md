@@ -4,6 +4,8 @@ A walkthrough of the basics and the most useful features, for everyone on the te
 
 The website, the Windows app and the Android app all look and work the same. On a phone, the parts table turns into cards, but every button is still there.
 
+Something not working? See [Troubleshooting and FAQ](TROUBLESHOOTING.md). Running the team? See the [team admin guide](ADMIN.md). For a one-page sheet to post in the shop, print the [quick start](QUICK-START.md).
+
 **Contents**
 
 1. [Get into your team](#1-get-into-your-team)
@@ -36,7 +38,7 @@ After joining, enter your name, email and a password, tick the privacy policy bo
 
 <img src="how-to/phone-create-account.png" alt="Creating an account after joining a team" width="300">
 
-> **Admins:** to invite people, open **☰ → Team**. Teammates scan the QR code on your screen, or you send them the join code or link. Only share these with your team: anyone who has them can join.
+> **Admins:** to invite people, open **☰ → Team**. Teammates scan the QR code on your screen, or you send them the join code or link. Only share these with your team: anyone who has them can join. The [team admin guide](ADMIN.md) covers the rest of running the team.
 >
 > <img src="how-to/phone-team.png" alt="The Team screen with the join QR code and join code" width="300">
 
@@ -196,9 +198,10 @@ Before anything is added, the app shows what it found. Parts already in the inve
 
 ## 11. Team, sign out and other tips
 
-- **☰ → Team** shows the join QR code and code, lets you change **your name**, and lists the members. The team owner can remove members, **Reset join code** if it was shared by mistake, and delete the team.
+- **☰ → Team** shows the join QR code and code, lets you change **your name**, and lists the members. The team owner can remove members, **Reset join code** if it was shared by mistake, and delete the team (see the [team admin guide](ADMIN.md)).
 - **Works offline.** No wifi at the venue? Keep editing. Changes are saved on the device and sync when it's back online. The website opens offline too, after it has been used online once.
 - **Everyone sees changes live**, so two people can count parts at the same time from different devices.
 - **Blue banner saying your Firebase rules are out of date?** Your team's admin needs to [update the rules](../SETUP.md#updating-the-rules). The app will keep working in the meantime, but some new features may not work correctly until your Firebase rules are up to date.
+- **A banner or message you don't understand?** [Troubleshooting and FAQ](TROUBLESHOOTING.md) explains each one and how to fix it.
 - **☰ → Report bug** logs a short description of the problem to a central server, with your team name and app version. Please don't include personal info.
 - **☰ → Sign out** also removes the team's data saved on that device, which is good practice on a shared computer.
