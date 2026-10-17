@@ -254,12 +254,12 @@ const joinCodeFrom = (text) => new URLSearchParams(text.split('#')[1]).get('join
 
 function renderWelcome() {
   app.innerHTML = `
-    <main class="center">
+    <main class="center wide">
       <h1>FTC Ultimate Inventory</h1>
       <p id="error" class="error" hidden></p>
       <form id="signin" class="card">
         <h2>Sign in to your team</h2>
-        <p class="muted">Already have an account? Enter your team number, then sign in with your email. New to the team? Join it first with the join code below.</p>
+        <p class="muted">Already have an account? Enter your team number, then sign in with your email. New to the team? Join it first with your join code.</p>
         ${teamFields()}
         <button>Next</button>
       </form>
@@ -316,7 +316,7 @@ function renderWelcome() {
 // The setup steps in short, with the details in SETUP.md. Creating the team first checks the Firebase project (see setup.js).
 function renderSetup() {
   app.innerHTML = `
-    <main class="center">
+    <main class="center wide">
       <h1>Set up a new team</h1>
       <p id="error" class="error" hidden></p>
       <div class="card">
