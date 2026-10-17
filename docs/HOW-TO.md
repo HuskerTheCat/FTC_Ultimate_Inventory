@@ -60,7 +60,7 @@ A brand-new team's inventory is empty, so it shows **Add your first parts** with
 8. **Add part.**
 9. **− and +** change the quantity by one.
 10. **Add to** puts the part in a project or packing list. Above it, **In use** shows how many are free and which projects use the part.
-11. **Badges** flag parts that are **Low stock**, **on order**, used or broken.
+11. **Badges** (square, with an outline) flag parts that are **Low stock**, **on order**, used or broken. The round chips next to them are the part's tags; click one to show only parts with that tag.
 
 Click a part's name (or anywhere on its row) to open and edit it. On a computer, click a column heading to sort by it, and click it again to reverse the order.
 

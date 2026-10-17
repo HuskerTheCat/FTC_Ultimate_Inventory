@@ -122,8 +122,9 @@ const parseTags = (text) =>
   [...new Set(text.split(',').map((tag) => tag.trim().toLowerCase().slice(0, 40)).filter(Boolean))].slice(0, 20);
 // The × on a removable tag chip.
 const TAG_X = '<span class="x" aria-hidden="true">×</span>';
-const tagChips = (tags) => tags.length
-  ? `<div class="tags">${tags.map((t) => `<button type="button" class="tag" data-tag="${esc(t)}">${esc(t)}</button>`).join('')}</div>`
+// A part's status badges and its tag chips share one row under its name.
+const partChips = (badges, tags) => badges || tags.length
+  ? `<div class="tags">${badges}${tags.map((t) => `<button type="button" class="tag" data-tag="${esc(t)}">${esc(t)}</button>`).join('')}</div>`
   : '';
 
 const project = (id) => state.projects.find((p) => p.id === id);
@@ -905,7 +906,7 @@ function rowHtml(p, columns) {
     <tr data-id="${esc(p.id)}" class="${selected ? 'selected' : ''} ${p.packed ? 'packed' : ''} ${waiting(p.id) ? 'waiting' : ''}">
       ${state.selected ? `<td class="check"><input type="checkbox" aria-label="Select ${esc(p.name)}" ${selected ? 'checked' : ''} /></td>` : ''}
       ${label('packed') ? `<td data-label="Packed" class="packed"><input type="checkbox" data-packed="1" aria-label="Packed" ${p.packed ? 'checked' : ''} /></td>` : ''}
-      <td data-label="Item" class="name"><button type="button" class="part-name">${esc(p.name)}</button>${lowBadge(p.id)}${orderBadge(p.id)}${conditionBadge(p.condition)}${notesLine(p.notes)}${tagChips(p.tags)}</td>
+      <td data-label="Item" class="name"><button type="button" class="part-name">${esc(p.name)}</button>${partChips(lowBadge(p.id) + orderBadge(p.id) + conditionBadge(p.condition), p.tags)}${notesLine(p.notes)}</td>
       <td class="card-meta muted small">${esc(cardMeta(p, !label('inUse')))}</td>
       <td data-label="Part #">${esc(p.partNumber)}${partLink(p)}</td>
       <td data-label="${label('quantity')}" class="qty">
