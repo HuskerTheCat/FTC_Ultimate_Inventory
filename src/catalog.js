@@ -23,8 +23,27 @@ function index(catalog) {
   return { byCode, all };
 }
 
+// The Windows and Android apps take the newest catalog from the website, which the "Update part catalog" workflow
+// refreshes every week, so they know new parts without a new release. Offline they use the one they were built with.
+// The file name carries the row format: when the rows change shape, publish a new name so older apps skip it.
+const LATEST_CATALOG = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/catalog-v1.json';
+
+async function latestCatalog() {
+  const response = await fetch(LATEST_CATALOG, { signal: AbortSignal.timeout(10000) });
+  if (!response.ok) throw new Error(`${response.status} from ${LATEST_CATALOG}`);
+  return response.json();
+}
+
+const builtInCatalog = () => import('./catalog.json').then(({ default: catalog }) => catalog);
+
+const catalog = import.meta.env.MODE === 'app'
+  ? latestCatalog().catch((error) => {
+    console.warn('Using the built-in part catalog:', error);
+    return builtInCatalog();
+  })
+  : builtInCatalog();
 // Browsers don't fetch a module again after it failed, so a failed load needs the app reloaded.
-const products = import('./catalog.json').then(({ default: catalog }) => index(catalog));
+const products = catalog.then(index);
 products.catch(() => {}); // reported below, when a lookup needs the catalog
 
 function loaded() {

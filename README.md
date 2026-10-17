@@ -43,7 +43,7 @@ Every team stores its data in its own free Firebase project. Setting a team up t
 
 The app is one plain JavaScript web app (`src/`). Electron wraps it for Windows (`electron/`) and Capacitor wraps it for Android, so all three look and work the same. The app talks directly to the team's Firebase project: Firebase Auth for sign-in and Firestore for the parts list. [`firestore.rules`](firestore.rules) only lets team members read or write, and a teammate can only join with the team secret inside the join code.
 
-The supplier catalog ([`src/catalog.json`](src/catalog.json)) is built from the product data each supplier publishes on its own store by [`.github/scripts/build-catalog.mjs`](.github/scripts/build-catalog.mjs). The **Update part catalog** workflow rebuilds it on the 1st of each month and republishes the website; run it from the Actions tab to update sooner. Windows and Android apps get the new catalog with their next build.
+The supplier catalog ([`src/catalog.json`](src/catalog.json)) is built from the product data each supplier publishes on its own store by [`.github/scripts/build-catalog.mjs`](.github/scripts/build-catalog.mjs). The **Update part catalog** workflow rebuilds it every Monday and republishes the website; run it from the Actions tab to update sooner. The Windows and Android apps download the newest catalog from the website each time they open, and use the one they were built with when offline.
 
 ## Privacy
 

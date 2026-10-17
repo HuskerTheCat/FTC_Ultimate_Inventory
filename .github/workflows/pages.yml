@@ -32,6 +32,8 @@ jobs:
       # Latest release plus commits since, e.g. 0.4.0-11-g1796556, shown in bug reports.
       - run: npm pkg set version=$(git describe --tags | sed 's/^v//')
       - run: npm run build
+      # The Windows and Android apps download the newest part catalog from here (see src/catalog.js).
+      - run: cp src/catalog.json dist/catalog-v1.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

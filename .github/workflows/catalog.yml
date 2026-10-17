@@ -1,10 +1,10 @@
 name: Update part catalog
 
 # Rebuilds src/catalog.json (the supplier parts the scanner recognizes) from the suppliers' stores.
-# Runs on the 1st of each month, or from the Actions tab ("Update part catalog" -> "Run workflow").
+# Runs every Monday, or from the Actions tab ("Update part catalog" -> "Run workflow").
 on:
   schedule:
-    - cron: '0 8 1 * *'
+    - cron: '0 8 * * 1'
   workflow_dispatch:
 
 permissions:
