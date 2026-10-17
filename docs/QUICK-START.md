@@ -14,7 +14,7 @@ Easiest: just use the website, **[huskerthecat.github.io/FTC_Ultimate_Inventory]
 
 1. Get the join code or QR code from your team admin (the person who set up the team in the app).
 2. Under **Join a team**, tap **Scan QR** and scan it, or paste the code.
-3. Enter your name, email and a password (8 or more characters), accept the [privacy policy](../PRIVACY.md), and tap **Create account**. Open the link in the email you get, then tap **I opened the link**.
+3. Enter your name, email and a password (8 or more characters), accept the [privacy policy](../PRIVACY.md), and tap **Create account**. Then open the link in the email you get.
 
 On a new device later, choose **Sign in to your team**, pick your program (**FTC**), enter the team number, then sign in.
 

@@ -55,7 +55,7 @@ These rules are what keep your inventory private: only people who joined with yo
 1. On the app's **Set up a new team** screen, enter your team name and number, paste the block you copied, and click **Create team**.
 2. The app checks your Firebase project first. If a step above was missed, it says which one, with a **Fix it in Firebase** link to the right page. Fix it, then click **Create team** again.
 3. Enter your name, email and a password, and click **Create account**.
-4. Open the link in the email Firebase sends you (check spam if it's not there), then click **I opened the link**. You are now the team's first member.
+4. Open the link in the email Firebase sends you (check spam if it's not there). The app moves on by itself, and you are now the team's first member.
 
 ## 6. Invite your team
 

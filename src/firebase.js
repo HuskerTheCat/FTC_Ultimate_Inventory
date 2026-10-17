@@ -29,10 +29,11 @@ export const signIn = (email, password) => signInWithEmailAndPassword(auth, emai
 export const signUp = (email, password) => createUserWithEmailAndPassword(auth, email, password);
 export const resetPassword = (email) => sendPasswordResetEmail(auth, email);
 export const sendVerification = (user) => sendEmailVerification(user);
-// Picks up a verification link the user just opened, and refreshes the sign-in token the rules check it in.
-export async function refreshUser(user) {
+// True once the user has opened their verification link. Then refreshes the sign-in token the rules check it in.
+export async function checkVerified(user) {
   await user.reload();
-  await user.getIdToken(true);
+  if (user.emailVerified) await user.getIdToken(true);
+  return user.emailVerified;
 }
 export const logOut = () => signOut(auth);
 

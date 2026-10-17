@@ -84,10 +84,7 @@ Only the admin sees this, when creating the team. Publish the app's rules ([step
 That join code is old. The code changes whenever the admin resets it or removes someone from the team. Get the current one from the **Team** screen. If the code is current, update the app: older versions can't join teams whose rules check emails.
 
 **"Check your email" won't go away, or the email never came.**
-New members confirm their email once, when they join. Look in your spam or junk folder: the email comes from your team's Firebase project, not from the app. Tap **Send it again** if it's not there. Once you've opened the link, tap **I opened the link**. If the address shown is wrong, tap **Use a different email** and create the account again.
-
-**"Not confirmed yet. Open the link in the email, then try again."**
-The link hasn't been opened yet. Open the link in the email, then tap **I opened the link**.
+New members confirm their email once, when they join. Look in your spam or junk folder: the email comes from your team's Firebase project, not from the app. Tap **Send it again** if it's not there. Once you open the link, the app moves on within a few seconds. If the address shown is wrong, tap **Use a different email** and create the account again.
 
 **"You no longer have access to 26706 Thunder Lab."**
 The team admin removed you from the team. If that was a mistake, ask them for the current join code, join again, and use **Sign in** (not **Create account**) with your old email and password.

@@ -34,7 +34,7 @@ The first screen has three ways in:
 
 ![The first screen: sign in, join a team, or set up a new team](how-to/welcome.png)
 
-After joining, enter your name, email and a password, tick the privacy policy box, and tap **Create account**. Your name is what teammates see in the change log. Then open the link in the email you get, come back and tap **I opened the link**. This only happens once. Next time, just **Sign in**.
+After joining, enter your name, email and a password, tick the privacy policy box, and tap **Create account**. Your name is what teammates see in the change log. Then open the link in the email you get, and the app carries on by itself. This only happens once. Next time, just **Sign in**.
 
 <img src="how-to/phone-create-account.png" alt="Creating an account after joining a team" width="300">
 

@@ -435,30 +435,38 @@ function renderSignIn() {
   app.querySelector('#switch').onclick = forgetConnection;
 }
 
+const VERIFY_CHECK_MS = 3000;
+
 // Shown to someone joining with an email they haven't confirmed yet. Members who already joined never see it.
+// Checks every few seconds while the app is on screen, and moves on by itself once the link is opened.
 function renderVerify(user, onVerified) {
   app.innerHTML = `
-    <main class="center">
+    <main id="verify" class="center">
       <h1>Check your email</h1>
-      <p>We sent a link to <strong class="email">${esc(user.email)}</strong>. Open it to confirm it’s your email, then come back here.</p>
+      <p>We sent a link to <strong class="email">${esc(user.email)}</strong>. Open it to confirm it’s your email. This screen moves on by itself once you have.</p>
       <p class="muted">Not there? Check your spam or junk folder.</p>
-      <p id="error" class="error" hidden></p>
+      <p id="error" class="error" role="alert" hidden></p>
       <div class="card">
-        <button id="verified">I opened the link</button>
         <button id="resend" class="secondary">Send it again</button>
       </div>
       <button id="different" class="link">Use a different email</button>
     </main>`;
-  app.querySelector('#verified').onclick = async (e) => {
+  let checking = false;
+  const timer = setInterval(async () => {
+    if (!app.querySelector('#verify')) return clearInterval(timer);
+    if (document.hidden || checking) return;
+    checking = true;
     try {
-      await fb.refreshUser(user);
+      if (await fb.checkVerified(user)) {
+        clearInterval(timer);
+        onVerified();
+      }
     } catch (error) {
-      return showError(error);
+      showError(error);
+    } finally {
+      checking = false;
     }
-    if (!user.emailVerified) return showError(new Error('Not confirmed yet. Open the link in the email, then try again.'));
-    e.target.disabled = true;
-    onVerified();
-  };
+  }, VERIFY_CHECK_MS);
   app.querySelector('#resend').onclick = async () => {
     try {
       await fb.sendVerification(user);
