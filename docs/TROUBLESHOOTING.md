@@ -5,7 +5,7 @@ What each banner and message in the app means, and how to fix it. The app shows 
 - **Banners** stay across the top of the screen until the problem is fixed (or you close them).
 - **Messages** show in red at the top for about 10 seconds after something goes wrong.
 
-The examples use the team **26706 Thunder Lab**; your app shows your own team's name and number.
+The examples use the team **12345 Example Team**; your app shows your own team's name and number.
 
 **Contents**
 
@@ -74,11 +74,11 @@ The code was mistyped or cut off. Ask your admin to use the **Copy** button next
 
 The app couldn't find a team for that code or number. Check the code with your admin. If you're the admin and this happens right after setup, make sure you finished [creating the team in the app](../SETUP.md#5-create-your-team-in-the-app) and [published the rules](../SETUP.md#3-create-the-database).
 
-### "You're not on 26706 Thunder Lab. Ask your team admin for the join code."
+### "You're not on 12345 Example Team. Ask your team admin for the join code."
 
 **Sign in to your team** is only for people already on the team. If you're new, choose **Use a different team**, then **Join a team** with the join code and create your account.
 
-### "Couldn't join 26706 Thunder Lab. Ask your team admin for a fresh join code."
+### "Couldn't join 12345 Example Team. Ask your team admin for a fresh join code."
 
 That join code is old. The code changes whenever the admin resets it or removes someone from the team. Get the current one from the **Team** screen. If the code is current, update the app: older versions can't join teams whose rules check emails.
 
@@ -86,7 +86,7 @@ That join code is old. The code changes whenever the admin resets it or removes 
 
 New members confirm their email once, when they join. Look in your spam or junk folder: the email comes from your team's Firebase project, not from the app. Tap **Send it again** if it's not there. Once you open the link, the app moves on within a few seconds. If the address shown is wrong, tap **Use a different email** and create the account again.
 
-### "You no longer have access to 26706 Thunder Lab."
+### "You no longer have access to 12345 Example Team."
 
 The team admin removed you from the team. If that was a mistake, ask them for the current join code, join again, and use **Sign in** (not **Create account**) with your old email and password.
 
@@ -122,7 +122,7 @@ Firebase pauses sign-in after several wrong passwords. Wait, then try again or u
 
 Signing in and joining need the internet. If other websites work, the network may be blocking Firebase (some school networks do), so try another network.
 
-### "FTC team 26706 can't sign in by number yet. Join with your team's join code instead. Team admins can sign in from Set up a new team."
+### "FTC team 12345 can't sign in by number yet. Join with your team's join code instead. Team admins can sign in from Set up a new team."
 
 Your team isn't on the central team list. It gets added (or added back) the next time the admin opens the app online on a device where they set up the team or signed in by team number. Until then, use **Join a team** with the join code, then **Sign in** with your existing email and password.
 
@@ -157,7 +157,7 @@ Before creating the team, the app checks your Firebase project. Each line names 
 
 Then click **Create team** again.
 
-### "FTC team 26706 is already on the central server's team list, so teammates can't sign in by team number."
+### "FTC team 12345 is already on the central server's team list, so teammates can't sign in by team number."
 
 Only the admin sees this. Another team already registered that number, or the wrong number was typed at setup. Join codes still work for everyone. Use **☰ → Report bug** with your team number to get it fixed.
 

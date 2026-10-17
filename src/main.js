@@ -259,7 +259,7 @@ function renderLoading() {
 const teamFields = () => `
   <div class="teamid">
     <select name="program" aria-label="Program">${PROGRAMS.map((p) => `<option>${p}</option>`).join('')}</select>
-    <input name="teamNumber" required inputmode="numeric" pattern="[1-9][0-9]{0,5}" placeholder="Team number, e.g. 26706" />
+    <input name="teamNumber" required inputmode="numeric" pattern="[1-9][0-9]{0,5}" placeholder="Team number, e.g. 12345" />
   </div>`;
 
 // The join QR code holds the join link (…#join=CODE); anything else is taken as a typed join code.
@@ -345,7 +345,7 @@ function renderSetup() {
       </div>
       <form id="create" class="card">
         <h2>Create your team</h2>
-        <input name="teamName" required maxlength="200" placeholder="Team name, e.g. 26706 Thunder Lab" />
+        <input name="teamName" required maxlength="200" placeholder="Team name, e.g. 12345 Example Team" />
         ${teamFields()}
         <textarea name="config" rows="6" required placeholder="Paste your firebaseConfig here"></textarea>
         <ul id="problems" class="problems" hidden></ul>
@@ -2419,7 +2419,7 @@ function askDeleteTeam() {
   const dialog = app.querySelector('#ask');
   dialog.innerHTML = `
     <form method="dialog" class="card">
-      <label>Delete your team? Type your team number to confirm, e.g. FTC 26706.<input name="team" /></label>
+      <label>Delete your team? Type your team number to confirm, e.g. FTC 12345.<input name="team" /></label>
       <label>Why are you leaving? (optional)<textarea name="reason" rows="3" maxlength="1000" placeholder="This is logged to a central server. Please don't include personal info."></textarea></label>
       <div class="row">
         <button value="ok">OK</button>
@@ -2440,7 +2440,7 @@ async function deleteTeam() {
   if (!form) return;
   // The program is optional for FTC teams.
   const match = form.team.value.trim().match(/^(?:(ftc|frc|fll|other)\s*)?([1-9][0-9]{0,5})$/i);
-  if (!match) throw new Error('Enter your team number, e.g. FTC 26706.');
+  if (!match) throw new Error('Enter your team number, e.g. FTC 12345.');
   const program = PROGRAMS.find((p) => p.toLowerCase() === (match[1] ?? 'ftc').toLowerCase());
   const ownerKey = await fb.getOwnerKey();
   if (!ownerKey) throw new Error('This team isn’t on the central server’s list of active teams.');

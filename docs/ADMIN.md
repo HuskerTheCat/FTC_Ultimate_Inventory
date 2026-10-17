@@ -100,6 +100,6 @@ Only do this if your team is done with the app for good. If you just want a fres
 
 1. Export a CSV of each inventory first if you might want the data later.
 2. Open **☰ → Team** and tap **Delete team**.
-3. Type your team number to confirm, for example `FTC 26706`. You can add a reason; it's logged to a central server, so please don't include personal info.
+3. Type your team number to confirm, for example `FTC 12345`. You can add a reason; it's logged to a central server, so please don't include personal info.
 
 This takes your team off the central team list, so nobody can sign in with your team number, and this device leaves the team. **It doesn't erase anything in your Firebase project**: teammates can still open the inventory until you delete the project. To erase the inventory and everyone's accounts, open your Firebase project's **Settings → General**, scroll to the bottom and click **Delete project**. The app shows a link to it after you delete the team.
