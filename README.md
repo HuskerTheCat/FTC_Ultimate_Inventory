@@ -43,7 +43,12 @@ Every team stores its data in its own free Firebase project. Setting a team up t
 
 The app is one plain JavaScript web app (`src/`). Electron wraps it for Windows (`electron/`) and Capacitor wraps it for Android, so all three look and work the same. The app talks directly to the team's Firebase project: Firebase Auth for sign-in and Firestore for the parts list. [`firestore.rules`](firestore.rules) only lets team members read or write, and a teammate can only join with the team secret inside the join code.
 
-The supplier catalog ([`src/catalog.json`](src/catalog.json)) is built from the product data each supplier publishes on its own store by [`.github/scripts/build-catalog.mjs`](.github/scripts/build-catalog.mjs). The **Update part catalog** workflow rebuilds it every Monday and republishes the website; run it from the Actions tab to update sooner. The Windows and Android apps download the newest catalog from the website each time they open, and use the one they were built with when offline.
+The supplier catalog ([`src/catalog.json`](src/catalog.json)) is built from the product data each supplier publishes on its own store by [`.github/scripts/build-catalog.mjs`](.github/scripts/build-catalog.mjs). The **Update part catalog** workflow rebuilds it by itself every Monday and republishes the website. The Windows and Android apps download the newest catalog from the website each time they open, and use the one they were built with when offline.
+
+[![Part catalog last changed](https://img.shields.io/github/last-commit/HuskerTheCat/FTC_Ultimate_Inventory/main?path=src%2Fcatalog.json&label=part%20catalog%20last%20changed)](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/commits/main/src/catalog.json)
+[![Update part catalog](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/actions/workflows/catalog.yml/badge.svg)](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/actions/workflows/catalog.yml)
+
+The first badge shows when a weekly run last found new or changed parts, and the second whether the last run worked. To update the catalog right away, open [Update part catalog](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/actions/workflows/catalog.yml), click **Run workflow**, then the green **Run workflow** button. It takes about 20 minutes. Only the repository owner can run it.
 
 ## Privacy
 
