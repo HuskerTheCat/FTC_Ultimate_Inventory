@@ -205,13 +205,13 @@ function ask(question, value = '') {
   });
 }
 
-// A heading and a line of text with an OK button, over whatever dialog is open.
-function showMessage(heading, text) {
+// A heading and a paragraph of HTML with an OK button, over whatever dialog is open.
+function showMessage(heading, html) {
   const dialog = app.querySelector('#ask');
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>${esc(heading)}</h2>
-      <p>${esc(text)}</p>
+      <p>${html}</p>
       <div class="row"><button value="ok">OK</button></div>
     </form>`;
   dialog.showModal();
@@ -2277,13 +2277,15 @@ function openLogDialog() {
   dialog.showModal();
 }
 
+const FOLLOW_GITHUB = `You can follow the app's development on <a href="${SOURCE_URL}" target="_blank" rel="noopener">GitHub</a>.`;
+
 // Bug reports and feature requests go to the app's developer, not the team (see hub.js).
 function openSendDialog({ title, label, placeholder, goal, sent, send }) {
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>${title}</h2>
-      <p class="muted small">This will be logged on the developer's server with your team name and app version. Please don't include personal info. I will do my best to ${goal}. You can follow the app's progress on <a href="${SOURCE_URL}" target="_blank" rel="noopener">GitHub</a>.</p>
+      <p class="muted small">This will be logged on the developer's server with your team name and app version. Please don't include personal info. I will do my best to ${goal}. ${FOLLOW_GITHUB}</p>
       <label>${label}<textarea name="text" rows="6" maxlength="5000" required placeholder="${placeholder}"></textarea></label>
       <div class="row">
         <button value="send">Send</button>
@@ -2295,7 +2297,7 @@ function openSendDialog({ title, label, placeholder, goal, sent, send }) {
     if (e.submitter.value !== 'send') return;
     // Sent in the background, so it still goes out once an offline device reconnects.
     send(state.connection.teamName, form.text.value.trim())
-      .then(() => showMessage(sent, `Thanks for your feedback! I will work to the best of my ability to ${goal}.`))
+      .then(() => showMessage(sent, `Thanks for your feedback! I will work to the best of my ability to ${goal}. ${FOLLOW_GITHUB}`))
       .catch(showError);
   };
   dialog.showModal();
