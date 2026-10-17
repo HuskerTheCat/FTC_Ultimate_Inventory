@@ -48,7 +48,9 @@ The supplier catalog ([`src/catalog.json`](src/catalog.json)) is built from the 
 [![Part catalog last changed](https://img.shields.io/github/last-commit/HuskerTheCat/FTC_Ultimate_Inventory/main?path=src%2Fcatalog.json&label=part%20catalog%20last%20changed)](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/commits/main/src/catalog.json)
 [![Update part catalog](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/actions/workflows/catalog.yml/badge.svg)](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/actions/workflows/catalog.yml)
 
-The first badge shows when a weekly run last found new or changed parts, and the second whether the last run worked. To update the catalog right away, open [Update part catalog](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/actions/workflows/catalog.yml), click **Run workflow**, then the green **Run workflow** button. It takes about 20 minutes. Only the repository owner can run it.
+The first badge shows when a weekly run last found new or changed parts, and the second whether the last run worked.
+
+Manual update: [Update part catalog](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/actions/workflows/catalog.yml)
 
 ## Privacy
 
