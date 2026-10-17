@@ -18,14 +18,41 @@
   --danger: #ff6b7d;
   --pending: #f2b84b;
   --row-hover: #1c2238;
+  --raised-hover: #283152;
+  --tag-text: #9cc2ff;
+  --placeholder: #6b7493;
+  --scrollbar: #3a4466;
+  --backdrop: rgb(5 7 14 / 0.75);
   --focus: 0 0 0 3px rgb(91 155 255 / 0.85);
   --float-shadow: 0 18px 48px rgb(0 0 0 / 0.5);
   color-scheme: dark;
 }
+/* Pain and suffering mode: the light theme, picked in the ☰ menu and saved on this device. */
+:root[data-theme="light"] {
+  --bg: #eef1f7;
+  --surface: #ffffff;
+  --raised: #e3e8f2;
+  --field: #ffffff;
+  --text: #141a2e;
+  --muted: #586180;
+  --border: #d3d9e6;
+  --field-border: #8a94b2;
+  --accent: #2563d9;
+  --danger: #d0263f;
+  --pending: #a05f00;
+  --row-hover: #eef2fa;
+  --raised-hover: #d5dcea;
+  --tag-text: #1f56c4;
+  --placeholder: #8a92ad;
+  --scrollbar: #b8c0d4;
+  --backdrop: rgb(20 26 46 / 0.4);
+  --float-shadow: 0 18px 48px rgb(20 30 60 / 0.18);
+  color-scheme: light;
+}
 
 * { box-sizing: border-box; scrollbar-width: thin; }
-/* Thin navy scrollbars everywhere (Chrome, Edge, the Windows and Android apps, Firefox). */
-:root { scrollbar-color: #3a4466 transparent; }
+/* Thin scrollbars everywhere (Chrome, Edge, the Windows and Android apps, Firefox). */
+:root { scrollbar-color: var(--scrollbar) transparent; }
 body {
   margin: 0;
   background: var(--bg);
@@ -127,7 +154,7 @@ option { padding: 8px 10px; border-radius: 8px; color: var(--text); }
 option::checkmark { display: none; }
 option:is(:hover, :focus-visible) { background: var(--row-hover); outline: none; }
 option:checked { background: rgb(91 155 255 / 0.15); color: var(--accent); }
-input::placeholder, textarea::placeholder { color: #6b7493; }
+input::placeholder, textarea::placeholder { color: var(--placeholder); }
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
 textarea { resize: vertical; font-family: ui-monospace, monospace; font-size: 0.85rem; }
 label, .field { display: flex; flex-direction: column; gap: 6px; font-size: 0.875rem; font-weight: 500; color: var(--muted); }
@@ -147,7 +174,7 @@ button {
 }
 button:not([class]):hover { filter: brightness(1.08); }
 button.secondary { background: var(--raised); color: var(--text); }
-button.secondary:hover { background: #283152; }
+button.secondary:hover { background: var(--raised-hover); }
 button.danger { background: none; color: var(--danger); border-color: rgb(255 107 125 / 0.5); margin-left: auto; }
 button.danger:hover { background: rgb(255 107 125 / 0.1); }
 button.link { min-height: 0; background: none; border: none; color: var(--accent); padding: 4px; align-self: center; font-weight: 500; }
@@ -297,7 +324,7 @@ tbody tr.loading:hover { background: none; }
   height: 0.85em;
   width: 75%;
   border-radius: 6px;
-  background: linear-gradient(90deg, var(--raised) 35%, #2b3458 50%, var(--raised) 65%) 0 0 / 300% 100%;
+  background: linear-gradient(90deg, var(--raised) 35%, var(--raised-hover) 50%, var(--raised) 65%) 0 0 / 300% 100%;
   animation: shimmer 1.6s linear infinite;
 }
 .skeleton.title { width: 220px; max-width: 60%; height: 1.75rem; }
@@ -334,10 +361,10 @@ button.step {
   line-height: 1;
   vertical-align: middle;
 }
-button.step:hover:not(:disabled) { background: #2d3760; }
+button.step:hover:not(:disabled) { background: var(--raised-hover); }
 
 .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-button.tag { min-height: 0; padding: 2px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 500; background: rgb(91 155 255 / 0.12); color: #9cc2ff; }
+button.tag { min-height: 0; padding: 2px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 500; background: rgb(91 155 255 / 0.12); color: var(--tag-text); }
 button.tag:hover { background: rgb(91 155 255 / 0.22); }
 /* Removable chips (in the part editors) are a little bigger, with a round × that is easy to tap. */
 button.tag:has(.x) { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 12px; font-size: 0.875rem; }
@@ -349,7 +376,7 @@ button.tag.removed { padding: 3px 12px; font-size: 0.875rem; text-decoration: li
 /* Dialogs */
 /* The dialog itself is the rounded panel, so its scrollbar sits inside it and the sticky buttons never poke out at the corners. */
 dialog { border: 1px solid var(--border); border-radius: 16px; padding: 0; background: var(--surface); box-shadow: var(--float-shadow); width: min(480px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; color: var(--text); }
-dialog::backdrop { background: rgb(5 7 14 / 0.75); backdrop-filter: blur(3px); }
+dialog::backdrop { background: var(--backdrop); backdrop-filter: blur(3px); }
 dialog .card { padding: 24px; border: none; }
 /* The last row of buttons stays in view while a long form scrolls. */
 dialog .card > .row:last-child { position: sticky; bottom: 0; margin: 4px -24px -24px; padding: 14px 24px; background: var(--surface); border-top: 1px solid var(--border); }

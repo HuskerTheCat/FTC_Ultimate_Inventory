@@ -18,6 +18,15 @@ const SOURCE_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory';
 const STORAGE_KEY = 'ftc-inventory-connection';
 // Opening the app with ?demo runs it on sample data instead of a team's Firebase project (see demo.js).
 const DEMO = new URLSearchParams(location.search).has('demo');
+// Pain and suffering mode is the light theme. The choice is saved on this device only.
+const THEME_KEY = 'ftc-inventory-theme';
+const THEME_COLORS = { light: '#eef1f7', dark: '#0e1221' };
+function setTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  document.querySelector('meta[name="theme-color"]').content = THEME_COLORS[theme];
+}
+setTheme(localStorage.getItem(THEME_KEY) ?? 'dark');
+const themeLabel = () => (document.documentElement.dataset.theme === 'light' ? 'Normal mode' : 'Pain and suffering mode');
 const FIELDS = [
   ['name', 'Item'],
   ['partNumber', 'Part #'],
@@ -513,6 +522,7 @@ function renderInventory() {
             <button id="invite" class="menu-item">Team</button>
             <button id="bug" class="menu-item">Report bug</button>
             <button id="feature" class="menu-item">Request feature</button>
+            <button id="theme" class="menu-item">${themeLabel()}</button>
             <button id="signout" class="menu-item">Sign out</button>
           </div>
         </div>
@@ -645,6 +655,12 @@ function renderInventory() {
     title: 'Request a feature', label: 'What would you like the app to do?', placeholder: 'What you want to do and how it would help your team',
     goal: 'implement your feature', sent: 'Request submitted', send: sendFeatureRequest,
   });
+  app.querySelector('#theme').onclick = (e) => {
+    const theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    localStorage.setItem(THEME_KEY, theme);
+    setTheme(theme);
+    e.currentTarget.textContent = themeLabel();
+  };
   // Restarts the app, since wiping the data kept on this device shuts down its connection to Firebase.
   app.querySelector('#signout').onclick = () => fb.logOut().then(fb.clearDeviceData)
     .then(() => location.assign(location.pathname), showError);
