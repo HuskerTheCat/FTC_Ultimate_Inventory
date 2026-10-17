@@ -209,5 +209,5 @@ Before anything is added, the app shows what it found. Parts already in the inve
 - **A banner or message you don't understand?** [Troubleshooting and FAQ](TROUBLESHOOTING.md) explains each one and how to fix it.
 - **☰ → Report bug** logs a short description of the problem to a central server, with your team name and app version. Please don't include personal info.
 - **☰ → Request feature** sends an idea for the app to its developer the same way.
-- **☰ → Pain and suffering mode** switches to a light theme, and **☰ → Normal mode** switches back. Each device remembers its own choice.
+- **☰ → Pain and suffering mode** is a switch for a light theme. Turn it off to go back to Normal mode. Each device remembers its own choice.
 - **☰ → Sign out** also removes the team's data saved on that device, which is good practice on a shared computer.

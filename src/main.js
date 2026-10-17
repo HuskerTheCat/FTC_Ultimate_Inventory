@@ -26,7 +26,6 @@ function setTheme(theme) {
   document.querySelector('meta[name="theme-color"]').content = THEME_COLORS[theme];
 }
 setTheme(localStorage.getItem(THEME_KEY) ?? 'dark');
-const themeLabel = () => (document.documentElement.dataset.theme === 'light' ? 'Normal mode' : 'Pain and suffering mode');
 const FIELDS = [
   ['name', 'Item'],
   ['partNumber', 'Part #'],
@@ -522,7 +521,7 @@ function renderInventory() {
             <button id="invite" class="menu-item">Team</button>
             <button id="bug" class="menu-item">Report bug</button>
             <button id="feature" class="menu-item">Request feature</button>
-            <button id="theme" class="menu-item">${themeLabel()}</button>
+            <button id="theme" class="menu-item" role="switch" aria-checked="${document.documentElement.dataset.theme === 'light'}">Pain and suffering mode<span class="switch" aria-hidden="true"></span></button>
             <button id="signout" class="menu-item">Sign out</button>
           </div>
         </div>
@@ -609,7 +608,7 @@ function renderInventory() {
     button.onclick = () => showMenu(button, button.getAttribute('aria-expanded') !== 'true');
   });
   // Choosing anything in a menu closes it.
-  app.querySelectorAll('.menu').forEach((menu) => menu.addEventListener('click', (e) => e.target.closest('button') && closeMenus()));
+  app.querySelectorAll('.menu').forEach((menu) => menu.addEventListener('click', (e) => e.target.closest('button:not([role="switch"])') && closeMenus()));
   app.querySelector('#project-menu').onclick = (e) => {
     if (e.target.closest('#new-project')) return openProjectDialog();
     const id = e.target.closest('[data-project]')?.dataset.project;
@@ -659,7 +658,7 @@ function renderInventory() {
     const theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
     localStorage.setItem(THEME_KEY, theme);
     setTheme(theme);
-    e.currentTarget.textContent = themeLabel();
+    e.currentTarget.setAttribute('aria-checked', String(theme === 'light'));
   };
   // Restarts the app, since wiping the data kept on this device shuts down its connection to Firebase.
   app.querySelector('#signout').onclick = () => fb.logOut().then(fb.clearDeviceData)

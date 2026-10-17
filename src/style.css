@@ -249,6 +249,12 @@ button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised)
 .menu-item:hover { background: var(--row-hover); }
 .menu-item[aria-current="true"] { background: rgb(91 155 255 / 0.15); color: var(--accent); }
 .menu-item[aria-current="true"] svg { color: var(--accent); }
+/* An on/off switch in a menu (Pain and suffering mode). Flipping it leaves the menu open. */
+.switch { flex: none; position: relative; width: 40px; height: 24px; margin-left: auto; border-radius: 999px; background: var(--field-border); transition: background 0.15s; }
+.switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform 0.15s; }
+[aria-checked="true"] > .switch { background: var(--accent-gradient); }
+[aria-checked="true"] > .switch::after { transform: translateX(16px); }
+@media (prefers-reduced-motion: reduce) { .switch, .switch::after { transition: none; } }
 /* Type choice in the New dialog: three tiles, each with its icon. */
 .types { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; border: none; }
 .types legend { padding: 0; margin-bottom: 6px; font-size: 0.875rem; font-weight: 500; color: var(--muted); }
