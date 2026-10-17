@@ -32,23 +32,23 @@ The first screen has three ways in:
 - **Join a team**: you're new. Paste the join code your team admin sent you, or tap **Scan QR** and point the camera at the team's join QR code. Opening the join link does the same thing.
 - **Set up a new team**: only one person per team does this, once. It lists the setup steps and checks your Firebase project before creating the team. The [team setup guide](../SETUP.md) has each step in detail.
 
-![The first screen: sign in, join a team, or set up a new team](how-to/welcome.png)
+<img src="how-to/welcome.png" alt="The first screen: sign in, join a team, or set up a new team" width="560">
 
 After joining, enter your name, email and a password, tick the privacy policy box, and tap **Create account**. Your name is what teammates see in the change log. Then open the link in the email you get, and the app carries on by itself. This only happens once. Next time, just **Sign in**.
 
-<img src="how-to/phone-create-account.png" alt="Creating an account after joining a team" width="300">
+<img src="how-to/phone-create-account.png" alt="Creating an account after joining a team" width="200">
 
 A brand-new team's inventory is empty, so it shows **Add your first parts** with buttons to add a part, scan a package, import a CSV file, add locations and invite your team.
 
 > **Admins:** to invite people, open **☰ → Team**. Teammates scan the QR code on your screen, or you send them the join code or link. Only share these with your team: anyone who has them can join. The [team admin guide](ADMIN.md) covers the rest of running the team.
 >
-> <img src="how-to/phone-team.png" alt="The Team screen with the join QR code and join code" width="300">
+> <img src="how-to/phone-team.png" alt="The Team screen with the join QR code and join code" width="200">
 
 ---
 
 ## 2. Find your way around
 
-![The inventory on a computer, with numbered buttons](how-to/desktop-tour.png)
+<img src="how-to/desktop-tour.png" alt="The inventory on a computer, with numbered buttons" width="720">
 
 1. **List picker.** Switch between inventories, projects and packing lists, or make a new one.
 2. **Rename or delete** the inventory, project or list you're looking at.
@@ -67,8 +67,8 @@ Click a part's name (or anywhere on its row) to open and edit it. On a computer,
 On a phone, each part is a card with its location and part number under the name. **+ Add part** floats at the bottom right, and the ☰ menu holds the same items.
 
 <p>
-  <img src="how-to/phone-inventory.png" alt="The inventory on a phone" width="260">
-  <img src="how-to/phone-main-menu.png" alt="The ☰ menu on a phone" width="260">
+  <img src="how-to/phone-inventory.png" alt="The inventory on a phone" width="200">
+  <img src="how-to/phone-main-menu.png" alt="The ☰ menu on a phone" width="200">
 </p>
 
 ---
@@ -77,7 +77,7 @@ On a phone, each part is a card with its location and part number under the name
 
 Tap **+ Add part** and fill in what you know. Only the item name and quantity are required.
 
-![The Add part dialog, filled in from the part number](how-to/add-part.png)
+<img src="how-to/add-part.png" alt="The Add part dialog, filled in from the part number" width="480">
 
 - **Type a goBILDA, REV, AndyMark, ServoCity, TETRIX or Studica part number** and the item name, supplier and product link fill in by themselves. Even faster: tap **Scan** next to Barcode and scan the barcode on the package.
 - **Low stock at** flags the part once its quantity drops to that number or below (optional).
@@ -104,7 +104,7 @@ Type in **Search** to narrow the list as you type. If parts in your other invent
 
 The Filters button shows how many filters are on, so you never forget one. **Reset filters** turns them all off.
 
-![Filters showing only low-stock parts, grouped by location](how-to/filters.png)
+<img src="how-to/filters.png" alt="Filters showing only low-stock parts, grouped by location" width="640">
 
 ---
 
@@ -112,13 +112,13 @@ The Filters button shows how many filters are on, so you never forget one. **Res
 
 Your team keeps one list of locations (bins, shelves, drawers). Open **☰ → Locations** to add, rename or delete them, or print one bin's label. A location can only be deleted if there are no parts assigned to it.
 
-![The Locations list](how-to/locations.png)
+<img src="how-to/locations.png" alt="The Locations list" width="360">
 
 **QR labels** are printed from **⋯ → Print QR labels**. Stick them on bins and parts. Scanning one with the app's **Scan** button, or with any phone camera, opens that bin (showing just its parts) or that part, ready to take one with **−**.
 
 The app remembers which labels you've printed, so only new ones are checked. The list follows your filters, so filter to one location first to print just its labels. A single part's label can also be printed from its dialog with **Print label**.
 
-![The QR labels dialog](how-to/labels.png)
+<img src="how-to/labels.png" alt="The QR labels dialog" width="360">
 
 ---
 
@@ -127,8 +127,8 @@ The app remembers which labels you've printed, so only new ones are checked. The
 Open the **list picker** at the top to switch views or make a new one with **New inventory, project or list**.
 
 <p>
-  <img src="how-to/list-picker.png" alt="The list picker" width="49%">
-  <img src="how-to/new-list.png" alt="Making a new project" width="49%">
+  <img src="how-to/list-picker.png" alt="The list picker" height="200">
+  <img src="how-to/new-list.png" alt="Making a new project" height="200">
 </p>
 
 - **Inventory**: holds parts. Every team starts with **Main Inventory**, and you can add more (for example *Pit spares*).
@@ -137,13 +137,13 @@ Open the **list picker** at the top to switch views or make a new one with **New
 
 In a project or packing list, **+ Add parts** opens a list of every part in every inventory; tap a part to add one more. Use **−** and **+** to change how many it uses, or tap the part to type a number or remove it.
 
-![A robot project showing the parts it uses](how-to/project.png)
+<img src="how-to/project.png" alt="A robot project showing the parts it uses" width="640">
 
 From the inventory, **Add to** on any part puts it straight into a project or packing list.
 
 <p>
-  <img src="how-to/phone-add-to.png" alt="Adding a part to a project or packing list" width="260">
-  <img src="how-to/phone-packing.png" alt="A packing list with packed parts checked off" width="260">
+  <img src="how-to/phone-add-to.png" alt="Adding a part to a project or packing list" width="200">
+  <img src="how-to/phone-packing.png" alt="A packing list with packed parts checked off" width="200">
 </p>
 
 ---
@@ -152,7 +152,7 @@ From the inventory, **Add to** on any part puts it straight into a project or pa
 
 Open **☰ → Orders** to track parts you've ordered.
 
-![The order list](how-to/orders.png)
+<img src="how-to/orders.png" alt="The order list" width="360">
 
 - Add an order by typing the item, or pick a part you already have. Typing a supported part number fills in the rest. A link and notes are optional.
 - New items show up in Main Inventory right away as **on order**, so projects and packing lists can use them before they arrive.
@@ -165,7 +165,7 @@ Open **☰ → Orders** to track parts you've ordered.
 
 Choose **⋯ → Select parts**, tap the parts you want (or **Select all shown** to take everything your search and filters show), then **Edit selected**. You can set the location, category, low-stock number and tags for all of them at once. Anything left on "Keep" stays as it is on each part.
 
-![Editing two parts at once](how-to/bulk-edit.png)
+<img src="how-to/bulk-edit.png" alt="Editing two parts at once" width="360">
 
 ---
 
@@ -179,8 +179,8 @@ In an inventory, the **⋯** menu has:
 Before anything is added, the app shows what it found. Parts already in the inventory (same name or part number) are skipped, so nothing you already have is changed, and importing the same file twice adds nothing. **Undo** removes the whole import.
 
 <p>
-  <img src="how-to/more-menu.png" alt="The ⋯ menu" width="49%">
-  <img src="how-to/csv-import.png" alt="The import preview" width="49%">
+  <img src="how-to/more-menu.png" alt="The ⋯ menu" height="260">
+  <img src="how-to/csv-import.png" alt="The import preview" height="260">
 </p>
 
 **Print list** in the same menu prints the parts on screen, grouped the same way.
@@ -194,8 +194,8 @@ Before anything is added, the app shows what it found. Parts already in the inve
 - **☰ → Trash** keeps deleted parts, projects, packing lists and orders for 30 days. Tap **Restore** to bring one back. Only the team owner can **Delete forever**.
 
 <p>
-  <img src="how-to/change-log.png" alt="The change log" width="49%">
-  <img src="how-to/trash.png" alt="The trash" width="49%">
+  <img src="how-to/change-log.png" alt="The change log" width="380">
+  <img src="how-to/trash.png" alt="The trash" width="380">
 </p>
 
 ---

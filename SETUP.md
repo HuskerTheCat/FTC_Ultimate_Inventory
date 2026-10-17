@@ -10,45 +10,50 @@ Your team gets its own free Firebase project, so your inventory, logins and usag
 2. Click **Get started by setting up a Firebase project** (or **Create a project**), name it (for example `thunder-lab-26706`), tick **I accept the Firebase terms** and click **Continue**. Google Analytics is not needed: switch it off and click **Create project**.
    Your project ID (shown under the name) becomes the start of your join code, so a short one keeps the code short.
 
-<img src="docs/setup/1-project-name.png" alt="Naming the Firebase project, with the project ID under the name" width="560">
+   <img src="docs/setup/1-project-name.png" alt="Naming the Firebase project, with the project ID under the name" width="460">
 
 ## 2. Turn on email sign-in
 
 1. In the left menu, open **Security → Authentication** and click **Get started**.
+
+   <img src="docs/setup/2-menu.png" alt="Security, then Authentication, in the left menu" width="280">
+
 2. On the **Sign-in method** tab, choose **Email/Password**, switch on the first toggle, and click **Save**.
 
-<img src="docs/setup/2-menu.png" alt="Security, then Authentication, in the left menu" width="360">
-
-![Email/Password switched on, with the Save button](docs/setup/2-email-password.png)
+   <img src="docs/setup/2-email-password.png" alt="Email/Password switched on, with the Save button" width="560">
 
 ## 3. Create the database
 
 1. Open **Databases & Storage → Firestore** (under NoSQL) and click **Create database**. Use Firestore, not Realtime Database.
+
+   <img src="docs/setup/3-menu.png" alt="Databases & Storage, then Firestore, in the left menu" width="460">
+
 2. Choose **Standard edition**, leave the database ID as **(default)**, pick a location close to you, and choose **Start in production mode**.
+
+   <img src="docs/setup/3-production-mode.png" alt="Start in production mode" width="460">
+
 3. Copy the app's rules: open the app ([web version](https://huskerthecat.github.io/FTC_Ultimate_Inventory/), or the Windows or Android app), click **Start setup** under **Set up a new team**, then **Copy rules**.
 4. Back in Firebase, open the database's **Rules** tab, delete everything there, paste the rules, and click **Publish**.
 
-![Databases & Storage, then Firestore, in the left menu](docs/setup/3-menu.png)
-
-![Start in production mode](docs/setup/3-production-mode.png)
-
-![The Rules tab with the app's rules pasted in, and the Publish button](docs/setup/3-rules-editor.png)
+   <img src="docs/setup/3-rules-editor.png" alt="The Rules tab with the app's rules pasted in, and the Publish button" width="560">
 
 These rules are what keep your inventory private: only people who joined with your team's code can read or change it.
 
 ## 4. Copy your connection info
 
 1. In the left menu, open **Settings → General** and scroll down to **Your apps**.
+
+   <img src="docs/setup/4-menu.png" alt="Settings, then General, in the left menu" width="280">
+
 2. Click the web icon (`</>`), give it any nickname, and click **Register app**. Leave Firebase Hosting unticked.
+
+   <img src="docs/setup/4-your-apps.png" alt="Your apps, with the web icon" width="560">
+
+   <img src="docs/setup/4-register-app.png" alt="Registering the web app with a nickname" width="420">
+
 3. Copy the code block it shows you with its copy button (bottom right). The app only reads the `firebaseConfig = { ... }` part, so copying the whole block is fine.
 
-<img src="docs/setup/4-menu.png" alt="Settings, then General, in the left menu" width="360">
-
-![Your apps, with the web icon](docs/setup/4-your-apps.png)
-
-<img src="docs/setup/4-register-app.png" alt="Registering the web app with a nickname" width="560">
-
-<img src="docs/setup/4-firebase-config.png" alt="The firebaseConfig block to copy" width="560">
+   <img src="docs/setup/4-firebase-config.png" alt="The firebaseConfig block to copy" width="420">
 
 ## 5. Create your team in the app
 
