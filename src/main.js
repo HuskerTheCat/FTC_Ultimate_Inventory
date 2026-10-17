@@ -1415,8 +1415,12 @@ async function openRestoreDialog(file) {
     restoreBackup(plan, team, file.name).then(() => {
       dialog.close();
       showMessage('Backup restored', replace
-        ? `${esc(teamName)} now matches ${esc(file.name)}.${removed ? ` What was removed is in the Trash for ${TRASH_DAYS} days.` : ''}`
+        ? `${esc(teamName)} now matches ${esc(file.name)}.${removed ? ` Removed items will stay in the <button type="button" id="open-trash" class="link inline">Trash</button> for ${TRASH_DAYS} days.` : ''}`
         : `Added what was in ${esc(file.name)} to ${esc(teamName)}.`);
+      app.querySelector('#open-trash')?.addEventListener('click', () => {
+        app.querySelector('#ask').close();
+        openTrashDialog();
+      });
     }, (error) => {
       dialog.close();
       showError(error);
