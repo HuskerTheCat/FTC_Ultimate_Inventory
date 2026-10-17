@@ -1,6 +1,6 @@
 # Privacy policy
 
-FTC Ultimate Inventory is made by HuskerTheCat for FTC robotics teams. This page says what the app logs to the developer's server, and what it doesn't.
+FTC Ultimate Inventory is made by HuskerTheCat for FTC/FRC robotics teams. This page says what the app logs to the developer's server, and what it doesn't.
 
 ## What gets logged to the central server
 
