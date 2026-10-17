@@ -109,6 +109,9 @@ const watchCollection = (name, callback, onError) =>
   onSnapshot(collection(db, name), (snap) =>
     callback(snap.docs.map((d) => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) }))), onError);
 
+// Every doc in a collection, read once (from the server when online), for a team backup.
+export const getCollection = async (name) => (await getDocs(collection(db, name))).docs.map((d) => ({ id: d.id, ...d.data() }));
+
 export const watchParts = (callback, onError) => watchCollection('parts', callback, onError);
 export const watchProjects = (callback, onError) => watchCollection('projects', callback, onError);
 export const watchUses = (callback, onError) => watchCollection('uses', callback, onError);

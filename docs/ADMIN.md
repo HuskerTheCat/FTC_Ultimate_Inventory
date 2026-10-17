@@ -10,7 +10,7 @@ Everything below is on the **☰ → Team** screen unless it says otherwise. Tea
 2. [Keep the Members list clean](#2-keep-the-members-list-clean)
 3. [Reset the join code](#3-reset-the-join-code)
 4. [Update the Firebase rules](#4-update-the-firebase-rules)
-5. [Back up with CSV](#5-back-up-with-csv)
+5. [Back up the team](#5-back-up-the-team)
 6. [Hand the team to a new admin](#6-hand-the-team-to-a-new-admin)
 7. [Delete the team](#7-delete-the-team)
 
@@ -63,15 +63,15 @@ A red **Your Firebase is configured incorrectly and your account is not secure**
 
 ---
 
-## 5. Back up with CSV
+## 5. Back up the team
 
-Your inventory is stored safely in your Firebase project, and deleted items stay in **☰ → Trash** for 30 days. A CSV backup protects against bigger mistakes, like a bulk edit gone wrong or a deleted Firebase project.
+Your inventory is stored safely in your Firebase project, and deleted items stay in **☰ → Trash** for 30 days. A backup file protects against bigger mistakes, like a bulk edit gone wrong or a deleted Firebase project.
 
-In each inventory, choose **⋯ → Export CSV** (on the website or the Windows app; the Android app can't save files). Do it before each season and after a big inventory count, and keep the files somewhere the team can find them, like a shared drive.
+Choose **☰ → Export backup** (on the website or the Windows app; the Android app can't save files). It saves one `.inv` file with every inventory, project, packing list, part, order and location, and which QR labels are printed. It doesn't hold the members, the change log or the trash. Do it before each season and after a big inventory count, and keep the files somewhere the team can find them, like a shared drive.
 
-A CSV holds each part's details (item, part number, quantity, low-stock number, unit, location, supplier, category, tags, condition, barcode, link and notes). It doesn't include projects, packing lists, orders, the change log or the trash.
+To bring things back, choose **☰ → Restore backup** and pick the file. The app shows what it will add before anything changes. Restoring only adds what the team doesn't have, so nothing is deleted and changes made since the backup stay, unless you tick **Also change back**. See [Import, export and backups](HOW-TO.md#9-import-export-and-backups).
 
-To bring parts back from a backup, open an inventory, choose **⋯ → Import spreadsheet** and then **Choose CSV file**. Parts already in that inventory (same name or part number) are skipped, so nothing you have is changed. See [Import and export](HOW-TO.md#9-import-and-export).
+**Moving to a new Firebase project:** export a backup, set up the new team (see the [team setup guide](../SETUP.md)), then restore the backup there. Everything keeps its ID, so the QR labels you've already printed still work. Teammates join the new team with its join code.
 
 ---
 
@@ -98,7 +98,7 @@ The same steps work if the owner's account is lost (for example, a school email 
 
 Only do this if your team is done with the app for good. If you just want a fresh start, delete parts or inventories instead.
 
-1. Export a CSV of each inventory first if you might want the data later.
+1. Export a backup first (**☰ → Export backup**) if you might want the data later.
 2. Open **☰ → Team** and tap **Delete team**.
 3. Type your team number to confirm, for example `FTC 12345`. You can add a reason; it's logged to a central server, so please don't include personal info.
 

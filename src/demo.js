@@ -191,6 +191,8 @@ export async function ensureMainProject() {}
 export const rulesUpToDate = async () => true;
 export const rulesOpen = async () => false;
 
+export const getCollection = async (name) => docs(name);
+
 const watchCollection = (name) => (callback) => watch(name, () => callback(docs(name)));
 
 export const watchParts = watchCollection('parts');

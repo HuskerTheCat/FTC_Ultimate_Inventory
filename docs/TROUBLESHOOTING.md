@@ -187,7 +187,23 @@ The part was deleted, or the label was printed by another team. Look in **☰ �
 
 ### "The Android app can't save files. Export from the website or the Windows app."
 
-Export CSV only works on the website and in the Windows app. Sign in to the website on a computer to export.
+Export CSV and Export backup only work on the website and in the Windows app. Sign in to the website on a computer to export. Restore backup works on Android too.
+
+### "parts.csv isn’t an inventory backup. Choose a .inv file made with Export backup."
+
+Restore backup only opens the `.inv` files the app saves with **☰ → Export backup**. To bring in parts from a spreadsheet or a CSV file, use **⋯ → Import spreadsheet** instead. See [Import, export and backups](HOW-TO.md#9-import-export-and-backups).
+
+### "12345 Example Team backup.inv was made by a newer version of the app. Update the app, then restore it."
+
+The backup was saved by a newer version of the app than this one. Update the app (see [Installing and updating](#installing-and-updating)), then restore it again.
+
+### "Restoring a backup needs an internet connection."
+
+Restoring checks what your team already has on the server first. Try again once the Offline banner is gone.
+
+### Restoring says the team already has everything, but my numbers are different.
+
+Restoring only adds what's missing; it doesn't undo changes made since the backup. Tick **Also change back** in the preview to set those back to how they were in the backup.
 
 ### "Delete the parts in Pit spares first."
 
@@ -195,7 +211,7 @@ An inventory can only be deleted once it's empty. Move its parts somewhere else 
 
 ### "No parts found in pasted cells. Include the row of column names and the parts under it."
 
-Import needs the row of column names and at least one row of parts under it. Select both in your spreadsheet, copy them and paste again. A CSV file needs the same. See [Import and export](HOW-TO.md#9-import-and-export).
+Import needs the row of column names and at least one row of parts under it. Select both in your spreadsheet, copy them and paste again. A CSV file needs the same. See [Import, export and backups](HOW-TO.md#9-import-export-and-backups).
 
 ### A teammate's changes aren't showing up.
 

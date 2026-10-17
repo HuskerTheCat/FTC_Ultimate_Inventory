@@ -5,6 +5,7 @@ import { scanCode, BARCODES } from './scanner.js';
 import { codeKey, findProduct, searchCatalog, catalogSuppliers } from './catalog.js';
 import { printLabels, printSheet } from './labels.js';
 import { toCsv, parseCsv } from './csv.js';
+import { BACKUP_COLLECTIONS, makeBackup, readBackup } from './backup.js';
 import { startStatusBanners, checkRules } from './status.js';
 import { RULES, consolePage, AUTH_PAGE, RULES_PAGE, AUTH_OFF_CODES, setupProblems } from './setup.js';
 import { PROGRAMS, recordTeam, recordDeletedTeam, findTeamProject, teamProject, sendBugReport, sendFeatureRequest } from './hub.js';
@@ -517,6 +518,8 @@ function renderInventory() {
             <button id="locations" class="menu-item">Locations</button>
             <button id="log" class="menu-item">Change log</button>
             <button id="trash" class="menu-item">Trash</button>
+            <button id="export-backup" class="menu-item">Export backup</button>
+            <button id="restore-backup" class="menu-item">Restore backup</button>
             <hr />
             <button id="invite" class="menu-item">Team</button>
             <button id="bug" class="menu-item">Report bug</button>
@@ -618,6 +621,8 @@ function renderInventory() {
   app.querySelector('#locations').onclick = openLocationsDialog;
   app.querySelector('#orders').onclick = openOrdersDialog;
   app.querySelector('#trash').onclick = openTrashDialog;
+  app.querySelector('#export-backup').onclick = () => exportBackup().catch(showError);
+  app.querySelector('#restore-backup').onclick = chooseBackup;
   app.querySelector('#edit-project').onclick = openListDialog;
   app.querySelector('#search').oninput = (e) => { state.search = e.target.value; renderRows(); };
   app.querySelector('#elsewhere').onclick = (e) => {
@@ -815,7 +820,10 @@ function groupRows(rows) {
     .map(([name, group]) => [name || 'None', group]);
 }
 
-const countParts = (n) => `${n} ${n === 1 ? 'part' : 'parts'}`;
+const count = (n, word, plural = `${word}s`) => `${n} ${n === 1 ? word : plural}`;
+const countParts = (n) => count(n, 'part');
+// "A, B, C and 2 more"
+const listNames = (names) => `${names.slice(0, 3).join(', ')}${names.length > 3 ? ` and ${names.length - 3} more` : ''}`;
 
 function columnsFor(current) {
   if (!current.source) return [...FIELDS.slice(0, 3), ['inUse', 'In use'], ...FIELDS.slice(3)];
@@ -995,18 +1003,22 @@ const CSV_COLUMNS = [
   ['notes', 'Notes', ['note', 'comments', 'comment', 'description']],
 ];
 
+// Saves text as a file on the device. The Android app's web view can't save files.
+function saveFile(name, text, type) {
+  if (window.Capacitor?.isNativePlatform()) return showError(new Error('The Android app can’t save files. Export from the website or the Windows app.'));
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([text], { type }));
+  link.download = name.replace(/[\\/:*?"<>|]/g, '-');
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
 // Saves every part of the inventory on screen as a CSV file, as a backup or to open in a spreadsheet.
 function exportCsv() {
-  // The Android app's web view can't save files.
-  if (window.Capacitor?.isNativePlatform()) return showError(new Error('The Android app can’t save files. Export from the website or the Windows app.'));
   const current = currentProject();
   const rows = inventoryParts(current.id).sort((a, b) => naturalCompare(a.name, b.name))
     .map((p) => CSV_COLUMNS.map(([key]) => (key === 'tags' ? p.tags.join(', ') : p[key])));
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(new Blob([toCsv([CSV_COLUMNS.map(([, label]) => label), ...rows])], { type: 'text/csv' }));
-  link.download = `${current.name} ${new Date().toISOString().slice(0, 10)}.csv`.replace(/[\\/:*?"<>|]/g, '-');
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  saveFile(`${current.name} ${new Date().toISOString().slice(0, 10)}.csv`, toCsv([CSV_COLUMNS.map(([, label]) => label), ...rows]), 'text/csv');
 }
 
 // Asks for the parts to import: cells pasted from any spreadsheet, so nobody has to save it as a CSV file first, or a CSV file.
@@ -1179,7 +1191,7 @@ function openImportPreview(source, rows) {
     const notes = [
       ...Object.entries(plan.skipped).map(([problem, names]) => {
         const named = names.filter(Boolean);
-        const examples = named.length ? `: ${named.slice(0, 3).join(', ')}${named.length > 3 ? ` and ${named.length - 3} more` : ''}` : '';
+        const examples = named.length ? `: ${listNames(named)}` : '';
         return `Skipped ${names.length}, ${problem}${examples}`;
       }),
       ...(plan.newLocations.length ? [`New locations: ${plan.newLocations.join(', ')}`] : []),
@@ -1215,6 +1227,173 @@ function importParts(parts, newLocations, source) {
   writeParts(changes, 'added', name, `Imported from ${source}`.slice(0, 1990));
   offerUndo(`Imported ${name}`, () => logged(Promise.all(changes.map(([id, data]) =>
     fb.moveToTrash({ kind: 'part', docId: id, name: data.name, data, uses: [] }, state.user))), 'deleted', name, 'Undo: removed after import'));
+}
+
+// ---------- team backup ----------
+// Export backup saves everything the team has in one .inv file (see backup.js). Restore backup adds what's in a backup
+// and not in the team, under the same ids, so printed QR labels and project uses still find their parts. What the team
+// has that differs from the backup is only changed back when asked. Nothing is deleted.
+
+// Every doc of the backed-up collections, read fresh rather than taken from the screen, so a backup made while the
+// inventory is still loading isn't missing anything.
+async function readTeam() {
+  const docs = await Promise.all(BACKUP_COLLECTIONS.map((name) => fb.getCollection(name)));
+  return Object.fromEntries(BACKUP_COLLECTIONS.map((name, i) => [name, docs[i]]));
+}
+
+async function exportBackup() {
+  const { teamName } = state.connection;
+  saveFile(`${teamName} backup ${new Date().toISOString().slice(0, 10)}.inv`, makeBackup(teamName, await readTeam()), 'application/octet-stream');
+}
+
+// Asks for a backup file. Only computers' file pickers are set to .inv files: Android's can't tell a .inv file's type
+// (the Android app's would crash), and other phone and tablet pickers filter by type too, so they list every file.
+function chooseBackup() {
+  if (!navigator.onLine) return showError(new Error('Restoring a backup needs an internet connection.'));
+  const input = document.createElement('input');
+  input.type = 'file';
+  if (!/Android/.test(navigator.userAgent) && matchMedia('(pointer: fine)').matches) input.accept = '.inv';
+  input.onchange = () => openRestoreDialog(input.files[0]).catch(showError);
+  input.click();
+}
+
+// How describeEdit names what restoring changes besides parts.
+const NAME_FIELDS = [['name', 'Name']];
+const USE_FIELDS = [['quantity', 'Using'], ['packed', 'Packed']];
+const ORDER_FIELDS = [['name', 'Item'], ['partNumber', 'Part #'], ['quantity', 'Qty'], ['supplier', 'Supplier'], ['link', 'Link'], ['notes', 'Notes']];
+const useDetails = (use) => ({ quantity: use.quantity, packed: use.packed === undefined ? '' : use.packed ? 'Yes' : 'No' });
+
+// What restoring a backup does: `add` holds what's in it and not in the team, and `change` what the team has that differs
+// from it, each with a line saying how. Something whose inventory or part is in neither goes in Main Inventory, or for an
+// order, becomes an order for a new part, like bringing it back from the trash. Uses of a project or part in neither are
+// left out.
+function restorePlan(backup, team) {
+  const byId = (docs) => new Map(docs.map((d) => [d.id, d]));
+  const [projects, parts, uses, orders] = [team.projects, team.parts, team.uses, team.orders].map(byId);
+  const projectIds = new Set([...projects.keys(), ...backup.projects.map((p) => p.id)]);
+  const partIds = new Set([...parts.keys(), ...backup.parts.map((p) => p.id)]);
+  const printed = new Set(team.printed.map((p) => p.id));
+  const add = {
+    locations: backup.locations.filter((name) => !team.locations.some((l) => sameName(l.name, name))),
+    projects: [], parts: [], uses: [], orders: [],
+    printed: backup.printed.filter((key) => !printed.has(key)),
+  };
+  const change = { projects: [], parts: [], uses: [], orders: [] };
+  for (const { id, ...project } of backup.projects) {
+    const now = projects.get(id);
+    if (!now) add.projects.push({ id, ...project, source: !project.source || projectIds.has(project.source) ? project.source : fb.MAIN_PROJECT });
+    else if (now.name !== project.name) change.projects.push({ id, name: project.name, text: `${TYPES[typeOf(now)].label}: ${describeEdit(now, project, NAME_FIELDS)}` });
+  }
+  for (const { id, ...part } of backup.parts) {
+    if (!parts.has(id)) {
+      add.parts.push([id, projectIds.has(part.projectId) ? part : { ...part, projectId: fb.MAIN_PROJECT }]);
+      continue;
+    }
+    const [before, after] = [partData(parts.get(id)), partData(part)];
+    const how = describeEdit(before, after);
+    if (how) change.parts.push({ id, fields: changedFields(before, after), text: `${before.name}: ${how}` });
+  }
+  // A use without a quantity is never written, since setUse would delete it.
+  for (const use of backup.uses.filter((u) => u.quantity > 0 && projectIds.has(u.projectId) && partIds.has(u.partId))) {
+    const now = uses.get(`${use.projectId}_${use.partId}`);
+    if (!now) {
+      add.uses.push(use);
+      continue;
+    }
+    const how = describeEdit(useDetails(now), useDetails(use), USE_FIELDS);
+    if (how) change.uses.push({ use, text: `${parts.get(use.partId)?.name ?? 'A part'} in ${projects.get(use.projectId)?.name ?? 'a project'}: ${how}` });
+  }
+  for (const { id, ...order } of backup.orders) {
+    const data = partIds.has(order.partId) ? order : { ...order, partId: '' };
+    const now = orders.get(id);
+    if (!now) {
+      add.orders.push([id, data]);
+      continue;
+    }
+    const how = describeEdit(now, data, ORDER_FIELDS);
+    if (how) change.orders.push({ id, order: data, text: `Order for ${now.name}: ${how}` });
+  }
+  return { add, change };
+}
+
+// Shows what restoring a backup file adds to the team, and what the team has that differs from the backup, which is only
+// changed back when its box is checked.
+async function openRestoreDialog(file) {
+  const backup = readBackup(file.name, await file.text());
+  const { add, change } = restorePlan(backup, await readTeam());
+  const team = state.connection.teamName;
+  const adds = [
+    ...Object.entries(TYPES).map(([type, { label, plural }]) => {
+      const names = add.projects.filter((p) => typeOf(p) === type).map((p) => p.name);
+      return names.length && `${count(names.length, label.toLowerCase(), plural.toLowerCase())}: ${listNames(names)}`;
+    }),
+    add.parts.length && `${countParts(add.parts.length)}: ${listNames(add.parts.map(([, p]) => p.name))}`,
+    add.uses.length && `${count(add.uses.length, 'item')} in projects and packing lists`,
+    add.orders.length && `${count(add.orders.length, 'order')}: ${listNames(add.orders.map(([, o]) => o.name))}`,
+    add.locations.length && `${count(add.locations.length, 'location')}: ${listNames(add.locations)}`,
+    add.printed.length && `${count(add.printed.length, 'QR label')} marked as printed`,
+  ].filter(Boolean);
+  const changes = Object.values(change).flat().map((c) => c.text);
+  const lines = (texts) => texts.map((text) => `<li>${esc(text)}</li>`).join('');
+  const dialog = app.querySelector('#dialog');
+  dialog.innerHTML = `
+    <form method="dialog" class="card">
+      <h2>Restore backup</h2>
+      <p class="muted small">Backup of ${esc(backup.team)}, saved ${esc(new Date(backup.saved).toLocaleString())}. Restoring adds what ${esc(team)} doesn’t have. Nothing is deleted.</p>
+      ${adds.length ? `<ul class="small">${lines(adds)}</ul>` : `<p>${esc(team)} already has everything in this backup.</p>`}
+      ${changes.length ? `
+        <label class="check"><input type="checkbox" name="changes" />Also change back ${count(changes.length, 'thing')} that ${changes.length === 1 ? 'differs' : 'differ'} from the backup</label>
+        <ul class="small">${lines(changes.slice(0, 5))}${changes.length > 5 ? `<li class="muted">and ${changes.length - 5} more</li>` : ''}</ul>` : ''}
+      <div class="row">
+        <button value="restore" autofocus>Restore</button>
+        <button value="cancel" formnovalidate class="secondary">Cancel</button>
+      </div>
+    </form>`;
+  const form = dialog.querySelector('form');
+  const button = form.querySelector('[value="restore"]');
+  const withChanges = () => Boolean(form.changes?.checked);
+  const update = () => { button.disabled = !adds.length && !withChanges(); };
+  form.onchange = update;
+  update();
+  form.onsubmit = (e) => {
+    if (e.submitter.value !== 'restore') return;
+    e.preventDefault();
+    button.disabled = true;
+    button.textContent = 'Restoring…';
+    restoreBackup({ add, change }, withChanges(), file.name).then(() => {
+      dialog.close();
+      showMessage('Backup restored', `${esc(team)} now has everything in ${esc(file.name)}.`);
+    }, (error) => {
+      dialog.close();
+      showError(error);
+    });
+  };
+  dialog.showModal();
+}
+
+// Writes a restore in the order the rules check that things exist: inventories before the projects that name them and the
+// parts in them, parts before their uses and orders. With `withChanges`, what differs from the backup is changed back too.
+async function restoreBackup({ add, change }, withChanges, source) {
+  const changed = (list) => (withChanges ? list : []);
+  const create = (p) => fb.createProject(p.id, p.name, p.source, p.kind);
+  const edits = changed(change.parts);
+  const log = (action, n, details) => n && fb.logChange(me(), action, countParts(n), `Restored from ${source}${details}`.slice(0, 2000));
+  await Promise.all([...add.locations.map((name) => fb.addLocation(name)), ...add.projects.filter((p) => !p.source).map(create)]);
+  await Promise.all([
+    ...add.projects.filter((p) => p.source).map(create),
+    ...changed(change.projects).map(({ id, name }) => fb.renameProject(id, name)),
+  ]);
+  await Promise.all([
+    fb.saveParts(add.parts, state.user),
+    fb.updateParts(edits.map(({ id, fields }) => [id, fields]), state.user),
+    log('added', add.parts.length, ''),
+    log('edited', edits.length, `: ${edits.map((c) => c.text).join('; ')}`),
+  ]);
+  await Promise.all([
+    ...[...add.uses, ...changed(change.uses).map((c) => c.use)].map((u) => fb.setUse(u.projectId, u.partId, u.quantity, u.packed)),
+    ...[...add.orders, ...changed(change.orders).map((c) => [c.id, c.order])].map(([id, order]) => fb.saveOrder(id, order)),
+    fb.markPrinted(add.printed),
+  ]);
 }
 
 const lowBadge = (partId) => lowStock(partId) ? '<small class="badge low">Low stock</small>' : '';
@@ -2220,9 +2399,9 @@ function changeQuantity(part, delta, undoable = true) {
   offerUndo(`${part.name} ${total > 0 ? '+' : ''}${total}`, () => changeQuantity(part, -total, false), key);
 }
 
-// "Quantity 4 → 6, Location Bin A → Bin B"
-function describeEdit(before, after) {
-  return EDIT_FIELDS
+// "Quantity 4 → 6, Location Bin A → Bin B", over a part's fields or the `fields` given.
+function describeEdit(before, after, fields = EDIT_FIELDS) {
+  return fields
     .map(([key, label]) => [label, String(before[key] ?? ''), String(after[key] ?? '')])
     .filter(([, from, to]) => from !== to)
     .map(([label, from, to]) => `${label} ${from || '(blank)'} → ${to || '(blank)'}`)

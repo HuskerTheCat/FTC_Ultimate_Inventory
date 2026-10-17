@@ -16,7 +16,7 @@ Something not working? See [Troubleshooting and FAQ](TROUBLESHOOTING.md). Runnin
 6. [Inventories, projects and packing lists](#6-inventories-projects-and-packing-lists)
 7. [Order list](#7-order-list)
 8. [Edit many parts at once](#8-edit-many-parts-at-once)
-9. [Import and export](#9-import-and-export)
+9. [Import, export and backups](#9-import-export-and-backups)
 10. [Change log, Undo and Trash](#10-change-log-undo-and-trash)
 11. [Team, sign out and other tips](#11-team-sign-out-and-other-tips)
 
@@ -53,7 +53,7 @@ A brand-new team's inventory is empty, so it shows **Add your first parts** with
 1. **List picker.** Switch between inventories, projects and packing lists, or make a new one.
 2. **Rename or delete** the inventory, project or list you're looking at.
 3. **Scan.** Scan a QR label to open that bin or part, or a supplier package barcode to find or add that part. A part you already have opens with big **−** and **+** buttons, so taking one or putting some back is two taps; **Edit part** opens everything else.
-4. **☰ menu.** Orders, Locations, Change log, Trash, Team, Report bug, Request feature, Pain and suffering mode and Sign out.
+4. **☰ menu.** Orders, Locations, Change log, Trash, Export backup, Restore backup, Team, Report bug, Request feature, Pain and suffering mode and Sign out.
 5. **Search** by name, part number, barcode, supplier, location, category, condition or notes. Each word can match anywhere, so `m4 screw` finds *M4 x 8mm socket head screw*.
 6. **Filters.** Filter, sort and group the list.
 7. **⋯ menu.** Select parts, Print QR labels, Print list, Export CSV and Import spreadsheet.
@@ -173,7 +173,7 @@ Choose **⋯ → Select parts**, tap the parts you want (or **Select all shown**
 
 ---
 
-## 9. Import and export
+## 9. Import, export and backups
 
 Already keep your parts in a spreadsheet? Bring them in with **⋯ → Import spreadsheet**, whatever your columns are called.
 
@@ -189,6 +189,16 @@ Rows the app can't add are listed with the reason, like a quantity that isn't a 
 The same menu has **Export CSV**, which saves every part in the inventory as a spreadsheet file, for a backup or to open in Excel or Google Sheets. Export works on the website and the Windows app, not the Android app. **Print list** prints the parts on screen, grouped the same way.
 
 <img src="how-to/more-menu.png" alt="The ⋯ menu" height="260">
+
+### Back up the whole team
+
+**☰ → Export backup** saves everything your team has in one `.inv` file: every inventory, project and packing list, every part, the orders, the locations and which QR labels are printed. It doesn't hold the members, the change log or the trash. Export works on the website and the Windows app, not the Android app. Keep the file somewhere the team can find it, like a shared drive.
+
+**☰ → Restore backup** opens a `.inv` file. On a computer the file picker shows `.inv` files; a phone lists all files, and the app checks that the one you pick is a backup. Before anything changes, the app shows what restoring will add: parts, projects and anything else your team doesn't have anymore. Click **Restore** to add them.
+
+<img src="how-to/restore-backup.png" alt="The restore preview, with what restoring adds and what differs from the backup" width="420">
+
+Restoring never deletes anything, and it leaves the things you've changed since the backup as they are. To also set those back to how they were in the backup, like a quantity or a project's name, tick **Also change back** first; the preview lists what will change. Everything comes back under the same IDs, so printed QR labels keep working, even in a new Firebase project. Restoring needs an internet connection.
 
 ---
 
