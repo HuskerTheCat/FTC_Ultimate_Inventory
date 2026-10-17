@@ -205,6 +205,18 @@ function ask(question, value = '') {
   });
 }
 
+// A heading and a line of text with an OK button, over whatever dialog is open.
+function showMessage(heading, text) {
+  const dialog = app.querySelector('#ask');
+  dialog.innerHTML = `
+    <form method="dialog" class="card">
+      <h2>${esc(heading)}</h2>
+      <p>${esc(text)}</p>
+      <div class="row"><button value="ok">OK</button></div>
+    </form>`;
+  dialog.showModal();
+}
+
 function saveConnection(connection) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(connection));
   location.reload();
@@ -627,11 +639,11 @@ function renderInventory() {
   app.querySelector('#log').onclick = openLogDialog;
   app.querySelector('#bug').onclick = () => openSendDialog({
     title: 'Report a bug', label: 'What went wrong?', placeholder: 'What you did, what you expected, and what happened instead',
-    goal: 'fix your issue', send: sendBugReport,
+    goal: 'fix your issue', sent: 'Report submitted', send: sendBugReport,
   });
   app.querySelector('#feature').onclick = () => openSendDialog({
     title: 'Request a feature', label: 'What would you like the app to do?', placeholder: 'What you want to do and how it would help your team',
-    goal: 'implement your feature', send: sendFeatureRequest,
+    goal: 'implement your feature', sent: 'Request submitted', send: sendFeatureRequest,
   });
   // Restarts the app, since wiping the data kept on this device shuts down its connection to Firebase.
   app.querySelector('#signout').onclick = () => fb.logOut().then(fb.clearDeviceData)
@@ -2266,7 +2278,7 @@ function openLogDialog() {
 }
 
 // Bug reports and feature requests go to the app's developer, not the team (see hub.js).
-function openSendDialog({ title, label, placeholder, goal, send }) {
+function openSendDialog({ title, label, placeholder, goal, sent, send }) {
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `
     <form method="dialog" class="card">
@@ -2283,7 +2295,7 @@ function openSendDialog({ title, label, placeholder, goal, send }) {
     if (e.submitter.value !== 'send') return;
     // Sent in the background, so it still goes out once an offline device reconnects.
     send(state.connection.teamName, form.text.value.trim())
-      .then(() => alert(`Thanks for your feedback! I will work to the best of my ability to ${goal}.`))
+      .then(() => showMessage(sent, `Thanks for your feedback! I will work to the best of my ability to ${goal}.`))
       .catch(showError);
   };
   dialog.showModal();
