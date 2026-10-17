@@ -75,7 +75,7 @@ On a phone, each part is a card with its location and part number under the name
 
 ## 3. Add and change parts
 
-Tap **+ Add part**. The quickest way to fill it in is **Search the parts catalog** at the top: type a few words of the name or the part number, like `u-beam 8mm`, and tap the part. The catalog has goBILDA, REV, AndyMark, ServoCity, TETRIX and Studica parts.
+Tap **+ Add part**. The quickest way to fill it in is **Search the parts catalog** at the top: type a few words of the name or the part number, like `u-beam 8mm`, and tap the part. The catalog has goBILDA, REV, AndyMark, ServoCity, TETRIX and Studica parts; pick one supplier in the menu next to the search to see only theirs.
 
 <img src="how-to/catalog-search.png" alt="Searching the parts catalog in Add part" width="480">
 

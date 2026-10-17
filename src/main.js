@@ -2,7 +2,7 @@ import QRCode from 'qrcode';
 import * as firebase from './firebase.js';
 import { parseFirebaseConfig, encodeJoinCode, decodeJoinCode, findTeam, newSecret } from './joincode.js';
 import { scanCode, BARCODES } from './scanner.js';
-import { codeKey, findProduct, searchCatalog } from './catalog.js';
+import { codeKey, findProduct, searchCatalog, catalogSuppliers } from './catalog.js';
 import { printLabels, printSheet } from './labels.js';
 import { toCsv, parseCsv } from './csv.js';
 import { startStatusBanners, checkRules } from './status.js';
@@ -1346,12 +1346,15 @@ async function scanBarcodeInto(form) {
   if (product.category && !form.category.value) setCategory(form.category, canonicalCategory(product.category));
 }
 
-// Lists catalog parts matching what's typed in the part form's catalog search. Picking one fills in its name, part
-// number, supplier, link and category, leaving quantity and location to the user.
+// Lists catalog parts matching what's typed in the part form's catalog search, from every supplier or the one picked.
+// Picking a part fills in its name, part number, supplier, link and category, leaving quantity and location to the user.
 function searchCatalogInto(form, field) {
   const search = field.querySelector('input');
+  const supplier = field.querySelector('select');
   const list = field.querySelector('ul');
   let found = [];
+  let searches = 0;
+  catalogSuppliers().then((names) => names.forEach((name) => supplier.add(new Option(name)))).catch(() => {}); // the search reports a failed load
   const pick = (product) => {
     for (const key of ['name', 'partNumber', 'supplier', 'link']) form[key].value = product[key] ?? '';
     if (product.category) setCategory(form.category, canonicalCategory(product.category));
@@ -1360,10 +1363,11 @@ function searchCatalogInto(form, field) {
     form.quantity.focus();
     form.quantity.select();
   };
-  search.oninput = async () => {
+  search.oninput = supplier.onchange = async () => {
     const query = search.value;
-    const results = query.trim() ? await searchCatalog(query, 30).catch((error) => error) : [];
-    if (search.value !== query) return; // a later keystroke's search is on its way
+    const run = ++searches;
+    const results = query.trim() ? await searchCatalog(query, supplier.value, 30).catch((error) => error) : [];
+    if (run !== searches) return; // a later search is on its way
     list.hidden = !query.trim();
     if (results instanceof Error) return (list.innerHTML = `<li class="muted small">${esc(results.message)}</li>`);
     found = results;
@@ -1900,7 +1904,10 @@ function openPartDialog(part, carry = null, note = '') {
       ${part && onOrder(part.id) ? `<p class="muted small">${onOrder(part.id)} on order. Tap Arrived in Orders when they come in.</p>` : ''}
       ${part ? '' : `<div class="field catalog-search">
         <label for="catalog-search">Search the parts catalog</label>
-        <input id="catalog-search" type="search" autocomplete="off" placeholder="Name or part #, e.g. u-beam 8mm" />
+        <div class="catalog-row">
+          <input id="catalog-search" type="search" autocomplete="off" placeholder="Name or part #, e.g. u-beam 8mm" />
+          <select aria-label="Supplier"><option value="">All suppliers</option></select>
+        </div>
         <ul class="picker" hidden></ul>
       </div>`}
       ${input('name', 'Item', 'required')}

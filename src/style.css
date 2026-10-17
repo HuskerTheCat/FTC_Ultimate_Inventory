@@ -394,6 +394,10 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
 }
 /* Catalog search sits apart at the top of Add part, since picking a result fills in the fields below it. */
 .catalog-search { padding: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.catalog-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.catalog-row > * { color: var(--text); font-weight: 400; font-size: 1rem; }
+.catalog-row input { flex: 999 1 200px; } /* the supplier picker only grows once it wraps under the search */
+.catalog-row select { flex: 1 0 auto; width: auto; }
 .catalog-search .picker { max-height: min(320px, 40dvh); }
 .catalog-search .picker[hidden] { display: none; }
 .catalog-search .picker button { min-height: 0; padding: 8px 12px; font-weight: 400; }

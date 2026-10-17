@@ -40,12 +40,19 @@ export async function findProduct(code) {
   return byCode.get(codeKey(code)) ?? null;
 }
 
+// The suppliers the catalog has parts from.
+export async function catalogSuppliers() {
+  const { all } = await loaded();
+  return [...new Set(all.map(({ product }) => product.supplier))];
+}
+
 // Catalog parts with every word of the search in their name, part number or supplier, so "u-beam 8mm" finds
-// "1101 Series U-Beam (1 Hole, 8mm Length)". Parts whose words start with the searched words come first, then shorter names.
-export async function searchCatalog(query, limit) {
+// "1101 Series U-Beam (1 Hole, 8mm Length)". Only one supplier's parts when a supplier is given.
+// Parts whose words start with the searched words come first, then shorter names.
+export async function searchCatalog(query, supplier, limit) {
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   const { all } = await loaded();
-  return all.filter(({ text }) => words.every((word) => text.includes(word)))
+  return all.filter(({ product, text }) => (!supplier || product.supplier === supplier) && words.every((word) => text.includes(word)))
     .map(({ product, text }) => ({ product, starts: words.filter((word) => wordStarts(text).includes(` ${wordStarts(word).trim()}`)).length }))
     .sort((a, b) => b.starts - a.starts || a.product.name.length - b.product.name.length)
     .slice(0, limit)
