@@ -2370,8 +2370,10 @@ async function deleteTeam() {
 // Checked each time the app opens on the device that set up the team, so a try that failed (say, offline) is made again,
 // and the owner hears about it when the number is already taken.
 // The owner key is saved in the team's own project first, so the owner can always take the team off the list later.
+// Test teams on the local emulators ("demo-" project IDs) stay off the real list.
 async function registerTeam() {
   const { teamName, program, teamNumber, config } = state.connection;
+  if (config.projectId.startsWith('demo-')) return;
   if (!navigator.onLine || await teamProject(program, teamNumber) === config.projectId) return;
   let ownerKey = await fb.getOwnerKey();
   if (!ownerKey) {
