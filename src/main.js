@@ -2,7 +2,7 @@ import QRCode from 'qrcode';
 import * as firebase from './firebase.js';
 import { parseFirebaseConfig, encodeJoinCode, decodeJoinCode, findTeam, newSecret } from './joincode.js';
 import { scanCode, BARCODES } from './scanner.js';
-import { codeKey, findProduct } from './catalog.js';
+import { codeKey, findProduct, searchCatalog } from './catalog.js';
 import { printLabels, printSheet } from './labels.js';
 import { toCsv, parseCsv } from './csv.js';
 import { startStatusBanners, checkRules } from './status.js';
@@ -1343,12 +1343,51 @@ async function scanBarcodeInto(form) {
   for (const key of ['name', 'partNumber', 'supplier', 'link']) {
     if (!form[key].value) form[key].value = product[key] ?? '';
   }
-  const category = product.category && canonicalCategory(product.category);
-  if (category && !form.category.value) {
-    if (![...form.category.options].some((o) => o.value === category)) form.category.add(new Option(categoryLabel(category), category), form.category.options.length - 1);
-    form.category.value = category;
-    form.category.dispatchEvent(new Event('change')); // so "+ New category…" falls back to it
-  }
+  if (product.category && !form.category.value) setCategory(form.category, canonicalCategory(product.category));
+}
+
+// Lists catalog parts matching what's typed in the part form's catalog search. Picking one fills in its name, part
+// number, supplier, link and category, leaving quantity and location to the user.
+function searchCatalogInto(form, field) {
+  const search = field.querySelector('input');
+  const list = field.querySelector('ul');
+  let found = [];
+  const pick = (product) => {
+    for (const key of ['name', 'partNumber', 'supplier', 'link']) form[key].value = product[key] ?? '';
+    if (product.category) setCategory(form.category, canonicalCategory(product.category));
+    search.value = '';
+    list.hidden = true;
+    form.quantity.focus();
+    form.quantity.select();
+  };
+  search.oninput = async () => {
+    const query = search.value;
+    const results = query.trim() ? await searchCatalog(query, 30).catch((error) => error) : [];
+    if (search.value !== query) return; // a later keystroke's search is on its way
+    list.hidden = !query.trim();
+    if (results instanceof Error) return (list.innerHTML = `<li class="muted small">${esc(results.message)}</li>`);
+    found = results;
+    list.innerHTML = found.map((p, i) => `<li><button type="button" class="secondary" data-index="${i}">
+        <span><strong>${esc(p.name)}</strong><span class="muted small">${esc(p.supplier)} · ${esc(p.partNumber)}</span></span>
+      </button></li>`).join('') || '<li class="muted small">No catalog parts match. Fill in the part yourself below.</li>';
+  };
+  // Enter picks the best match instead of saving the form.
+  search.onkeydown = (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    if (found.length && !list.hidden) pick(found[0]);
+  };
+  list.onclick = (e) => {
+    const index = e.target.closest('button')?.dataset.index;
+    if (index !== undefined) pick(found[index]);
+  };
+}
+
+// Picks a category in a form's category picker, adding it to the picker when no part uses it yet.
+function setCategory(select, category) {
+  if (![...select.options].some((o) => o.value === category)) select.add(new Option(categoryLabel(category), category), select.options.length - 1);
+  select.value = category;
+  select.dispatchEvent(new Event('change')); // so "+ New category…" falls back to it
 }
 
 // The part a code is saved on as its barcode or part number. Prefers the inventory on screen.
@@ -1859,6 +1898,11 @@ function openPartDialog(part, carry = null, note = '') {
       ${carry?.added ? `<p class="muted small">${carry.added} added so far. Location, category and tags are kept from the last part.</p>` : ''}
       ${note ? `<p class="muted small">${esc(note)}</p>` : ''}
       ${part && onOrder(part.id) ? `<p class="muted small">${onOrder(part.id)} on order. Tap Arrived in Orders when they come in.</p>` : ''}
+      ${part ? '' : `<div class="field catalog-search">
+        <label for="catalog-search">Search the parts catalog</label>
+        <input id="catalog-search" type="search" autocomplete="off" placeholder="Name or part #, e.g. u-beam 8mm" />
+        <ul class="picker" hidden></ul>
+      </div>`}
       ${input('name', 'Item', 'required')}
       ${input('partNumber', 'Part number')}
       <label>Barcode
@@ -1924,6 +1968,7 @@ function openPartDialog(part, carry = null, note = '') {
   watchNewCategory(form.category);
   watchNewLocation(form.location);
   autofillFromCatalog(form);
+  if (!part) searchCatalogInto(form, dialog.querySelector('.catalog-search'));
   dialog.querySelector('#scan-barcode').onclick = () => scanBarcodeInto(form).catch(showError);
 
   const tagBox = dialog.querySelector('#part-tags');
@@ -1972,7 +2017,8 @@ function openPartDialog(part, carry = null, note = '') {
     openPartDialog(null, { ...kept, added: (carry?.added ?? 0) + 1 });
   };
   if (!dialog.open) dialog.showModal();
-  if (carry) form.name.focus();
+  // A new part starts at the catalog search, unless it's already filled in from the catalog.
+  if (carry) (carry.name ? form.name : dialog.querySelector('#catalog-search')).focus();
   // Opening a part to look at it doesn't bring up the phone keyboard; tapping a field does.
   if (part) document.activeElement.blur();
 }

@@ -75,11 +75,15 @@ On a phone, each part is a card with its location and part number under the name
 
 ## 3. Add and change parts
 
-Tap **+ Add part** and fill in what you know. Only the item name and quantity are required.
+Tap **+ Add part**. The quickest way to fill it in is **Search the parts catalog** at the top: type a few words of the name or the part number, like `u-beam 8mm`, and tap the part. The catalog has goBILDA, REV, AndyMark, ServoCity, TETRIX and Studica parts.
 
-<img src="how-to/add-part.png" alt="The Add part dialog, filled in from the part number" width="480">
+<img src="how-to/catalog-search.png" alt="Searching the parts catalog in Add part" width="480">
 
-- **Type a goBILDA, REV, AndyMark, ServoCity, TETRIX or Studica part number** and the item name, supplier and product link fill in by themselves. Even faster: tap **Scan** next to Barcode and scan the barcode on the package.
+The part's name, part number, supplier, category and product link fill in. Add how many you have and where they are, and **Save**. Only the item name and quantity are required, so parts that aren't in the catalog are just typed in.
+
+<img src="how-to/add-part.png" alt="The Add part dialog, filled in from the catalog" width="480">
+
+- **Typing a part number** from those suppliers fills in the item name, supplier and product link too. Or tap **Scan** next to Barcode and scan the barcode on the package.
 - **Low stock at** flags the part once its quantity drops to that number or below (optional).
 - **Location** comes from your team's list of locations (see [section 5](#5-locations-and-qr-labels)). Pick **+ New location…** to add one without leaving the part.
 - **Category** can have subcategories: `Electronics/Sensors` shows as Electronics › Sensors.

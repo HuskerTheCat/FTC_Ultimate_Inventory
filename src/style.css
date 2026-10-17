@@ -392,6 +392,12 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   dialog .part-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
   dialog .part-form > :is(h2, p, .field, .row, label:has(textarea), label:has([name="name"])) { grid-column: 1 / -1; }
 }
+/* Catalog search sits apart at the top of Add part, since picking a result fills in the fields below it. */
+.catalog-search { padding: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.catalog-search .picker { max-height: min(320px, 40dvh); }
+.catalog-search .picker[hidden] { display: none; }
+.catalog-search .picker button { min-height: 0; padding: 8px 12px; font-weight: 400; }
+.catalog-search .picker button > span { display: flex; flex-direction: column; }
 /* Fields most parts leave empty fold under More details. */
 .more-details summary { cursor: pointer; color: var(--accent); font-size: 0.875rem; font-weight: 500; }
 .more-fields { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
