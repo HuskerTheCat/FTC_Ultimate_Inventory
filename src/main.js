@@ -6,10 +6,13 @@ import { codeKey, findProduct } from './catalog.js';
 import { printLabels, printSheet } from './labels.js';
 import { toCsv, parseCsv } from './csv.js';
 import { startStatusBanners, checkRules } from './status.js';
+import { RULES, consolePage, AUTH_PAGE, RULES_PAGE, AUTH_OFF_CODES, setupProblems } from './setup.js';
 import { PROGRAMS, recordTeam, recordDeletedTeam, findTeamProject, teamProject, sendBugReport } from './hub.js';
 
 const WEB_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/';
 const PRIVACY_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/PRIVACY.md';
+const SETUP_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/SETUP.md';
+const GUIDE_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/docs/HOW-TO.md';
 // The AGPL license asks anyone hosting a version of the app to offer its source; forks should point this at their own code.
 const SOURCE_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory';
 const STORAGE_KEY = 'ftc-inventory-connection';
@@ -172,10 +175,14 @@ function showError(error) {
   const message = ERROR_MESSAGES[error.code] ?? error.message.replace(/^Firebase: /, '').replace(/\s*\(.*\)\.?$/, '');
   const banner = document.getElementById('error');
   banner.textContent = message;
+  if (error.link) banner.append(' ', Object.assign(document.createElement('a'), { href: error.link, target: '_blank', rel: 'noopener', textContent: error.linkText }));
   banner.hidden = false;
   clearTimeout(errorTimer);
   errorTimer = setTimeout(() => { banner.hidden = true; }, ERROR_MS);
 }
+
+// An error that links to where it can be fixed, like a page of the team's Firebase project.
+const errorWithLink = (message, link, linkText) => Object.assign(new Error(message), { link, linkText });
 
 // Asks for a line of text over whatever dialog is open. The Windows app has no prompt(), so the app uses this instead.
 // Resolves with the trimmed text, or '' when cancelled. `value` fills the box to start with.
@@ -264,23 +271,21 @@ function renderWelcome() {
           <button type="button" id="scan-join" class="secondary">Scan QR</button>
         </div>
       </form>
-      <form id="create" class="card">
-        <h2>Set up a new team</h2>
-        <p class="muted">For one person per team. Follow the <a href="https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/SETUP.md" target="_blank" rel="noopener">setup guide</a> to make your free Firebase project first.</p>
-        <input name="teamName" required maxlength="200" placeholder="Team name, e.g. 26706 Thunder Lab" />
-        ${teamFields()}
-        <textarea name="config" rows="6" required placeholder="Paste your firebaseConfig here"></textarea>
-        <button>Create team</button>
-      </form>
       <div class="card">
         <h2>Just looking?</h2>
         <p class="muted">Try the app with sample parts. Nothing is saved.</p>
         <button id="demo" class="secondary">Try the demo</button>
       </div>
+      <div class="card">
+        <h2>Set up a new team</h2>
+        <p class="muted">For one person per team, once. Your team gets its own free Firebase project.</p>
+        <button id="setup" class="secondary">Start setup</button>
+      </div>
     </main>
     <dialog id="dialog"></dialog>`;
 
   app.querySelector('#demo').onclick = () => { location.search = 'demo'; };
+  app.querySelector('#setup').onclick = renderSetup;
   app.querySelector('#signin').onsubmit = async (e) => {
     e.preventDefault();
     try {
@@ -305,13 +310,58 @@ function renderWelcome() {
       form.code.value = joinCodeFrom(text);
       form.requestSubmit();
     }).catch(showError);
-  app.querySelector('#create').onsubmit = (e) => {
+}
+
+// The setup steps in short, with the details in SETUP.md. Creating the team first checks the Firebase project (see setup.js).
+function renderSetup() {
+  app.innerHTML = `
+    <main class="center">
+      <h1>Set up a new team</h1>
+      <p id="error" class="error" hidden></p>
+      <div class="card">
+        <p class="muted">One person per team does this once, in about 10 minutes. The <a href="${SETUP_URL}" target="_blank" rel="noopener">setup guide</a> shows each step in detail.</p>
+        <ol class="steps">
+          <li>Create a free project at <a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a>.</li>
+          <li>In Authentication, turn on <strong>Email/Password</strong> sign-in.</li>
+          <li>Create a <strong>Firestore</strong> database in production mode. In its <strong>Rules</strong> tab, replace everything with the app’s rules and click <strong>Publish</strong>.
+            <button type="button" id="copy-rules" class="secondary">Copy rules</button></li>
+          <li>In Project settings, add a web app (<code>&lt;/&gt;</code>) and copy its <code>firebaseConfig</code>.</li>
+        </ol>
+      </div>
+      <form id="create" class="card">
+        <h2>Create your team</h2>
+        <input name="teamName" required maxlength="200" placeholder="Team name, e.g. 26706 Thunder Lab" />
+        ${teamFields()}
+        <textarea name="config" rows="6" required placeholder="Paste your firebaseConfig here"></textarea>
+        <ul id="problems" class="problems" hidden></ul>
+        <button>Create team</button>
+      </form>
+      <button id="back" class="link">Back</button>
+    </main>`;
+
+  copyButton(app.querySelector('#copy-rules'), RULES);
+  app.querySelector('#back').onclick = renderWelcome;
+  const form = app.querySelector('#create');
+  const list = app.querySelector('#problems');
+  form.onsubmit = async (e) => {
     e.preventDefault();
+    const button = e.submitter;
+    button.disabled = true;
+    button.textContent = 'Checking your Firebase project…';
     try {
-      const config = parseFirebaseConfig(e.target.config.value);
-      saveConnection({ config, secret: newSecret(), teamName: e.target.teamName.value.trim(), program: e.target.program.value, teamNumber: Number(e.target.teamNumber.value), role: 'owner' });
+      const config = parseFirebaseConfig(form.config.value);
+      const problems = await setupProblems(config);
+      list.hidden = !problems.length;
+      list.innerHTML = problems.map(({ step, text, page }) => `<li>
+        ${step ? `<strong>Step ${step}:</strong> ` : ''}${esc(text)}
+        ${page ? `<a href="${esc(consolePage(config.projectId, page))}" target="_blank" rel="noopener">Fix it in Firebase</a>` : ''}
+      </li>`).join('') + (problems.some((problem) => problem.step) ? '<li class="muted">Then click Create team again.</li>' : '');
+      if (!problems.length) saveConnection({ config, secret: newSecret(), teamName: form.teamName.value.trim(), program: form.program.value, teamNumber: Number(form.teamNumber.value), role: 'owner' });
     } catch (error) {
       showError(error);
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Create team';
     }
   };
 }
@@ -334,8 +384,8 @@ function renderSignIn() {
         </div>
         ${canJoin ? `<label class="check"><input name="privacy" type="checkbox" /><span>I accept the <a href="${PRIVACY_URL}" target="_blank" rel="noopener">privacy policy</a> (first time on this team)</span></label>` : ''}
         ${canJoin ? `<div class="row">
-          <button name="action" value="in">Sign in</button>
-          <button name="action" value="up" class="secondary">Create account</button>
+          <button name="action" value="up">Create account</button>
+          <button name="action" value="in" class="secondary">Sign in</button>
         </div>` : '<button name="action" value="in">Sign in</button>'}
         <button type="button" id="reset" class="link">Forgot password?</button>
       </form>
@@ -365,7 +415,10 @@ function renderSignIn() {
       }
       else await fb.signIn(email.value, password.value);
     } catch (error) {
-      showError(error);
+      showError(AUTH_OFF_CODES.includes(error.code)
+        ? errorWithLink('Email sign-in isn’t turned on in this team’s Firebase project. The team admin needs to turn it on (setup step 2).',
+          consolePage(state.connection.config.projectId, AUTH_PAGE), 'Open Authentication')
+        : error);
     }
   };
   app.querySelector('#reset').onclick = async () => {
@@ -457,6 +510,18 @@ function renderInventory() {
       <tbody id="rows">${skeletonRows()}</tbody>
     </table>
     <p id="empty" class="muted center-text" hidden></p>
+    <div id="getting-started" class="card getting-started" hidden>
+      <h2>Add your first parts</h2>
+      <p class="muted">Scanning a goBILDA, REV, AndyMark, ServoCity, TETRIX or Studica package fills in the part for you. Parts in a spreadsheet can come in as a CSV file.</p>
+      <div class="row">
+        <button data-start="#add">+ Add part</button>
+        <button data-start="#scan" class="secondary">Scan a package</button>
+        <button data-start="#import-csv" class="secondary">Import CSV</button>
+        <button data-start="#locations" class="secondary">Add locations</button>
+        ${DEMO ? '' : '<button data-start="#invite" class="secondary">Invite your team</button>'}
+      </div>
+      <p class="muted small">New to the app? The <a href="${GUIDE_URL}" target="_blank" rel="noopener">how-to guide</a> shows every feature with pictures.</p>
+    </div>
     <div id="undo" class="toast" hidden><span></span><button class="link">Undo</button></div>
     <dialog id="dialog"></dialog>
     <dialog id="ask"></dialog>`;
@@ -503,8 +568,16 @@ function renderInventory() {
   // Restarts the app, since wiping the data kept on this device shuts down its connection to Firebase.
   app.querySelector('#signout').onclick = () => fb.logOut().then(fb.clearDeviceData)
     .then(() => location.assign(location.pathname), showError);
+  // The rules banners (see status.js) open the steps here, where the rules can be copied.
+  document.getElementById('rules-banner').onclick = (e) => { e.preventDefault(); openRulesDialog(false); };
+  document.getElementById('open-rules-banner').onclick = (e) => { e.preventDefault(); openRulesDialog(true); };
   app.querySelector('#invite').hidden = DEMO;
   app.querySelector('#bug').hidden = DEMO;
+  // Each getting-started button does what the same button or menu item does.
+  app.querySelector('#getting-started').onclick = (e) => {
+    const target = e.target.closest('[data-start]')?.dataset.start;
+    if (target) app.querySelector(target).click();
+  };
   app.querySelector('thead').onclick = (e) => {
     const key = e.target.dataset.sort;
     if (!key) return;
@@ -700,8 +773,11 @@ function renderRows() {
     (name ? `<tr class="group"><th colspan="${columns.length + (state.selected ? 1 : 0)}">${esc(name)} <span class="muted small">${countParts(group.length)}</span></th></tr>` : '')
     + group.map((p) => rowHtml(p, columns)).join('')).join('');
 
+  // A team with no parts yet gets ways to start instead of the empty message.
+  const gettingStarted = app.querySelector('#getting-started');
+  gettingStarted.hidden = state.parts.length > 0 || usesParts;
   const empty = app.querySelector('#empty');
-  empty.hidden = rows.length > 0;
+  empty.hidden = rows.length > 0 || !gettingStarted.hidden;
   empty.textContent = all.length ? 'No parts match your filters.'
     : usesParts ? 'No parts yet. Tap “+ Add parts” to pick parts this project uses.'
       : 'No parts yet. Tap “+ Add part” to add the first one.';
@@ -1507,6 +1583,7 @@ function openPartDialog(part, carry = null, note = '') {
         <select name="location">
           <option value="">No location</option>
           ${locationNames(values).map((name) => `<option ${name === values?.location ? 'selected' : ''}>${esc(name)}</option>`).join('')}
+          <option value="${NEW_OPTION}">+ New location…</option>
         </select>
       </label>
       ${input('supplier', 'Supplier', 'list="supplier-list"')}
@@ -1547,6 +1624,7 @@ function openPartDialog(part, carry = null, note = '') {
   if (part) dialog.querySelector('#label').onclick = () => printAndMark([partLabel(part)]);
 
   watchNewCategory(form.category);
+  watchNewLocation(form.location);
   autofillFromCatalog(form);
   dialog.querySelector('#scan-barcode').onclick = () => scanBarcodeInto(form).catch(showError);
 
@@ -1610,6 +1688,22 @@ function watchNewCategory(select) {
     select.value = name || category;
     category = select.value;
   };
+}
+
+// Lets a location picker's "+ New location…" option add a location to the team's list.
+function watchNewLocation(select) {
+  let previous = select.value;
+  select.addEventListener('change', async () => {
+    if (select.value !== NEW_OPTION) return (previous = select.value);
+    const name = await ask('New location, e.g. Bin 3');
+    const known = state.locations.find((l) => sameName(l.name, name));
+    if (name && !known) {
+      fb.addLocation(name).catch(showError);
+      select.add(new Option(name), select.options.length - 1);
+    }
+    select.value = known?.name ?? (name || previous);
+    previous = select.value;
+  });
 }
 
 // The team's locations, plus the part's own location if it was deleted from the list, so saving keeps it.
@@ -1883,6 +1977,7 @@ function openBulkEditDialog() {
           <option value="${KEEP}">Keep each part's location</option>
           <option value="">No location</option>
           ${locationNames().map((name) => `<option>${esc(name)}</option>`).join('')}
+          <option value="${NEW_OPTION}">+ New location…</option>
         </select>
       </label>
       <label>Category
@@ -1907,6 +2002,7 @@ function openBulkEditDialog() {
     </form>`;
   const form = dialog.querySelector('form');
   watchNewCategory(form.category);
+  watchNewLocation(form.location);
 
   const tagBox = dialog.querySelector('#bulk-tags');
   const addTag = dialog.querySelector('#add-tag');
@@ -2025,6 +2121,29 @@ function copyButton(button, text) {
     button.textContent = 'Copied';
     setTimeout(() => { button.textContent = label; }, 1500);
   }).catch(showError);
+}
+
+// How the team admin publishes the app's rules. `open` when the published rules let anyone in.
+function openRulesDialog(open) {
+  const dialog = app.querySelector('#dialog');
+  dialog.innerHTML = `
+    <form method="dialog" class="card">
+      <h2>${open ? 'Fix your Firebase rules' : 'Update your Firebase rules'}</h2>
+      <p class="muted">${open
+        ? 'Your team’s Firebase project isn’t using the app’s rules, so anyone could read your inventory and your members’ emails.'
+        : 'This version of the app needs newer rules. New features won’t work until they’re published.'}
+        Only your team admin, the person who owns the team’s Firebase project, can do this. It doesn’t change any of your team’s data.</p>
+      <ol class="steps">
+        <li><button type="button" id="copy-rules" class="secondary">Copy rules</button></li>
+        <li><a href="${esc(consolePage(state.connection.config.projectId, RULES_PAGE))}" target="_blank" rel="noopener">Open your Firebase rules</a>, signed in with the Google account that owns the project.</li>
+        <li>Select everything in the rules editor, paste the rules over it and click <strong>Publish</strong>.</li>
+        <li>Wait a minute, then reopen the app.</li>
+      </ol>
+      <p class="muted small">Not the admin? Send them the <a href="${SETUP_URL}#updating-the-rules" target="_blank" rel="noopener">update steps</a>.</p>
+      <div class="row"><button value="close" class="secondary">Close</button></div>
+    </form>`;
+  copyButton(dialog.querySelector('#copy-rules'), RULES);
+  dialog.showModal();
 }
 
 async function openTeamDialog() {
@@ -2242,9 +2361,12 @@ async function start() {
       forgetSecret();
       await fb.ensureMainProject();
     } catch (error) {
-      state.signInError = new Error(error.code === "permission-denied"
-        ? `Couldn't join ${state.connection.teamName}. Ask your team admin for a fresh join code.`
-        : error.message);
+      const creating = state.connection.role === 'owner' && state.connection.secret;
+      state.signInError = error.code !== 'permission-denied' ? error
+        // The owner's first sign-in creates the team, which only the app's rules allow.
+        : creating ? errorWithLink('Your Firebase project doesn’t have the app’s rules yet (setup step 3). Publish them, then sign in.',
+          `${SETUP_URL}#3-create-the-database`, 'Show me how')
+          : new Error(`Couldn't join ${state.connection.teamName}. Ask your team admin for a fresh join code.`);
       await fb.logOut();
       return;
     }

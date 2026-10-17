@@ -75,6 +75,17 @@ a { color: var(--accent); }
   color: var(--danger);
 }
 
+/* Setup steps, and the steps still to do when creating a team */
+.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; color: var(--muted); }
+.steps li::marker { color: var(--text); font-weight: 600; }
+.steps strong { color: var(--text); font-weight: 600; }
+.steps button { display: block; margin-top: 8px; }
+.problems { margin: 0; padding: 10px 14px 10px 32px; display: flex; flex-direction: column; gap: 6px; border-radius: 10px; background: rgb(255 107 125 / 0.1); border: 1px solid rgb(255 107 125 / 0.5); color: var(--danger); }
+.problems[hidden] { display: none; }
+.problems .muted { list-style: none; margin-left: -18px; }
+.getting-started { max-width: 640px; margin: 24px auto; }
+.getting-started[hidden] { display: none; }
+
 /* Form controls */
 input, select, textarea, button { font: inherit; color: inherit; }
 input, select, textarea {

@@ -57,7 +57,7 @@ People already on the team stay signed in; only new teammates need the new code.
 
 ## 4. Update the Firebase rules
 
-When a new version of the app needs newer security rules, everyone on the team sees a blue **Your Firebase rules are out of date** banner. Only the person who owns your team's Firebase project can fix it. Follow [Updating the rules](../SETUP.md#updating-the-rules) in the setup guide. It doesn't change any of your data, and the app keeps working until you do it.
+When a new version of the app needs newer security rules, everyone on the team sees a blue **Your Firebase rules are out of date** banner. Only the person who owns your team's Firebase project can fix it. Tap the banner: it has a **Copy rules** button and a link straight to your project's rules. [Updating the rules](../SETUP.md#updating-the-rules) in the setup guide has the full steps. It doesn't change any of your data, and the app keeps working until you do it.
 
 A red **Your Firebase is configured incorrectly and your account is not secure** banner means your project isn't using the app's rules at all, so anyone could read your inventory. Follow the same steps right away.
 

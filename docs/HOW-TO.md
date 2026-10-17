@@ -30,13 +30,15 @@ The first screen has three ways in:
 
 - **Sign in to your team**: you already have an account and you're on a new device. Pick your program, enter your team number, then sign in with your email and password.
 - **Join a team**: you're new. Paste the join code your team admin sent you, or tap **Scan QR** and point the camera at the team's join QR code. Opening the join link does the same thing.
-- **Set up a new team**: only one person per team does this, once. Follow the [team setup guide](../SETUP.md) first.
+- **Set up a new team**: only one person per team does this, once. It lists the setup steps and checks your Firebase project before creating the team. The [team setup guide](../SETUP.md) has each step in detail.
 
 ![The first screen: sign in, join a team, or set up a new team](how-to/welcome.png)
 
 After joining, enter your name, email and a password, tick the privacy policy box, and tap **Create account**. Your name is what teammates see in the change log. Next time, just **Sign in**.
 
 <img src="how-to/phone-create-account.png" alt="Creating an account after joining a team" width="300">
+
+A brand-new team's inventory is empty, so it shows **Add your first parts** with buttons to add a part, scan a package, import a CSV file, add locations and invite your team.
 
 > **Admins:** to invite people, open **☰ → Team**. Teammates scan the QR code on your screen, or you send them the join code or link. Only share these with your team: anyone who has them can join. The [team admin guide](ADMIN.md) covers the rest of running the team.
 >
@@ -79,7 +81,7 @@ Tap **+ Add part** and fill in what you know. Only the item name and quantity ar
 
 - **Type a goBILDA, REV, AndyMark, ServoCity, TETRIX or Studica part number** and the item name, supplier and product link fill in by themselves. Even faster: tap **Scan** next to Barcode and scan the barcode on the package.
 - **Low stock at** flags the part once its quantity drops to that number or below (optional).
-- **Location** comes from your team's list of locations (see [section 5](#5-locations-and-qr-labels)).
+- **Location** comes from your team's list of locations (see [section 5](#5-locations-and-qr-labels)). Pick **+ New location…** to add one without leaving the part.
 - **Category** can have subcategories: `Electronics/Sensors` shows as Electronics › Sensors.
 - **Tags** are short labels like `spare` or `competition`. Tap a tag on any part to show only parts with that tag.
 - **Save and add another** keeps the location, category and tags for the next part, which is handy when you're entering a whole bin.

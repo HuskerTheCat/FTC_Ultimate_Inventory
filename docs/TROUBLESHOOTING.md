@@ -44,7 +44,7 @@ A message from the app's developer to every team, for example planned downtime. 
 
 ![Your Firebase rules are out of date, click for update instructions](help/rules-banner.png)
 
-This version of the app has new features that need newer security rules in your team's Firebase project. Only your team's admin (the person who set up the Firebase project) can fix it: send them the [steps to update the rules](../SETUP.md#updating-the-rules). Updating the rules doesn't change any of your data.
+This version of the app has new features that need newer security rules in your team's Firebase project. Only your team's admin (the person who set up the Firebase project) can fix it. Tap the banner for the steps, with a **Copy rules** button and a link to your project's rules, or send your admin the [steps to update the rules](../SETUP.md#updating-the-rules). Updating the rules doesn't change any of your data.
 
 The app keeps working in the meantime, but new features may fail with **The server didn't allow that change** until the rules are updated.
 
@@ -52,7 +52,7 @@ The app keeps working in the meantime, but new features may fail with **The serv
 
 ![Your Firebase is configured incorrectly and your account is not secure. Click here to fix](help/open-rules-banner.png)
 
-Your team's Firebase project isn't using the app's security rules (for example, it was created in test mode), so anyone on the internet could read your inventory and your members' emails. Your admin should [publish the app's rules](../SETUP.md#updating-the-rules) right away. The banner goes away once they're in use.
+Your team's Firebase project isn't using the app's security rules (for example, it was created in test mode), so anyone on the internet could read your inventory and your members' emails. Your admin should publish the app's rules right away: tap the banner for the steps, or see [Updating the rules](../SETUP.md#updating-the-rules). The banner goes away once they're in use.
 
 ### Demo only
 
@@ -73,6 +73,12 @@ Your team isn't on the central team list yet. It gets added the next time the ad
 
 **"You're not on 26706 Thunder Lab. Ask your team admin for the join code."**
 **Sign in to your team** is only for people already on the team. If you're new, choose **Use a different team**, then **Join a team** with the join code and create your account.
+
+**"Email sign-in isn't turned on in this team's Firebase project."**
+The team admin skipped [step 2 of the setup guide](../SETUP.md#2-turn-on-email-sign-in). The admin can tap **Open Authentication** in the message to go straight to the page, choose **Email/Password**, switch it on and click **Save**.
+
+**"Your Firebase project doesn't have the app's rules yet (setup step 3)."**
+Only the admin sees this, when creating the team. Publish the app's rules ([step 3 of the setup guide](../SETUP.md#3-create-the-database)), then tap **Sign in** with the email and password you just used.
 
 **"Couldn't join 26706 Thunder Lab. Ask your team admin for a fresh join code."**
 That join code is old. The code changes whenever the admin resets it or removes someone from the team. Get the current one from the **Team** screen.
@@ -100,6 +106,18 @@ Only the admin sees this. Another team already registered that number, or the wr
 
 **"Couldn't find "apiKey" in the pasted Firebase config."**
 When setting up a team, paste the whole `firebaseConfig = { ... }` block from [step 4 of the setup guide](../SETUP.md#4-copy-your-connection-info), not just part of it.
+
+**Create team lists steps to fix.**
+Before creating the team, the app checks your Firebase project. Each line names the [setup guide](../SETUP.md) step that was missed, and **Fix it in Firebase** opens the right page of your project:
+
+- **Email/Password sign-in isn't turned on:** [step 2](../SETUP.md#2-turn-on-email-sign-in).
+- **There's no Firestore database yet:** [step 3](../SETUP.md#3-create-the-database). Make sure it's Firestore, not Realtime Database.
+- **The app's rules aren't published yet:** on the setup screen, click **Copy rules**, then paste them in the database's **Rules** tab and click **Publish**.
+- **The published rules let anyone read your inventory (test mode):** same fix. Test mode leaves the inventory open to anyone.
+- **The pasted connection info doesn't match a Firebase project:** copy the `firebaseConfig` block again ([step 4](../SETUP.md#4-copy-your-connection-info)).
+- **This Firebase project already has a team:** the team was already created. Use **Sign in to your team** or **Join a team** instead.
+
+Then click **Create team** again.
 
 **I joined from the link in Safari, but the Home Screen app asks me to join again.**
 The iPhone Home Screen app keeps its own sign-in. Join from inside the Home Screen app with **Scan QR** or the join code. See [Install on iPhone or iPad](../SETUP.md#install-on-iphone-or-ipad).
