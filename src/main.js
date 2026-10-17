@@ -7,7 +7,7 @@ import { printLabels, printSheet } from './labels.js';
 import { toCsv, parseCsv } from './csv.js';
 import { startStatusBanners, checkRules } from './status.js';
 import { RULES, consolePage, AUTH_PAGE, RULES_PAGE, AUTH_OFF_CODES, setupProblems } from './setup.js';
-import { PROGRAMS, recordTeam, recordDeletedTeam, findTeamProject, teamProject, sendBugReport } from './hub.js';
+import { PROGRAMS, recordTeam, recordDeletedTeam, findTeamProject, teamProject, sendBugReport, sendFeatureRequest } from './hub.js';
 
 const WEB_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/';
 const PRIVACY_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/PRIVACY.md';
@@ -500,6 +500,7 @@ function renderInventory() {
             <hr />
             <button id="invite" class="menu-item">Team</button>
             <button id="bug" class="menu-item">Report bug</button>
+            <button id="feature" class="menu-item">Request feature</button>
             <button id="signout" class="menu-item">Sign out</button>
           </div>
         </div>
@@ -624,7 +625,14 @@ function renderInventory() {
   app.querySelector('#scan').onclick = () => scanCode(dialog).then((text) => text && openScanned(text)).catch(showError);
   app.querySelector('#invite').onclick = () => openTeamDialog().catch(showError);
   app.querySelector('#log').onclick = openLogDialog;
-  app.querySelector('#bug').onclick = openBugDialog;
+  app.querySelector('#bug').onclick = () => openSendDialog({
+    title: 'Report a bug', label: 'What went wrong?', placeholder: 'What you did, what you expected, and what happened instead',
+    thanks: 'Thanks! Your bug report was sent.', send: sendBugReport,
+  });
+  app.querySelector('#feature').onclick = () => openSendDialog({
+    title: 'Request a feature', label: 'What would you like the app to do?', placeholder: 'What you want to do and how it would help your team',
+    thanks: 'Thanks! Your feature request was sent.', send: sendFeatureRequest,
+  });
   // Restarts the app, since wiping the data kept on this device shuts down its connection to Firebase.
   app.querySelector('#signout').onclick = () => fb.logOut().then(fb.clearDeviceData)
     .then(() => location.assign(location.pathname), showError);
@@ -633,6 +641,7 @@ function renderInventory() {
   document.getElementById('open-rules-banner').onclick = (e) => { e.preventDefault(); openRulesDialog(true); };
   app.querySelector('#invite').hidden = DEMO;
   app.querySelector('#bug').hidden = DEMO;
+  app.querySelector('#feature').hidden = DEMO;
   // Each getting-started button does what the same button or menu item does.
   app.querySelector('#getting-started').onclick = (e) => {
     const target = e.target.closest('[data-start]')?.dataset.start;
@@ -2256,14 +2265,14 @@ function openLogDialog() {
   dialog.showModal();
 }
 
-// Goes to the app's developer, not the team (see hub.js).
-function openBugDialog() {
+// Bug reports and feature requests go to the app's developer, not the team (see hub.js).
+function openSendDialog({ title, label, placeholder, thanks, send }) {
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `
     <form method="dialog" class="card">
-      <h2>Report a bug</h2>
+      <h2>${title}</h2>
       <p class="muted small">This is logged to a central server with your team name and app version. Please don't include personal info.</p>
-      <label>What went wrong?<textarea name="text" rows="6" maxlength="5000" required placeholder="What you did, what you expected, and what happened instead"></textarea></label>
+      <label>${label}<textarea name="text" rows="6" maxlength="5000" required placeholder="${placeholder}"></textarea></label>
       <div class="row">
         <button value="send">Send</button>
         <button value="cancel" formnovalidate class="secondary">Cancel</button>
@@ -2273,8 +2282,8 @@ function openBugDialog() {
   form.onsubmit = (e) => {
     if (e.submitter.value !== 'send') return;
     // Sent in the background, so it still goes out once an offline device reconnects.
-    sendBugReport(state.connection.teamName, form.text.value.trim())
-      .then(() => alert('Thanks! Your bug report was sent.'))
+    send(state.connection.teamName, form.text.value.trim())
+      .then(() => alert(thanks))
       .catch(showError);
   };
   dialog.showModal();

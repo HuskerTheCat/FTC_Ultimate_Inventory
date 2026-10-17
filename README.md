@@ -47,7 +47,7 @@ The supplier catalog ([`src/catalog.json`](src/catalog.json)) is built from the 
 
 ## Privacy
 
-Everyone must accept the [privacy policy](PRIVACY.md) to join a team. The app only logs each new team's name and number and any bug reports to a central server. It is a separate Firebase project ([`src/hub.js`](src/hub.js), rules in [`hub.rules`](hub.rules)). Nothing about individual users is sent.
+Everyone must accept the [privacy policy](PRIVACY.md) to join a team. The app only logs each new team's name and number and any bug reports and feature requests to a central server. It is a separate Firebase project ([`src/hub.js`](src/hub.js), rules in [`hub.rules`](hub.rules)). Nothing about individual users is sent.
 
 ## Development
 

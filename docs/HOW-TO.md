@@ -53,7 +53,7 @@ A brand-new team's inventory is empty, so it shows **Add your first parts** with
 1. **List picker.** Switch between inventories, projects and packing lists, or make a new one.
 2. **Rename or delete** the inventory, project or list you're looking at.
 3. **Scan.** Scan a QR label to open that bin or part, or a supplier package barcode to find or add that part. A part you already have opens with big **−** and **+** buttons, so taking one or putting some back is two taps; **Edit part** opens everything else.
-4. **☰ menu.** Orders, Locations, Change log, Trash, Team, Report bug and Sign out.
+4. **☰ menu.** Orders, Locations, Change log, Trash, Team, Report bug, Request feature and Sign out.
 5. **Search** by name, part number, barcode, supplier, location, category, condition or notes. Each word can match anywhere, so `m4 screw` finds *M4 x 8mm socket head screw*.
 6. **Filters.** Filter, sort and group the list.
 7. **⋯ menu.** Select parts, Print QR labels, Print list, Export CSV and Import CSV.
@@ -208,4 +208,5 @@ Before anything is added, the app shows what it found. Parts already in the inve
 - **Blue banner saying your Firebase rules are out of date?** Your team's admin needs to [update the rules](../SETUP.md#updating-the-rules). The app will keep working in the meantime, but some new features may not work correctly until your Firebase rules are up to date.
 - **A banner or message you don't understand?** [Troubleshooting and FAQ](TROUBLESHOOTING.md) explains each one and how to fix it.
 - **☰ → Report bug** logs a short description of the problem to a central server, with your team name and app version. Please don't include personal info.
+- **☰ → Request feature** sends an idea for the app to its developer the same way.
 - **☰ → Sign out** also removes the team's data saved on that device, which is good practice on a shared computer.

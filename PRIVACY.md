@@ -6,7 +6,7 @@ FTC Ultimate Inventory is made by HuskerTheCat for FTC/FRC robotics teams. This 
 
 - **When a new team is set up:** the team name, program, team number, Firebase project ID, a security key, and the date. Anyone with the app can look up a team's name and Firebase project ID by its program and team number, which is how teammates sign in on a new device.
 - **When a team owner deletes the team in the app:** the program, team number, the date, and the reason for leaving if the owner writes one. Please don't put personal info in the reason.
-- **When someone sends a bug report:** the report text, the team name, the app version and the date. Please don't put personal info in a report.
+- **When someone sends a bug report or feature request:** the text, the team name, the app version and the date. Please don't put personal info in it.
 
 That's all. Users names, emails, passwords, accounts, parts lists, projects, and anything else about a person or a team's inventory are never logged to the developers server. All of it stays in your team's own Firebase project, which your team admin set up and controls, protected by your team's sign-in and security rules. The developer can't see or access it.
 

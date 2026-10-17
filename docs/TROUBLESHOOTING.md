@@ -164,7 +164,7 @@ Changes show on every device within a few seconds. If they don't, one of the two
 **I deleted or changed something by mistake.**
 Tap **Undo** at the bottom of the screen right away. Deleted parts, projects, packing lists and orders stay in **☰ → Trash** for 30 days. See [Change log, Undo and Trash](HOW-TO.md#10-change-log-undo-and-trash).
 
-**I can't find Team or Report bug in the menu.**
+**I can't find Team, Report bug or Request feature in the menu.**
 They're hidden in the demo. Join or set up a real team to use them.
 
 ---
@@ -189,4 +189,5 @@ No. Your team's inventory lives in its Firebase project. Only changes made offli
 
 - Team admins: the [team admin guide](ADMIN.md) covers members, join codes, rules, backups and handing the team on.
 - Use **☰ → Report bug** to tell the app's developer what went wrong. It's logged to a central server with your team name and app version. Please don't include personal info.
+- Have an idea? **☰ → Request feature** sends it to the developer the same way.
 - Or open an issue on [GitHub](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/issues).

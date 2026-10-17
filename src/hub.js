@@ -2,7 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, addDoc, doc, getDoc, collection, serverTimestamp, writeBatch } from 'firebase/firestore';
 
 // The app developer's own Firebase project, separate from every team's. It collects each new team's name, program
-// and number, the numbers of teams that deleted themselves (with an optional reason), and bug reports. Anyone can add
+// and number, the numbers of teams that deleted themselves (with an optional reason), bug reports and feature requests. Anyone can add
 // to it and nobody can read it from the app, except looking up one team's Firebase project by its number. The developer
 // reads it in the Firebase console. Its security rules are in hub.rules.
 const HUB_CONFIG = {
@@ -61,5 +61,8 @@ export async function getNews() {
   return news.data()?.text?.trim() ?? '';
 }
 
-export const sendBugReport = (team, text) =>
-  addDoc(collection(db, 'reports'), { team, text, version: __APP_VERSION__, at: serverTimestamp() });
+const sendMessage = (collectionName, team, text) =>
+  addDoc(collection(db, collectionName), { team, text, version: __APP_VERSION__, at: serverTimestamp() });
+
+export const sendBugReport = (team, text) => sendMessage('reports', team, text);
+export const sendFeatureRequest = (team, text) => sendMessage('requests', team, text);
