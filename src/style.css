@@ -11,13 +11,14 @@
   --text: #eef1f8;
   --muted: #8f98b5;
   --border: #283050;
+  --field-border: #5c6894;
   --accent: #5b9bff;
-  --accent-gradient: linear-gradient(135deg, #5aa9ff, #3d6ff2);
+  --accent-gradient: linear-gradient(135deg, #2f6fe0, #2a55d4);
   --accent-text: #ffffff;
   --danger: #ff6b7d;
   --pending: #f2b84b;
   --row-hover: #1c2238;
-  --focus: 0 0 0 3px rgb(91 155 255 / 0.45);
+  --focus: 0 0 0 3px rgb(91 155 255 / 0.85);
   --float-shadow: 0 18px 48px rgb(0 0 0 / 0.5);
   color-scheme: dark;
 }
@@ -103,7 +104,7 @@ input, select, textarea {
   width: 100%;
   min-height: 42px;
   padding: 8px 12px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--field-border);
   border-radius: 10px;
   background: var(--field);
 }
@@ -241,7 +242,7 @@ button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised)
 .toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 8px; margin-bottom: 16px; }
 .toolbar:has(+ .filters:not([hidden])) { margin-bottom: 8px; }
 #filters-toggle.active { color: var(--accent); border-color: var(--accent); }
-#filter-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--accent-text); font-size: 0.8rem; line-height: 20px; text-align: center; }
+#filter-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--bg); font-size: 0.8rem; line-height: 20px; text-align: center; }
 /* The panel the Filters button opens: filters on one row, sort and grouping on the next. */
 .filters { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 16px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
 .filters[hidden] { display: none; }
@@ -264,6 +265,8 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; background: v
 th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 th { font-size: 0.85rem; font-weight: 600; color: var(--muted); white-space: nowrap; cursor: pointer; user-select: none; }
 thead th { background: var(--field); }
+/* Sort headers and part names are buttons for the keyboard, drawn as plain text. */
+:is(button.sort, button.part-name) { min-height: 0; padding: 0; border: none; background: none; color: inherit; font-weight: inherit; text-align: left; white-space: inherit; }
 th.sorted { color: var(--text); }
 th.sorted::after { content: " ▾"; color: var(--accent); }
 th.sorted.desc::after { content: " ▴"; }
@@ -473,7 +476,7 @@ label.check input { width: 18px; min-height: 18px; margin: 0; accent-color: var(
 
 .over { color: var(--danger); font-weight: 600; }
 .in-use { display: flex; flex-direction: column; }
-button.link.inline { padding: 0; align-self: auto; text-decoration: underline; font-size: inherit; }
+button.link.inline { padding: 2px 0; align-self: auto; text-decoration: underline; font-size: inherit; }
 button.add-to { display: inline-flex; align-items: center; min-height: 30px; margin-top: 4px; padding: 2px 10px 2px 6px; gap: 4px; align-self: flex-start; background: none; border: 1px solid var(--border); border-radius: 999px; color: var(--accent); font-size: 0.85rem; font-weight: 500; }
 button.add-to:hover { background: var(--raised); }
 button.add-to svg { width: 16px; height: 16px; }

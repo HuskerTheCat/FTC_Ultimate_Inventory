@@ -256,7 +256,7 @@ function renderWelcome() {
   app.innerHTML = `
     <main class="center wide">
       <h1>FTC Ultimate Inventory</h1>
-      <p id="error" class="error" hidden></p>
+      <p id="error" class="error" role="alert" hidden></p>
       <form id="signin" class="card">
         <h2>Sign in to your team</h2>
         <p class="muted">Already have an account? Enter your team number, then sign in with your email. New to the team? Join it first with your join code.</p>
@@ -318,7 +318,7 @@ function renderSetup() {
   app.innerHTML = `
     <main class="center wide">
       <h1>Set up a new team</h1>
-      <p id="error" class="error" hidden></p>
+      <p id="error" class="error" role="alert" hidden></p>
       <div class="card">
         <p class="muted">One person per team does this once, in about 10 minutes. The <a href="${SETUP_URL}" target="_blank" rel="noopener">setup guide</a> shows each step in detail.</p>
         <ol class="steps">
@@ -375,7 +375,7 @@ function renderSignIn() {
     <main class="center">
       <h1>${esc(state.connection.teamName)}</h1>
       <p class="muted">${!canJoin ? 'Sign in with your email and password.' : owner ? 'Create the admin account for your team.' : 'Sign in, or create an account if this is your first time.'}</p>
-      <p id="error" class="error" hidden></p>
+      <p id="error" class="error" role="alert" hidden></p>
       <form id="auth" class="card">
         ${canJoin ? '<input name="username" maxlength="40" autocomplete="nickname" placeholder="Your name (for new accounts)" />' : ''}
         <input name="email" type="email" required autocomplete="email" placeholder="Email" />
@@ -435,7 +435,7 @@ function renderSignIn() {
 }
 
 function renderInventory() {
-  app.innerHTML = `
+  app.innerHTML = `<main>
     <header>
       <h1>${esc(state.connection.teamName)}</h1>
       <div class="row">
@@ -455,7 +455,7 @@ function renderInventory() {
         </div>
       </div>
     </header>
-    <p id="error" class="error" hidden></p>
+    <p id="error" class="error" role="alert" hidden></p>
     <div class="projectpick">
       <div class="projectmenu menuwrap">
         <button id="project" class="secondary" aria-haspopup="true" aria-expanded="false" aria-controls="project-menu"></button>
@@ -463,7 +463,7 @@ function renderInventory() {
       </div>
       <button id="edit-project" class="icon" aria-label="Rename or delete" title="Rename or delete">${ICON_EDIT}</button>
     </div>
-    <p id="packed-count" class="muted small" hidden></p>
+    <p id="packed-count" class="muted small" role="status" hidden></p>
     <div class="toolbar">
       <input id="search" type="search" placeholder="Search parts…" />
       <button id="filters-toggle" class="secondary" aria-expanded="false" aria-controls="filters">${ICON_FILTER}<span>Filters</span><b id="filter-count" hidden></b></button>
@@ -483,9 +483,9 @@ function renderInventory() {
     <div id="filters" class="filters" hidden>
       <div class="row">
         <span class="muted small">Filter</span>
-        <select id="category"></select>
-        <select id="location"></select>
-        <select id="tag"></select>
+        <select id="category" aria-label="Filter by category"></select>
+        <select id="location" aria-label="Filter by location"></select>
+        <select id="tag" aria-label="Filter by tag"></select>
         <button id="low" class="secondary" aria-pressed="false">Low stock</button>
       </div>
       <div class="row">
@@ -526,9 +526,10 @@ function renderInventory() {
       </div>
       <p class="muted small">New to the app? The <a href="${GUIDE_URL}" target="_blank" rel="noopener">how-to guide</a> shows every feature with pictures.</p>
     </div>
-    <div id="undo" class="toast" hidden><span></span><button class="link">Undo</button></div>
+    <div id="undo" class="toast" role="status" hidden><span></span><button class="link">Undo</button></div>
     <dialog id="dialog"></dialog>
-    <dialog id="ask"></dialog>`;
+    <dialog id="ask"></dialog>
+  </main>`;
 
   const dialog = app.querySelector('#dialog');
   app.querySelectorAll('[aria-haspopup]').forEach((button) => {
@@ -588,7 +589,7 @@ function renderInventory() {
     if (target) app.querySelector(target).click();
   };
   app.querySelector('thead').onclick = (e) => {
-    const key = e.target.dataset.sort;
+    const key = e.target.closest('th')?.querySelector('[data-sort]')?.dataset.sort;
     if (!key) return;
     // Tapping the sorted column again reverses it.
     Object.assign(state, { sort: key, sortDir: key === state.sort ? -state.sortDir : 1 });
@@ -666,9 +667,14 @@ function closeMenus(keep) {
   });
 }
 
-// A menu closes on a tap anywhere else or on Escape.
+// A menu closes on a tap anywhere else or on Escape. Escape from inside a menu puts the keyboard back on its button.
 document.addEventListener('pointerdown', (e) => closeMenus(e.target.closest('.menuwrap')));
-document.addEventListener('keydown', (e) => e.key === 'Escape' && closeMenus());
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const wrap = document.activeElement.closest('.menu')?.closest('.menuwrap');
+  closeMenus();
+  wrap?.querySelector('[aria-haspopup]').focus();
+});
 
 // The Filters button shows or hides the filter and sort controls.
 function toggleFilters(e) {
@@ -774,13 +780,16 @@ function renderRows() {
   app.querySelector('#export-csv').hidden = usesParts;
   app.querySelector('#import-csv').hidden = usesParts;
   app.querySelector('#add').disabled = false;
+  // Redrawing replaces the headers and rows, so keyboard focus goes back to the same control afterwards.
+  const restoreFocus = focusKeeper(document.activeElement);
   app.querySelector('thead tr').innerHTML = (state.selected ? '<th aria-label="Selected"></th>' : '') + columns.map(([key, label]) =>
-    `<th data-sort="${key}" class="${key === state.sort ? `sorted${state.sortDir < 0 ? ' desc' : ''}` : ''}">${label}</th>`).join('');
+    `<th class="${key === state.sort ? `sorted${state.sortDir < 0 ? ' desc' : ''}` : ''}" ${key === state.sort ? `aria-sort="${state.sortDir < 0 ? 'descending' : 'ascending'}"` : ''}><button type="button" class="sort" data-sort="${key}">${label}</button></th>`).join('');
 
   const rows = visibleRows();
   app.querySelector('#rows').innerHTML = groupRows(rows).map(([name, group]) =>
     (name ? `<tr class="group"><th colspan="${columns.length + (state.selected ? 1 : 0)}">${esc(name)} <span class="muted small">${countParts(group.length)}</span></th></tr>` : '')
     + group.map((p) => rowHtml(p, columns)).join('')).join('');
+  restoreFocus();
 
   // A team with no parts yet gets ways to start instead of the empty message.
   const gettingStarted = app.querySelector('#getting-started');
@@ -831,6 +840,20 @@ function renderElsewhere(usesParts) {
     `<button class="link inline" data-search-in="${esc(p.id)}">${esc(p.name)} (${count})</button>`).join(', ');
 }
 
+// Returns a function that focuses the control matching `focused` after the table is redrawn: the same sort header,
+// or the same button, link or checkbox in the same part's row.
+function focusKeeper(focused) {
+  const controls = (row) => [...row.querySelectorAll('button, a, input')];
+  const sort = focused.closest('thead') && focused.dataset.sort;
+  const row = focused.closest('#rows tr[data-id]');
+  const index = row && controls(row).indexOf(focused);
+  return () => {
+    if (sort) app.querySelector(`thead [data-sort="${sort}"]`).focus();
+    const newRow = row && app.querySelector(`#rows tr[data-id="${CSS.escape(row.dataset.id)}"]`);
+    if (newRow) controls(newRow)[index]?.focus();
+  };
+}
+
 function rowHtml(p, columns) {
   const selected = state.selected?.has(p.id);
   const label = (key) => columns.find(([k]) => k === key)?.[1];
@@ -838,15 +861,15 @@ function rowHtml(p, columns) {
     <tr data-id="${esc(p.id)}" class="${selected ? 'selected' : ''} ${p.packed ? 'packed' : ''} ${waiting(p.id) ? 'waiting' : ''}">
       ${state.selected ? `<td class="check"><input type="checkbox" aria-label="Select ${esc(p.name)}" ${selected ? 'checked' : ''} /></td>` : ''}
       ${label('packed') ? `<td data-label="Packed" class="packed"><input type="checkbox" data-packed="1" aria-label="Packed" ${p.packed ? 'checked' : ''} /></td>` : ''}
-      <td data-label="Item" class="name">${esc(p.name)}${lowBadge(p.id)}${orderBadge(p.id)}${conditionBadge(p.condition)}${notesLine(p.notes)}${tagChips(p.tags)}</td>
+      <td data-label="Item" class="name"><button type="button" class="part-name">${esc(p.name)}</button>${lowBadge(p.id)}${orderBadge(p.id)}${conditionBadge(p.condition)}${notesLine(p.notes)}${tagChips(p.tags)}</td>
       <td class="card-meta muted small">${esc(cardMeta(p, !label('inUse')))}</td>
       <td data-label="Part #">${esc(p.partNumber)}${partLink(p)}</td>
       <td data-label="${label('quantity')}" class="qty">
-        <button class="step" data-delta="-1" ${p.quantity > 0 ? '' : 'disabled'} aria-label="Remove one">−</button>
+        <button class="step" data-delta="-1" ${p.quantity > 0 ? '' : 'disabled'} aria-label="Remove one: ${esc(p.name)}">−</button>
         <span>${esc(p.quantity)}</span>${p.unit ? `<small class="unit muted">${esc(p.unit)}</small>` : ''}
-        <button class="step" data-delta="1" aria-label="Add one">+</button>
+        <button class="step" data-delta="1" aria-label="Add one: ${esc(p.name)}">+</button>
       </td>
-      ${label('inUse') ? `<td data-label="In use">${usedIn(p)}<button class="add-to" data-add-to="1">${ICON_PLUS}<span>Add to</span></button></td>` : ''}
+      ${label('inUse') ? `<td data-label="In use">${usedIn(p)}<button class="add-to" data-add-to="1" aria-label="Add to: ${esc(p.name)}">${ICON_PLUS}<span>Add to</span></button></td>` : ''}
       <td data-label="Location">${esc(p.location)}${!label('inUse') && inventoryNote(p) ? `<div class="muted small">${esc(inventoryNote(p))}</div>` : ''}</td>
       <td data-label="Supplier">${esc(p.supplier)}</td>
       <td data-label="Category">${esc(categoryLabel(p.category))}</td>
@@ -1025,7 +1048,7 @@ const conditionBadge = (condition) => ['used', 'broken'].includes(condition)
 // line under the name. Supplier and category are left to the part dialog there.
 const cardMeta = (p, withInventory) => [p.location, withInventory && inventoryNote(p), p.partNumber].filter(Boolean).join(' · ');
 // The part's link, in the Part # column, which phones' short cards leave out.
-const partLink = (p) => p.link ? `<a class="part-link small" href="${esc(p.link)}" target="_blank" rel="noopener">Link ↗</a>` : '';
+const partLink = (p) => p.link ? `<a class="part-link small" href="${esc(p.link)}" target="_blank" rel="noopener" aria-label="Link: ${esc(p.name)}">Link ↗</a>` : '';
 const notesLine = (notes) => notes ?`<div class="notes muted small">${esc(notes.split('\n')[0])}</div>` : '';
 
 // Free count plus a link to every project using this inventory part, one per line.
