@@ -1230,9 +1230,9 @@ function importParts(parts, newLocations, source) {
 }
 
 // ---------- team backup ----------
-// Export backup saves everything the team has in one .inv file (see backup.js). Restore backup adds what's in a backup
-// and not in the team, under the same ids, so printed QR labels and project uses still find their parts. What the team
-// has that differs from the backup is only changed back when asked. Nothing is deleted.
+// Export backup saves everything the team has in one .inv file (see backup.js). Restore backup adds what's in a backup to
+// the team, or replaces the team with it. Either way things come back under their ids, so printed QR labels and project
+// uses still find their parts, and what Replace removes goes to the trash.
 
 // Every doc of the backed-up collections, read fresh rather than taken from the screen, so a backup made while the
 // inventory is still loading isn't missing anything.
@@ -1257,21 +1257,26 @@ function chooseBackup() {
   input.click();
 }
 
-// How describeEdit names what restoring changes besides parts.
+// How describeEdit names what restoring changes besides parts (see RESTORE_PART_FIELDS).
 const NAME_FIELDS = [['name', 'Name']];
 const USE_FIELDS = [['quantity', 'Using'], ['packed', 'Packed']];
 const ORDER_FIELDS = [['name', 'Item'], ['partNumber', 'Part #'], ['quantity', 'Qty'], ['supplier', 'Supplier'], ['link', 'Link'], ['notes', 'Notes']];
 const useDetails = (use) => ({ quantity: use.quantity, packed: use.packed === undefined ? '' : use.packed ? 'Yes' : 'No' });
 
-// What restoring a backup does: `add` holds what's in it and not in the team, and `change` what the team has that differs
-// from it, each with a line saying how. Something whose inventory or part is in neither goes in Main Inventory, or for an
-// order, becomes an order for a new part, like bringing it back from the trash. Uses of a project or part in neither are
-// left out.
-function restorePlan(backup, team) {
+// What restoring a backup does: `add` holds what's in it and not in the team. Add mode keeps everything the team has;
+// with `duplicates`, parts the team already has are added again as copies, and without it, a part with the same name or
+// part number as one in the same inventory is left out. Replace makes the team match the backup: `change` holds what
+// differs from it, and `remove` what isn't in it. Something whose inventory or part won't be there goes in Main
+// Inventory, or for an order, becomes an order for a new part, like bringing it back from the trash. Uses of a project or
+// part that won't be there are left out.
+function restorePlan(backup, team, { replace, duplicates }) {
   const byId = (docs) => new Map(docs.map((d) => [d.id, d]));
   const [projects, parts, uses, orders] = [team.projects, team.parts, team.uses, team.orders].map(byId);
-  const projectIds = new Set([...projects.keys(), ...backup.projects.map((p) => p.id)]);
-  const partIds = new Set([...parts.keys(), ...backup.parts.map((p) => p.id)]);
+  const [backupProjects, backupParts, backupOrders] = [backup.projects, backup.parts, backup.orders].map((docs) => new Set(docs.map((d) => d.id)));
+  const projectIds = new Set([fb.MAIN_PROJECT, ...backupProjects, ...(replace ? [] : projects.keys())]);
+  const inventoryOf = (id) => (projectIds.has(id) ? id : fb.MAIN_PROJECT);
+  const names = new Map([...team.projects, ...backup.projects].map((p) => [p.id, p.name]));
+  const named = (part) => ({ ...part, projectId: names.get(part.projectId) });
   const printed = new Set(team.printed.map((p) => p.id));
   const add = {
     locations: backup.locations.filter((name) => !team.locations.some((l) => sameName(l.name, name))),
@@ -1281,88 +1286,137 @@ function restorePlan(backup, team) {
   const change = { projects: [], parts: [], uses: [], orders: [] };
   for (const { id, ...project } of backup.projects) {
     const now = projects.get(id);
-    if (!now) add.projects.push({ id, ...project, source: !project.source || projectIds.has(project.source) ? project.source : fb.MAIN_PROJECT });
-    else if (now.name !== project.name) change.projects.push({ id, name: project.name, text: `${TYPES[typeOf(now)].label}: ${describeEdit(now, project, NAME_FIELDS)}` });
+    if (!now) add.projects.push({ id, ...project, source: project.source && inventoryOf(project.source) });
+    else if (replace && now.name !== project.name) change.projects.push({ id, name: project.name, text: `${TYPES[typeOf(now)].label}: ${describeEdit(now, project, NAME_FIELDS)}` });
   }
-  for (const { id, ...part } of backup.parts) {
-    if (!parts.has(id)) {
-      add.parts.push([id, projectIds.has(part.projectId) ? part : { ...part, projectId: fb.MAIN_PROJECT }]);
-      continue;
-    }
-    const [before, after] = [partData(parts.get(id)), partData(part)];
-    const how = describeEdit(before, after);
-    if (how) change.parts.push({ id, fields: changedFields(before, after), text: `${before.name}: ${how}` });
+  const sameItem = (a, b) => a.projectId === b.projectId && (sameName(a.name, b.name) || (b.partNumber && a.partNumber === b.partNumber));
+  for (const { id, ...saved } of backup.parts) {
+    const part = { ...saved, projectId: inventoryOf(saved.projectId) };
+    const now = parts.get(id);
+    if (replace && now) {
+      const [before, after] = [partData(now), partData(part)];
+      const how = describeEdit(named(before), named(after), RESTORE_PART_FIELDS);
+      if (how) change.parts.push({ id, fields: changedFields(before, after, RESTORE_PART_FIELDS), text: `${before.name}: ${how}` });
+    } else if (now) {
+      if (duplicates) add.parts.push({ id: fb.newPartId(), ...part });
+    } else if (replace || duplicates || !team.parts.some((p) => sameItem(p, part))) add.parts.push({ id, ...part });
   }
+  const partIds = new Set([...(replace ? backupParts : parts.keys()), ...add.parts.map((p) => p.id)]);
   // A use without a quantity is never written, since setUse would delete it.
   for (const use of backup.uses.filter((u) => u.quantity > 0 && projectIds.has(u.projectId) && partIds.has(u.partId))) {
     const now = uses.get(`${use.projectId}_${use.partId}`);
-    if (!now) {
-      add.uses.push(use);
-      continue;
+    if (!now) add.uses.push(use);
+    else if (replace) {
+      const how = describeEdit(useDetails(now), useDetails(use), USE_FIELDS);
+      if (how) change.uses.push({ use, text: `${parts.get(use.partId)?.name ?? 'A part'} in ${projects.get(use.projectId)?.name ?? 'a project'}: ${how}` });
     }
-    const how = describeEdit(useDetails(now), useDetails(use), USE_FIELDS);
-    if (how) change.uses.push({ use, text: `${parts.get(use.partId)?.name ?? 'A part'} in ${projects.get(use.projectId)?.name ?? 'a project'}: ${how}` });
   }
-  for (const { id, ...order } of backup.orders) {
-    const data = partIds.has(order.partId) ? order : { ...order, partId: '' };
+  for (const { id, ...saved } of backup.orders) {
+    const order = partIds.has(saved.partId) ? saved : { ...saved, partId: '' };
     const now = orders.get(id);
-    if (!now) {
-      add.orders.push([id, data]);
-      continue;
+    if (!now) add.orders.push({ id, ...order });
+    else if (replace) {
+      const how = describeEdit(now, order, ORDER_FIELDS);
+      if (how) change.orders.push({ id, order, text: `Order for ${now.name}: ${how}` });
     }
-    const how = describeEdit(now, data, ORDER_FIELDS);
-    if (how) change.orders.push({ id, order: data, text: `Order for ${now.name}: ${how}` });
   }
-  return { add, change };
+  if (!replace) return { add, change, remove: { projects: [], parts: [], uses: [], orders: [], locations: [] } };
+  const backupUses = new Set(backup.uses.map((u) => `${u.projectId}_${u.partId}`));
+  const remove = {
+    projects: team.projects.filter((p) => !projectIds.has(p.id)),
+    parts: team.parts.filter((p) => !partIds.has(p.id)),
+    // Uses of the parts and projects that go to the trash go with them.
+    uses: team.uses.filter((u) => projectIds.has(u.projectId) && partIds.has(u.partId) && !backupUses.has(u.id)),
+    orders: team.orders.filter((o) => !backupOrders.has(o.id)),
+    locations: team.locations.filter((l) => !backup.locations.some((name) => sameName(l.name, name))),
+  };
+  return { add, change, remove };
 }
 
-// Shows what restoring a backup file adds to the team, and what the team has that differs from the backup, which is only
-// changed back when its box is checked.
-async function openRestoreDialog(file) {
-  const backup = readBackup(file.name, await file.text());
-  const { add, change } = restorePlan(backup, await readTeam());
-  const team = state.connection.teamName;
-  const adds = [
+// Lines naming what's in a group of docs, like "2 parts: Speed servo, Color sensor V3".
+function planLines({ projects = [], parts = [], uses = [], orders = [], locations = [], printed = [] }) {
+  return [
     ...Object.entries(TYPES).map(([type, { label, plural }]) => {
-      const names = add.projects.filter((p) => typeOf(p) === type).map((p) => p.name);
+      const names = projects.filter((p) => typeOf(p) === type).map((p) => p.name);
       return names.length && `${count(names.length, label.toLowerCase(), plural.toLowerCase())}: ${listNames(names)}`;
     }),
-    add.parts.length && `${countParts(add.parts.length)}: ${listNames(add.parts.map(([, p]) => p.name))}`,
-    add.uses.length && `${count(add.uses.length, 'item')} in projects and packing lists`,
-    add.orders.length && `${count(add.orders.length, 'order')}: ${listNames(add.orders.map(([, o]) => o.name))}`,
-    add.locations.length && `${count(add.locations.length, 'location')}: ${listNames(add.locations)}`,
-    add.printed.length && `${count(add.printed.length, 'QR label')} marked as printed`,
+    parts.length && `${countParts(parts.length)}: ${listNames(parts.map((p) => p.name))}`,
+    uses.length && `${count(uses.length, 'item')} in projects and packing lists`,
+    orders.length && `${count(orders.length, 'order')}: ${listNames(orders.map((o) => o.name))}`,
+    locations.length && `${count(locations.length, 'location')}: ${listNames(locations)}`,
+    printed.length && `${count(printed.length, 'QR label')} marked as printed`,
   ].filter(Boolean);
-  const changes = Object.values(change).flat().map((c) => c.text);
-  const lines = (texts) => texts.map((text) => `<li>${esc(text)}</li>`).join('');
+}
+
+// Asks how to restore a backup file, showing what each way does. Add keeps everything the team has. Replace makes the
+// team match the backup, so it asks for the team number (or name, for teammates who joined with a code) to be typed
+// first. A team with nothing in it yet just gets the backup.
+async function openRestoreDialog(file) {
+  const backup = readBackup(file.name, await file.text());
+  const team = await readTeam();
+  const teamName = state.connection.teamName;
+  const empty = !team.parts.length && !team.orders.length && team.projects.every((p) => p.id === fb.MAIN_PROJECT);
+  const confirmText = String(state.connection.teamNumber ?? teamName);
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>Restore backup</h2>
-      <p class="muted small">Backup of ${esc(backup.team)}, saved ${esc(new Date(backup.saved).toLocaleString())}. Restoring adds what ${esc(team)} doesn’t have. Nothing is deleted.</p>
-      ${adds.length ? `<ul class="small">${lines(adds)}</ul>` : `<p>${esc(team)} already has everything in this backup.</p>`}
-      ${changes.length ? `
-        <label class="check"><input type="checkbox" name="changes" />Also change back ${count(changes.length, 'thing')} that ${changes.length === 1 ? 'differs' : 'differ'} from the backup</label>
-        <ul class="small">${lines(changes.slice(0, 5))}${changes.length > 5 ? `<li class="muted">and ${changes.length - 5} more</li>` : ''}</ul>` : ''}
+      <p class="muted small">Backup of ${esc(backup.team)}, saved ${esc(new Date(backup.saved).toLocaleString())}.</p>
+      ${empty ? '' : `
+        <fieldset class="types pair">
+          <legend>How to restore</legend>
+          <label><input type="radio" name="mode" value="add" checked />Add</label>
+          <label><input type="radio" name="mode" value="replace" />Replace</label>
+        </fieldset>`}
+      <div class="restore-plan"></div>
       <div class="row">
-        <button value="restore" autofocus>Restore</button>
+        <button value="restore">Restore</button>
         <button value="cancel" formnovalidate class="secondary">Cancel</button>
       </div>
     </form>`;
   const form = dialog.querySelector('form');
   const button = form.querySelector('[value="restore"]');
-  const withChanges = () => Boolean(form.changes?.checked);
-  const update = () => { button.disabled = !adds.length && !withChanges(); };
-  form.onchange = update;
-  update();
+  const section = (heading, lines) => (lines.length ? `<p class="small">${heading}</p><ul class="small">${lines.map((text) => `<li>${esc(text)}</li>`).join('')}</ul>` : '');
+  let plan, replace;
+  const update = () => {
+    const { add, change, remove } = plan;
+    const hasWork = [add, change, remove].some((group) => Object.values(group).some((list) => list.length));
+    button.disabled = !hasWork || (replace && !empty && form.confirm.value.trim().toLowerCase() !== confirmText.toLowerCase());
+  };
+  const render = () => {
+    replace = empty || form.mode.value === 'replace';
+    const duplicates = !replace && form.exclude?.checked === false;
+    plan = restorePlan(backup, team, { replace, duplicates });
+    const { add, change, remove } = plan;
+    const changes = Object.values(change).flat().map((c) => c.text);
+    const adds = planLines(add);
+    const removes = planLines({ ...remove, locations: remove.locations.map((l) => l.name) });
+    form.querySelector('.restore-plan').innerHTML = `
+      ${empty ? `<p class="muted small">Adds everything in the backup to ${esc(teamName)}.</p>` : replace
+        ? `<p class="muted small">Makes ${esc(teamName)} match the backup. Parts, projects and orders that aren’t in it go to the Trash for ${TRASH_DAYS} days.</p>`
+        : `<p class="muted small">Adds what’s in the backup to ${esc(teamName)}. Nothing is changed or deleted.</p>
+          <label class="check"><input type="checkbox" name="exclude" ${duplicates ? '' : 'checked'} />Exclude duplicates (parts with the same name or part number in the same inventory)</label>`}
+      ${section('Adds', adds)}
+      ${section('Changes back', [...changes.slice(0, 5), ...(changes.length > 5 ? [`and ${changes.length - 5} more`] : [])])}
+      ${section('Removes', removes)}
+      ${adds.length || changes.length || removes.length ? '' : `<p>${esc(teamName)} already has everything in this backup.</p>`}
+      ${replace && !empty ? `<label>Type ${esc(confirmText)} to confirm<input name="confirm" autocomplete="off" /></label>` : ''}`;
+    update();
+  };
+  form.onchange = (e) => { if (['mode', 'exclude'].includes(e.target.name)) render(); };
+  form.oninput = update;
+  render();
   form.onsubmit = (e) => {
     if (e.submitter.value !== 'restore') return;
     e.preventDefault();
     button.disabled = true;
     button.textContent = 'Restoring…';
-    restoreBackup({ add, change }, withChanges(), file.name).then(() => {
+    const removed = plan.remove.parts.length + plan.remove.projects.length + plan.remove.orders.length;
+    restoreBackup(plan, team, file.name).then(() => {
       dialog.close();
-      showMessage('Backup restored', `${esc(team)} now has everything in ${esc(file.name)}.`);
+      showMessage('Backup restored', replace
+        ? `${esc(teamName)} now matches ${esc(file.name)}.${removed ? ` What was removed is in the Trash for ${TRASH_DAYS} days.` : ''}`
+        : `Added what was in ${esc(file.name)} to ${esc(teamName)}.`);
     }, (error) => {
       dialog.close();
       showError(error);
@@ -1372,28 +1426,38 @@ async function openRestoreDialog(file) {
 }
 
 // Writes a restore in the order the rules check that things exist: inventories before the projects that name them and the
-// parts in them, parts before their uses and orders. With `withChanges`, what differs from the backup is changed back too.
-async function restoreBackup({ add, change }, withChanges, source) {
-  const changed = (list) => (withChanges ? list : []);
+// parts in them, parts before their uses and orders. What Replace removes goes last, parts, projects and orders through
+// the trash with their uses.
+async function restoreBackup({ add, change, remove }, team, source) {
   const create = (p) => fb.createProject(p.id, p.name, p.source, p.kind);
-  const edits = changed(change.parts);
-  const log = (action, n, details) => n && fb.logChange(me(), action, countParts(n), `Restored from ${source}${details}`.slice(0, 2000));
+  const log = (action, n, details) => n && fb.logChange(me(), action, countParts(n), details.slice(0, 2000));
+  const usesOf = (key, id) => team.uses.filter((u) => u[key] === id).map(useData);
+  const trash = (kind, { id, ...data }, uses) => fb.moveToTrash({ kind, docId: id, name: data.name, data, uses }, state.user);
   await Promise.all([...add.locations.map((name) => fb.addLocation(name)), ...add.projects.filter((p) => !p.source).map(create)]);
   await Promise.all([
     ...add.projects.filter((p) => p.source).map(create),
-    ...changed(change.projects).map(({ id, name }) => fb.renameProject(id, name)),
+    ...change.projects.map(({ id, name }) => fb.renameProject(id, name)),
   ]);
   await Promise.all([
-    fb.saveParts(add.parts, state.user),
-    fb.updateParts(edits.map(({ id, fields }) => [id, fields]), state.user),
-    log('added', add.parts.length, ''),
-    log('edited', edits.length, `: ${edits.map((c) => c.text).join('; ')}`),
+    fb.saveParts(add.parts.map(({ id, ...part }) => [id, part]), state.user),
+    fb.updateParts(change.parts.map(({ id, fields }) => [id, fields]), state.user),
+    log('added', add.parts.length, `Restored from ${source}`),
+    log('edited', change.parts.length, `Restored from ${source}: ${change.parts.map((c) => c.text).join('; ')}`),
   ]);
   await Promise.all([
-    ...[...add.uses, ...changed(change.uses).map((c) => c.use)].map((u) => fb.setUse(u.projectId, u.partId, u.quantity, u.packed)),
-    ...[...add.orders, ...changed(change.orders).map((c) => [c.id, c.order])].map(([id, order]) => fb.saveOrder(id, order)),
+    ...[...add.uses, ...change.uses.map((c) => c.use)].map((u) => fb.setUse(u.projectId, u.partId, u.quantity, u.packed)),
+    ...[...add.orders, ...change.orders.map((c) => ({ id: c.id, ...c.order }))].map(({ id, ...order }) => fb.saveOrder(id, order)),
     fb.markPrinted(add.printed),
   ]);
+  await Promise.all([
+    ...remove.parts.map((p) => trash('part', { ...partData(p), id: p.id }, usesOf('partId', p.id))),
+    ...remove.uses.map((u) => fb.setUse(u.projectId, u.partId, 0)),
+    ...remove.orders.map((o) => trash('order', o, [])),
+    log('deleted', remove.parts.length, `Replaced by ${source}`),
+  ]);
+  // Projects go after their parts, so a part's trash entry is written while its project is still there.
+  await Promise.all(remove.projects.map((p) => trash('project', p, usesOf('projectId', p.id))));
+  await Promise.all(remove.locations.map((l) => fb.deleteLocation(l.id)));
 }
 
 const lowBadge = (partId) => lowStock(partId) ? '<small class="badge low">Low stock</small>' : '';
@@ -2326,10 +2390,12 @@ const logged = (write, action, partName, details) =>
 
 // Every field an edit can change, with its name for the change log.
 const EDIT_FIELDS = [...FIELDS, ...DETAIL_FIELDS, ['barcode', 'Barcode'], ['link', 'Link'], ['minQuantity', 'Low stock at'], ['tags', 'Tags']];
+// A restored part's inventory counts too, so Replace can move a part back.
+const RESTORE_PART_FIELDS = [...EDIT_FIELDS, ['projectId', 'Inventory']];
 
-// The fields that differ from `before` to `after`, with their `after` values. A barcode, link or low-stock quantity that
-// was taken off is null.
-const changedFields = (before, after) => Object.fromEntries(EDIT_FIELDS
+// The fields that differ from `before` to `after` (a part's fields or the `fields` given), with their `after` values. A
+// barcode, link or low-stock quantity that was taken off is null.
+const changedFields = (before, after, fields = EDIT_FIELDS) => Object.fromEntries(fields
   .filter(([key]) => String(before[key] ?? '') !== String(after[key] ?? ''))
   .map(([key]) => [key, after[key] ?? null]));
 

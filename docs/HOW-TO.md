@@ -194,11 +194,14 @@ The same menu has **Export CSV**, which saves every part in the inventory as a s
 
 **☰ → Export backup** saves everything your team has in one `.inv` file: every inventory, project and packing list, every part, the orders, the locations and which QR labels are printed. It doesn't hold the members, the change log or the trash. Export works on the website and the Windows app, not the Android app. Keep the file somewhere the team can find it, like a shared drive.
 
-**☰ → Restore backup** opens a `.inv` file. On a computer the file picker shows `.inv` files; a phone lists all files, and the app checks that the one you pick is a backup. Before anything changes, the app shows what restoring will add: parts, projects and anything else your team doesn't have anymore. Click **Restore** to add them.
+**☰ → Restore backup** opens a `.inv` file. On a computer the file picker shows `.inv` files; a phone lists all files, and the app checks that the one you pick is a backup. Then pick how to restore it. Before anything changes, the app lists what each way will do.
 
-<img src="how-to/restore-backup.png" alt="The restore preview, with what restoring adds and what differs from the backup" width="420">
+- **Add** brings in what's in the backup and your team doesn't have, like parts deleted since. Nothing you have is changed or deleted. **Exclude duplicates** (on to start) leaves out parts your team already has, and parts with the same name or part number in the same inventory. Turn it off to add every part in the backup again, as copies.
+- **Replace** makes your team match the backup: it adds what's missing, sets back what changed (quantities, names, which inventory a part is in) and removes what isn't in the backup. Removed parts, projects and orders go to [Trash](#10-change-log-undo-and-trash) for 30 days. So it can't happen by accident, you type your team number first (or your team's name, if you joined with a code or link).
 
-Restoring never deletes anything, and it leaves the things you've changed since the backup as they are. To also set those back to how they were in the backup, like a quantity or a project's name, tick **Also change back** first; the preview lists what will change. Everything comes back under the same IDs, so printed QR labels keep working, even in a new Firebase project. Restoring needs an internet connection.
+<img src="how-to/restore-backup.png" alt="Restore backup, with Add picked and what it will add" width="420">
+
+If your team has nothing in it yet, like a new team, the app skips the choice and just restores the backup. Everything comes back under the same IDs, so printed QR labels keep working, even in a new Firebase project. Restoring needs an internet connection.
 
 ---
 

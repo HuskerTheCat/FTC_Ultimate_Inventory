@@ -69,7 +69,7 @@ Your inventory is stored safely in your Firebase project, and deleted items stay
 
 Choose **☰ → Export backup** (on the website or the Windows app; the Android app can't save files). It saves one `.inv` file with every inventory, project, packing list, part, order and location, and which QR labels are printed. It doesn't hold the members, the change log or the trash. Do it before each season and after a big inventory count, and keep the files somewhere the team can find them, like a shared drive.
 
-To bring things back, choose **☰ → Restore backup** and pick the file. The app shows what it will add before anything changes. Restoring only adds what the team doesn't have, so nothing is deleted and changes made since the backup stay, unless you tick **Also change back**. See [Import, export and backups](HOW-TO.md#9-import-export-and-backups).
+To bring things back, choose **☰ → Restore backup**, pick the file and pick how: **Add** only brings in what the team doesn't have, and **Replace** makes the team match the backup, after you type your team number. What Replace removes goes to the Trash for 30 days. The app shows what each way will do before anything changes. See [Import, export and backups](HOW-TO.md#9-import-export-and-backups).
 
 **Moving to a new Firebase project:** export a backup, set up the new team (see the [team setup guide](../SETUP.md)), then restore the backup there. Everything keeps its ID, so the QR labels you've already printed still work. Teammates join the new team with its join code.
 

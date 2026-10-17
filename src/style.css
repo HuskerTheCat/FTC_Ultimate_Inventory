@@ -257,6 +257,7 @@ button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised)
 @media (prefers-reduced-motion: reduce) { .switch, .switch::after { transition: none; } }
 /* Type choice in the New dialog: three tiles, each with its icon. */
 .types { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; border: none; }
+.types.pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .types legend { padding: 0; margin-bottom: 6px; font-size: 0.875rem; font-weight: 500; color: var(--muted); }
 .types label {
   position: relative;

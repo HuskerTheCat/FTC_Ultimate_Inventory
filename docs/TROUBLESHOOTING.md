@@ -203,7 +203,15 @@ Restoring checks what your team already has on the server first. Try again once 
 
 ### Restoring says the team already has everything, but my numbers are different.
 
-Restoring only adds what's missing; it doesn't undo changes made since the backup. Tick **Also change back** in the preview to set those back to how they were in the backup.
+**Add** only brings in what's missing; it doesn't undo changes made since the backup. Pick **Replace** to set everything back to how it was in the backup. See [Import, export and backups](HOW-TO.md#9-import-export-and-backups).
+
+### Restore stays grey after picking Replace.
+
+Type your team number in the box, like `12345`, without the program. If you joined with a code or link, type your team's name as shown at the top of the app instead; the box says which.
+
+### Replace removed something I needed.
+
+Parts, projects and orders that Replace removed are in **☰ → Trash** for 30 days. Tap **Restore** there to bring them back.
 
 ### "Delete the parts in Pit spares first."
 
