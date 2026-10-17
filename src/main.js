@@ -1638,7 +1638,7 @@ function openPicker() {
         const using = useOf(current.id, p.id)?.quantity ?? 0;
         const free = p.quantity - inUse(p.id);
         return `<li><button type="button" class="secondary" data-id="${esc(p.id)}">
-          <span><strong>${esc(p.name)}</strong>${orderBadge(p.id)} <span class="muted small">${esc([p.partNumber, p.location, inventoryNote(p)].filter(Boolean).join(' · '))}</span></span>
+          <span><strong>${esc(p.name)}</strong>${partChips(orderBadge(p.id), [])} <span class="muted small">${esc([p.partNumber, p.location, inventoryNote(p)].filter(Boolean).join(' · '))}</span></span>
           <span class="small ${free < 0 ? 'over' : ''}">${free} free${using ? ` · using ${using}` : ''}</span>
         </button></li>`;
       }).join('') || '<li class="muted">No parts match.</li>';
