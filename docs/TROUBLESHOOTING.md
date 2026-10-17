@@ -193,9 +193,9 @@ Export CSV only works on the website and in the Windows app. Sign in to the webs
 
 An inventory can only be deleted once it's empty. Move its parts somewhere else or delete them first.
 
-### "The first row of parts.csv needs column names, with one called Item."
+### "No parts found in pasted cells. Include the row of column names and the parts under it."
 
-The CSV file needs a header row. Export a CSV first to see every column the app reads. See [CSV export and import](HOW-TO.md#9-csv-export-and-import).
+Import needs the row of column names and at least one row of parts under it. Select both in your spreadsheet, copy them and paste again. A CSV file needs the same. See [Import and export](HOW-TO.md#9-import-and-export).
 
 ### A teammate's changes aren't showing up.
 

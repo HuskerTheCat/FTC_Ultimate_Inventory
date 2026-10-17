@@ -71,7 +71,7 @@ In each inventory, choose **⋯ → Export CSV** (on the website or the Windows 
 
 A CSV holds each part's details (item, part number, quantity, low-stock number, unit, location, supplier, category, tags, condition, barcode, link and notes). It doesn't include projects, packing lists, orders, the change log or the trash.
 
-To bring parts back from a backup, open an inventory and choose **⋯ → Import CSV**. Parts already in that inventory (same name or part number) are skipped, so nothing you have is changed. See [CSV export and import](HOW-TO.md#9-csv-export-and-import).
+To bring parts back from a backup, open an inventory, choose **⋯ → Import spreadsheet** and then **Choose CSV file**. Parts already in that inventory (same name or part number) are skipped, so nothing you have is changed. See [Import and export](HOW-TO.md#9-import-and-export).
 
 ---
 

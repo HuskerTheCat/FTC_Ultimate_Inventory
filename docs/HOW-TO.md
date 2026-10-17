@@ -16,7 +16,7 @@ Something not working? See [Troubleshooting and FAQ](TROUBLESHOOTING.md). Runnin
 6. [Inventories, projects and packing lists](#6-inventories-projects-and-packing-lists)
 7. [Order list](#7-order-list)
 8. [Edit many parts at once](#8-edit-many-parts-at-once)
-9. [CSV export and import](#9-csv-export-and-import)
+9. [Import and export](#9-import-and-export)
 10. [Change log, Undo and Trash](#10-change-log-undo-and-trash)
 11. [Team, sign out and other tips](#11-team-sign-out-and-other-tips)
 
@@ -38,7 +38,7 @@ After joining, enter your name, email and a password, tick the privacy policy bo
 
 <img src="how-to/phone-create-account.png" alt="Creating an account after joining a team" width="200">
 
-A brand-new team's inventory is empty, so it shows **Add your first parts** with buttons to add a part, scan a package, import a CSV file, add locations and invite your team.
+A brand-new team's inventory is empty, so it shows **Add your first parts** with buttons to add a part, scan a package, import a spreadsheet, add locations and invite your team.
 
 > **Admins:** to invite people, open **☰ → Team**. Teammates scan the QR code on your screen, or you send them the join code or link. Only share these with your team: anyone who has them can join. The [team admin guide](ADMIN.md) covers the rest of running the team.
 >
@@ -56,7 +56,7 @@ A brand-new team's inventory is empty, so it shows **Add your first parts** with
 4. **☰ menu.** Orders, Locations, Change log, Trash, Team, Report bug, Request feature, Pain and suffering mode and Sign out.
 5. **Search** by name, part number, barcode, supplier, location, category, condition or notes. Each word can match anywhere, so `m4 screw` finds *M4 x 8mm socket head screw*.
 6. **Filters.** Filter, sort and group the list.
-7. **⋯ menu.** Select parts, Print QR labels, Print list, Export CSV and Import CSV.
+7. **⋯ menu.** Select parts, Print QR labels, Print list, Export CSV and Import spreadsheet.
 8. **Add part.**
 9. **− and +** change the quantity by one.
 10. **Add to** puts the part in a project or packing list. Above it, **In use** shows how many are free and which projects use the part.
@@ -169,21 +169,22 @@ Choose **⋯ → Select parts**, tap the parts you want (or **Select all shown**
 
 ---
 
-## 9. CSV export and import
+## 9. Import and export
 
-In an inventory, the **⋯** menu has:
+Already keep your parts in a spreadsheet? Bring them in with **⋯ → Import spreadsheet**, whatever your columns are called.
 
-- **Export CSV**: saves every part in the inventory as a spreadsheet file, for a backup or to open in Excel or Google Sheets. Export works on the website and the Windows app, not the Android app.
-- **Import CSV**: adds parts from a spreadsheet. The first row needs column names, with one called **Item**. Export a file first to see every column the app reads.
+1. In Excel, Google Sheets or any other spreadsheet, select your parts along with the row of column names above them, and copy them.
+2. In the app, open the inventory they belong in, choose **⋯ → Import spreadsheet** and paste into the box. You can also choose a CSV file instead, like a backup from **Export CSV**.
+3. Check what the app found. Each column has a menu saying what it holds, like **Item**, **Qty** or **Location**, picked from the column's name. Fix any it got wrong, and pick **Leave out** for columns the app doesn't need, like prices. The column with each part's name must be **Item**.
+4. Click **Import**.
 
-Before anything is added, the app shows what it found. Parts already in the inventory (same name or part number) are skipped, so nothing you already have is changed, and importing the same file twice adds nothing. **Undo** removes the whole import.
+<img src="how-to/import-preview.png" alt="The import preview, with what each column holds" width="420">
 
-<p>
-  <img src="how-to/more-menu.png" alt="The ⋯ menu" height="260">
-  <img src="how-to/csv-import.png" alt="The import preview" height="260">
-</p>
+Rows the app can't add are listed with the reason, like a quantity that isn't a number (*250 pcs* and *1,200* are fine). Parts already in the inventory (same name or part number) are skipped, so nothing you already have is changed, and importing the same parts twice adds nothing. **Undo** removes the whole import.
 
-**Print list** in the same menu prints the parts on screen, grouped the same way.
+The same menu has **Export CSV**, which saves every part in the inventory as a spreadsheet file, for a backup or to open in Excel or Google Sheets. Export works on the website and the Windows app, not the Android app. **Print list** prints the parts on screen, grouped the same way.
+
+<img src="how-to/more-menu.png" alt="The ⋯ menu" height="260">
 
 ---
 

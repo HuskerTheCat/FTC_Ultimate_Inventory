@@ -547,7 +547,7 @@ function renderInventory() {
           <button id="print-list" class="menu-item">Print list</button>
           <button id="unpack-all" class="menu-item" hidden>Unpack all</button>
           <button id="export-csv" class="menu-item">Export CSV</button>
-          <button id="import-csv" class="menu-item">Import CSV</button>
+          <button id="import" class="menu-item">Import spreadsheet</button>
         </div>
       </div>
       <button id="add" disabled>+ Add part</button>
@@ -588,11 +588,11 @@ function renderInventory() {
     <p id="elsewhere" class="muted center-text" hidden></p>
     <div id="getting-started" class="card getting-started" hidden>
       <h2>Add your first parts</h2>
-      <p class="muted">Scanning a goBILDA, REV, AndyMark, ServoCity, TETRIX or Studica package fills in the part for you. Parts in a spreadsheet can come in as a CSV file.</p>
+      <p class="muted">Scanning a goBILDA, REV, AndyMark, ServoCity, TETRIX or Studica package fills in the part for you. Parts already in a spreadsheet can be pasted straight in.</p>
       <div class="row">
         <button data-start="#add">+ Add part</button>
         <button data-start="#scan" class="secondary">Scan a package</button>
-        <button data-start="#import-csv" class="secondary">Import CSV</button>
+        <button data-start="#import" class="secondary">Import spreadsheet</button>
         <button data-start="#locations" class="secondary">Add locations</button>
         ${DEMO ? '' : '<button data-start="#invite" class="secondary">Invite your team</button>'}
       </div>
@@ -636,7 +636,7 @@ function renderInventory() {
   app.querySelector('#print-list').onclick = printList;
   app.querySelector('#unpack-all').onclick = unpackAll;
   app.querySelector('#export-csv').onclick = exportCsv;
-  app.querySelector('#import-csv').onclick = pickCsv;
+  app.querySelector('#import').onclick = openImportDialog;
   app.querySelector('#select').onclick = () => { state.selected = new Set(); renderRows(); };
   app.querySelector('#select-shown').onclick = () => { visibleRows().forEach((p) => state.selected.add(p.id)); renderRows(); };
   app.querySelector('#select-none').onclick = () => { state.selected.clear(); renderRows(); };
@@ -864,7 +864,7 @@ function renderRows() {
   renderViewBar(columns);
   app.querySelector('#add').textContent = usesParts ? '+ Add parts' : '+ Add part';
   app.querySelector('#export-csv').hidden = usesParts;
-  app.querySelector('#import-csv').hidden = usesParts;
+  app.querySelector('#import').hidden = usesParts;
   app.querySelector('#add').disabled = false;
   // Redrawing replaces the headers and rows, so keyboard focus goes back to the same control afterwards.
   const restoreFocus = focusKeeper(document.activeElement);
@@ -977,21 +977,22 @@ function printList() {
 
 // ---------- CSV export and import ----------
 
-// The columns of an export, which an import reads back. Import also takes a column under one of the other names.
+// The columns of an export, which an import reads back. Import also guesses a column from the other names teams' own
+// spreadsheets give it (written the way columnName() leaves them), trying the names in order.
 const CSV_COLUMNS = [
-  ['name', 'Item', ['name', 'item name', 'part name']],
-  ['partNumber', 'Part #', ['part number', 'part no', 'part no.', 'sku']],
-  ['quantity', 'Qty', ['quantity', 'count']],
-  ['minQuantity', 'Low stock at', ['minimum', 'min quantity', 'min qty']],
+  ['name', 'Item', ['name', 'item name', 'part name', 'part', 'description', 'component', 'product']],
+  ['partNumber', 'Part #', ['part number', 'part no', 'pn', 'p n', 'sku', 'item #', 'item number', 'model', 'model #']],
+  ['quantity', 'Qty', ['quantity', 'count', 'amount', 'on hand', 'qty on hand', 'in stock', 'stock']],
+  ['minQuantity', 'Low stock at', ['minimum', 'min', 'min quantity', 'min qty', 'reorder at']],
   ['unit', 'Unit', []],
-  ['location', 'Location', ['bin']],
-  ['supplier', 'Supplier', ['vendor']],
-  ['category', 'Category', []],
-  ['tags', 'Tags', []],
+  ['location', 'Location', ['bin', 'box', 'drawer', 'shelf', 'storage', 'where']],
+  ['supplier', 'Supplier', ['vendor', 'manufacturer', 'brand', 'store', 'source']],
+  ['category', 'Category', ['type', 'group']],
+  ['tags', 'Tags', ['tag']],
   ['condition', 'Condition', []],
-  ['barcode', 'Barcode', []],
-  ['link', 'Link', ['url']],
-  ['notes', 'Notes', []],
+  ['barcode', 'Barcode', ['upc']],
+  ['link', 'Link', ['url', 'website']],
+  ['notes', 'Notes', ['note', 'comments', 'comment', 'description']],
 ];
 
 // Saves every part of the inventory on screen as a CSV file, as a backup or to open in a spreadsheet.
@@ -1008,33 +1009,79 @@ function exportCsv() {
   setTimeout(() => URL.revokeObjectURL(link.href), 1000);
 }
 
-function pickCsv() {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.csv,text/csv';
-  input.onchange = () => input.files[0].text().then((text) => openImportDialog(input.files[0].name, parseCsv(text))).catch(showError);
-  input.click();
+// Asks for the parts to import: cells pasted from any spreadsheet, so nobody has to save it as a CSV file first, or a CSV file.
+function openImportDialog() {
+  const dialog = app.querySelector('#dialog');
+  dialog.innerHTML = `
+    <form method="dialog" class="card">
+      <h2>Import spreadsheet</h2>
+      <p class="muted small">In Excel, Google Sheets or any spreadsheet, copy your parts along with the row of column names, then paste them here. Or choose a CSV file, like a backup from Export CSV.</p>
+      <textarea rows="5" placeholder="Paste here" aria-label="Cells copied from a spreadsheet"></textarea>
+      <p class="error" role="alert" hidden></p>
+      <div class="row">
+        <button type="button" id="choose-csv" class="secondary">Choose CSV file</button>
+        <button value="cancel" formnovalidate class="secondary">Cancel</button>
+      </div>
+    </form>`;
+  const problem = dialog.querySelector('.error');
+  const preview = (source, text, separator) => {
+    try {
+      openImportPreview(source, parseCsv(text, separator));
+    } catch (error) {
+      problem.textContent = error.message;
+      problem.hidden = false;
+    }
+  };
+  dialog.querySelector('textarea').onpaste = (e) => {
+    e.preventDefault();
+    preview('pasted cells', e.clipboardData.getData('text/plain'), '\t');
+  };
+  dialog.querySelector('#choose-csv').onclick = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,text/csv';
+    input.onchange = () => input.files[0].text().then((text) => preview(input.files[0].name, text)).catch(showError);
+    input.click();
+  };
+  dialog.showModal();
 }
 
-// Which CSV_COLUMNS key each column of the file is, by its name in the first row; null for columns the app doesn't know.
+// A column name the way CSV_COLUMNS lists it: lowercase words, so "Qty." is qty and "Part#" is part #.
+const columnName = (text) => text.toLowerCase().replaceAll('#', ' # ').replace(/[^\p{L}\p{N}#]+/gu, ' ').trim();
+
+// Which CSV_COLUMNS key each column most likely holds, by its name; '' for columns the app doesn't know.
 function csvKeys(headers) {
-  const taken = new Set();
-  return headers.map((header) => {
-    const name = header.trim().toLowerCase();
-    const column = CSV_COLUMNS.find(([key, label, others]) => !taken.has(key) && [label.toLowerCase(), ...others].includes(name));
-    if (!column) return null;
-    taken.add(column[0]);
-    return column[0];
-  });
+  const names = headers.map(columnName);
+  const keys = names.map(() => '');
+  for (const [key, label, others] of CSV_COLUMNS) {
+    for (const name of [columnName(label), ...others]) {
+      const i = names.findIndex((n, j) => n === name && !keys[j]);
+      if (i >= 0) {
+        keys[i] = key;
+        break;
+      }
+    }
+  }
+  return keys;
+}
+
+// A count from a spreadsheet cell: "1,200", "6.00" and "250 pcs" are whole numbers, "lots" and "2.5" aren't (NaN).
+function wholeNumber(text) {
+  const number = text.replace(/(\d),(?=\d{3}\b)/g, '$1').replace(/(\d)\s*\p{L}+\.?$/u, '$1');
+  return /^\d+(\.0*)?$/.test(number) ? Number(number) : NaN;
 }
 
 // A new part from a row of the file, or the reason the row can't be one.
 function csvPart(values, projectId) {
-  const text = (key, max = 200) => (values[key] ?? '').trim().slice(0, max);
+  // Every detail but notes is one line, like its box in the part form, so a cell's line breaks become spaces.
+  const text = (key, max = 200) => {
+    const value = (values[key] ?? '').trim();
+    return (key === 'notes' ? value : value.replace(/\s*\n\s*/g, ' ')).slice(0, max);
+  };
   if (!text('name')) return { problem: 'no item name' };
-  const quantity = text('quantity') ? Number(text('quantity')) : 0;
+  const quantity = text('quantity') ? wholeNumber(text('quantity')) : 0;
   if (!Number.isInteger(quantity) || quantity < 0 || quantity > 1000000) return { problem: 'quantity not a whole number' };
-  const minQuantity = text('minQuantity') ? Number(text('minQuantity')) : null;
+  const minQuantity = text('minQuantity') ? wholeNumber(text('minQuantity')) : null;
   if (minQuantity !== null && (!Number.isInteger(minQuantity) || minQuantity < 0 || minQuantity > 1000000)) {
     return { problem: 'low stock at not a whole number' };
   }
@@ -1060,25 +1107,23 @@ function csvPart(values, projectId) {
   };
 }
 
-// Shows what a CSV file will add to the inventory on screen, then adds it. Parts already there (same name or part number) are
-// left out, so importing the same file twice adds nothing, and nothing already in the inventory is changed.
-function openImportDialog(fileName, rows) {
+// What the rows would add to the inventory on screen, with each part detail read from the column columnOf gives it:
+// the new parts, the rows left out (reason → their item names) and the locations the team doesn't have yet. Parts
+// already there (same name or part number) are left out, so importing the same rows twice adds nothing.
+function importPlan(rows, columnOf) {
   const current = currentProject();
-  const keys = csvKeys(rows[0] ?? []);
-  if (!keys.includes('name')) {
-    throw new Error(`The first row of ${fileName} needs column names, with one called Item. Export CSV shows the columns the app reads.`);
-  }
   const existing = inventoryParts(current.id);
   const parts = [];
-  const problems = {};
-  const skip = (problem) => { problems[problem] = (problems[problem] ?? 0) + 1; };
-  for (const row of rows.slice(1)) {
-    const { part, problem } = csvPart(Object.fromEntries(keys.map((key, i) => [key, row[i]]).filter(([key]) => key)), current.id);
-    if (problem) skip(problem);
-    else if (existing.some((p) => sameName(p.name, part.name) || (part.partNumber && p.partNumber === part.partNumber))) skip(`already in ${current.name}`);
+  const skipped = {};
+  const skip = (problem, name) => (skipped[problem] ??= []).push(name);
+  for (const row of rows) {
+    const values = Object.fromEntries([...columnOf].map(([key, i]) => [key, row[i]]));
+    const { part, problem } = csvPart(values, current.id);
+    if (problem) skip(problem, values.name?.trim() ?? '');
+    else if (existing.some((p) => sameName(p.name, part.name) || (part.partNumber && p.partNumber === part.partNumber))) skip(`already in ${current.name}`, part.name);
     else parts.push(part);
   }
-  // A location is spelled the way the team (or the file's first row with it) spells it, ignoring capitals.
+  // A location is spelled the way the team (or the first row with it) spells it, ignoring capitals.
   const spellings = new Map(state.locations.map((l) => [l.name.toLowerCase(), l.name]));
   const newLocations = [];
   for (const part of parts.filter((p) => p.location)) {
@@ -1089,39 +1134,85 @@ function openImportDialog(fileName, rows) {
     }
     part.location = spellings.get(key);
   }
-  const ignored = rows[0].filter((header, i) => !keys[i] && header.trim());
+  return { parts, skipped, newLocations };
+}
+
+// Shows what a spreadsheet's rows will add to the inventory on screen, with a menu for each column saying which part
+// detail it holds, guessed from the column's name. Changing one updates the preview. Nothing already in the inventory
+// is changed.
+function openImportPreview(source, rows) {
+  const current = currentProject();
+  // The column names are the first row with more than one cell filled in, so a title above them is left out.
+  const namesAt = Math.max(0, rows.findIndex((row) => row.filter((v) => v.trim()).length > 1));
+  const headers = rows[namesAt] ?? [];
+  const body = rows.slice(namesAt + 1);
+  if (!body.length) throw new Error(`No parts found in ${source}. Include the row of column names and the parts under it.`);
+  const keys = csvKeys(headers);
+  // Columns with no name and nothing in them, like the empty ones at the end of some files, aren't listed.
+  const columns = [...Array(Math.max(...rows.map((row) => row.length))).keys()]
+    .filter((i) => headers[i]?.trim() || body.some((row) => row[i]?.trim()));
+  const sample = (i) => body.find((row) => row[i]?.trim())?.[i].trim() ?? '';
 
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `
     <form method="dialog" class="card">
-      <h2>Import ${countParts(parts.length)}</h2>
-      <p class="muted small">From ${esc(fileName)} into ${esc(current.name)}. Nothing already in ${esc(current.name)} is changed.</p>
-      <ul class="small">
-        <li>Columns read: ${esc(keys.filter(Boolean).map((key) => CSV_COLUMNS.find(([k]) => k === key)[1]).join(', '))}</li>
-        ${ignored.length ? `<li>Columns left out: ${esc(ignored.join(', '))}</li>` : ''}
-        ${Object.entries(problems).map(([problem, count]) => `<li>Skipped ${count}: ${esc(problem)}</li>`).join('')}
-        ${newLocations.length ? `<li>New locations: ${esc(newLocations.join(', '))}</li>` : ''}
-      </ul>
-      <ul class="members">${parts.slice(0, 5).map((p) => `<li><strong>${esc(p.name)}</strong>
-        <span class="muted small">${esc([`qty ${p.quantity}`, p.location, p.partNumber].filter(Boolean).join(' · '))}</span></li>`).join('')}
-        ${parts.length > 5 ? `<li class="muted small">and ${parts.length - 5} more</li>` : ''}</ul>
+      <h2></h2>
+      <p class="muted small">From ${esc(source)} into ${esc(current.name)}. Nothing already in ${esc(current.name)} is changed.</p>
+      <div class="import-columns">
+        <p class="muted small">What each column holds:</p>
+        ${columns.map((i) => `<label><span>${esc(headers[i]?.trim() || `Column ${i + 1}`)}<small>${esc(sample(i))}</small></span>
+          <select data-column="${i}"><option value="">Leave out</option>${CSV_COLUMNS.map(([key, label]) =>
+            `<option value="${key}" ${keys[i] === key ? 'selected' : ''}>${label}</option>`).join('')}</select></label>`).join('')}
+      </div>
+      <div class="import-found"></div>
       <div class="row">
-        <button value="import" ${parts.length ? '' : 'disabled'}>Import</button>
+        <button value="import">Import</button>
         <button value="cancel" formnovalidate class="secondary">Cancel</button>
       </div>
     </form>`;
-  dialog.querySelector('form').onsubmit = (e) => {
-    if (e.submitter.value === 'import') importParts(parts, newLocations, fileName);
+  const form = dialog.querySelector('form');
+  const selects = [...form.querySelectorAll('[data-column]')];
+  let plan;
+  const update = () => {
+    const columnOf = new Map(selects.filter((s) => s.value).map((s) => [s.value, Number(s.dataset.column)]));
+    plan = importPlan(body, columnOf);
+    const notes = [
+      ...Object.entries(plan.skipped).map(([problem, names]) => {
+        const named = names.filter(Boolean);
+        const examples = named.length ? `: ${named.slice(0, 3).join(', ')}${named.length > 3 ? ` and ${named.length - 3} more` : ''}` : '';
+        return `Skipped ${names.length}, ${problem}${examples}`;
+      }),
+      ...(plan.newLocations.length ? [`New locations: ${plan.newLocations.join(', ')}`] : []),
+    ];
+    form.querySelector('h2').textContent = `Import ${countParts(plan.parts.length)}`;
+    form.querySelector('.import-found').innerHTML = !columnOf.has('name')
+      ? '<p class="muted small">Pick the column with each part’s name as Item.</p>'
+      : `${notes.length ? `<ul class="small">${notes.map((note) => `<li>${esc(note)}</li>`).join('')}</ul>` : ''}
+        <ul class="members">${plan.parts.slice(0, 5).map((p) => `<li><strong>${esc(p.name)}</strong>
+          <span class="muted small">${esc([`qty ${p.quantity}`, p.location, p.partNumber].filter(Boolean).join(' · '))}</span></li>`).join('')}
+          ${plan.parts.length > 5 ? `<li class="muted small">and ${plan.parts.length - 5} more</li>` : ''}</ul>`;
+    form.querySelector('button[value="import"]').disabled = !plan.parts.length;
   };
-  dialog.showModal();
+  form.querySelector('.import-columns').onchange = (e) => {
+    // Each detail comes from one column, so picking it for this one takes it off any other.
+    selects.forEach((select) => {
+      if (select !== e.target && select.value === e.target.value) select.value = '';
+    });
+    update();
+  };
+  form.onsubmit = (e) => {
+    if (e.submitter.value === 'import') importParts(plan.parts, plan.newLocations, source);
+  };
+  update();
+  if (!dialog.open) dialog.showModal();
 }
 
 // Adds the parts, and the locations they name that the team doesn't have yet. Undo moves the parts to the trash.
-function importParts(parts, newLocations, fileName) {
+function importParts(parts, newLocations, source) {
   newLocations.forEach((name) => fb.addLocation(name).catch(showError));
   const changes = parts.map((part) => [fb.newPartId(), part]);
   const name = countParts(parts.length);
-  writeParts(changes, 'added', name, `Imported from ${fileName}`.slice(0, 1990));
+  writeParts(changes, 'added', name, `Imported from ${source}`.slice(0, 1990));
   offerUndo(`Imported ${name}`, () => logged(Promise.all(changes.map(([id, data]) =>
     fb.moveToTrash({ kind: 'part', docId: id, name: data.name, data, uses: [] }, state.user))), 'deleted', name, 'Undo: removed after import'));
 }

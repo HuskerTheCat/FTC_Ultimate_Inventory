@@ -11,7 +11,7 @@ The ultimate inventory tool for FTC teams. Track each part's name, part number, 
 - **Low-stock alerts:** give a part a **Low stock at** number and it's flagged once the number free (not used by a project or packing list) drops to that number. The **Low stock** filter lists just those parts.
 - **Subcategories and tags:** write categories like `Hardware/Screws` and tag parts (`spare`, `competition`) to filter by them.
 - **Trash:** deleted parts, projects, packing lists and orders wait in **Trash** for 30 days, so they can be brought back.
-- **CSV export and import:** save an inventory as a CSV file for a backup or a spreadsheet, or bring parts in from one. Import only adds parts and skips ones already there.
+- **Spreadsheet import and CSV export:** paste your parts straight from Excel or Google Sheets, whatever your columns are called, or save an inventory as a CSV file for a backup. Import only adds parts and skips ones already there.
 - **Works offline:** no wifi at the venue? Keep editing. Changes are saved on the device and sync when it's back online. The website opens offline too, after it has been used online once.
 
 - **Try it:** [live demo with sample parts](https://huskerthecat.github.io/FTC_Ultimate_Inventory/?demo), no setup needed. Changes aren't saved.
@@ -37,7 +37,7 @@ Every team stores its data in its own free Firebase project. Setting a team up t
 
 ![Order list](docs/screenshots/desktop-orders.png)
 
-![Low stock filter and CSV export and import](docs/screenshots/desktop-low-stock-csv.png)
+![Low stock filter, spreadsheet import and CSV export](docs/screenshots/desktop-low-stock-csv.png)
 
 ## How it works
 

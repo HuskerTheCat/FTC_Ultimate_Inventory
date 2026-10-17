@@ -12,8 +12,12 @@ const cell = (value) => {
 // rows are lists of cell values. Starts with a byte order mark, so Excel reads accented letters right.
 export const toCsv = (rows) => `﻿${rows.map((row) => row.map(cell).join(',')).join('\r\n')}\r\n`;
 
-// Reads a CSV file's text into rows of cell texts, leaving out blank lines.
-export function parseCsv(text) {
+// Excel saves CSV files with semicolons in countries that write decimals with a comma, so the first line shows which a file uses.
+const separatorOf = (line) => (line.split(';').length > line.split(',').length ? ';' : ',');
+
+// Reads a CSV file's text into rows of cell texts, leaving out blank lines. Cells copied from a spreadsheet are the same
+// with tabs between them, so pasted text is read with separator '\t'.
+export function parseCsv(text, separator = separatorOf(text.split('\n', 1)[0])) {
   const rows = [];
   let row = [];
   let value = '';
@@ -34,8 +38,8 @@ export function parseCsv(text) {
       if (c !== '"') value += c;
       else if (chars[i + 1] === '"') value += chars[++i];
       else quoted = false;
-    } else if (c === '"') quoted = true;
-    else if (c === ',') endCell();
+    } else if (c === '"' && !value) quoted = true; // only at the start of a cell, so a pasted 1/4" spacer keeps its inch mark
+    else if (c === separator) endCell();
     else if (c === '\n') endRow();
     else if (c !== '\r') value += c;
   }
