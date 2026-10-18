@@ -15,7 +15,7 @@ For the local emulators, create a team with a config whose `projectId` starts wi
 apiKey: "x", authDomain: "x", projectId: "demo-inventory", appId: "x"
 ```
 
-Pushing to `main` publishes the website. The **Build apps** workflow builds the Windows installer and Android APK and attaches them to a release.
+Pushing to `main` publishes the website. The build also turns the guides (README and the other `.md` files) into pages on the website ([`vite-guides.js`](../vite-guides.js)), so edit the `.md` files only. The **Build apps** workflow builds the Windows installer and Android APK and attaches them to a release.
 
 ## Part catalog
 

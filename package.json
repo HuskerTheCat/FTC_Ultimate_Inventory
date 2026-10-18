@@ -26,6 +26,7 @@
     "@capacitor/core": "^8.5.3",
     "electron": "^44.7.0",
     "electron-builder": "^26.15.3",
+    "marked": "^18.1.1",
     "vite": "^8.3.4"
   },
   "private": true,

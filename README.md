@@ -12,19 +12,19 @@ Track your team's parts on every teammate's phone and computer, with live update
 - [Website](https://huskerthecat.github.io/FTC_Ultimate_Inventory/)
 - [Windows installer](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest/download/FTC-Ultimate-Inventory-Setup.exe)
 - [Android app](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest/download/FTC-Ultimate-Inventory.apk)
-- [iPhone and iPad](SETUP.md#install-on-iphone-or-ipad)
+- [iPhone and iPad](https://huskerthecat.github.io/FTC_Ultimate_Inventory/setup.html#install-on-iphone-or-ipad)
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="720"></picture>
 
 ## Guides
 
-- [Team setup](SETUP.md)
-- [How to use it](docs/HOW-TO.md)
-- [Quick start](docs/QUICK-START.md)
-- [Troubleshooting](docs/TROUBLESHOOTING.md)
-- [Team admin](docs/ADMIN.md)
-- [Development](docs/DEVELOPMENT.md)
-- [Privacy](PRIVACY.md)
+- [Team setup](https://huskerthecat.github.io/FTC_Ultimate_Inventory/setup.html)
+- [How to use it](https://huskerthecat.github.io/FTC_Ultimate_Inventory/docs/how-to.html)
+- [Quick start](https://huskerthecat.github.io/FTC_Ultimate_Inventory/docs/quick-start.html)
+- [Troubleshooting](https://huskerthecat.github.io/FTC_Ultimate_Inventory/docs/troubleshooting.html)
+- [Team admin](https://huskerthecat.github.io/FTC_Ultimate_Inventory/docs/admin.html)
+- [Development](https://huskerthecat.github.io/FTC_Ultimate_Inventory/docs/development.html)
+- [Privacy](https://huskerthecat.github.io/FTC_Ultimate_Inventory/privacy.html)
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="720"></picture>
 

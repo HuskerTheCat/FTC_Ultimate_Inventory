@@ -11,9 +11,9 @@ import { RULES, consolePage, AUTH_PAGE, RULES_PAGE, AUTH_OFF_CODES, setupProblem
 import { PROGRAMS, recordTeam, recordDeletedTeam, findTeamProject, teamProject, sendBugReport, sendFeatureRequest } from './hub.js';
 
 const WEB_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/';
-const PRIVACY_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/PRIVACY.md';
-const SETUP_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/SETUP.md';
-const HELP_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/docs/HOW-TO.md';
+const PRIVACY_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/privacy.html';
+const SETUP_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/setup.html';
+const HELP_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/docs/how-to.html';
 // The AGPL license asks anyone hosting a version of the app to offer its source; forks should point this at their own code.
 const SOURCE_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory';
 const STORAGE_KEY = 'ftc-inventory-connection';

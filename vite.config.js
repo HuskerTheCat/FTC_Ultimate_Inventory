@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { defineConfig } from 'vite';
+import { guides } from './vite-guides.js';
 
 const { version } = JSON.parse(readFileSync('package.json', 'utf8'));
 const buildId = String(Date.now());
@@ -33,5 +34,5 @@ const serviceWorker = {
 export default defineConfig({
   base: './',
   define: { __APP_VERSION__: JSON.stringify(version), __BUILD_ID__: JSON.stringify(buildId), __RULES_VERSION__: rulesMatch[1] },
-  plugins: [versionFile, serviceWorker],
+  plugins: [versionFile, serviceWorker, guides()],
 });
