@@ -1,6 +1,7 @@
 {
   "name": "FTC Ultimate Inventory",
   "short_name": "Inventory",
+  "description": "Free parts inventory app for FTC robotics teams. Track parts, locations, projects, packing lists and orders on your computer, phone or the web.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0e1221",
@@ -8,5 +9,9 @@
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "screenshots": [
+    { "src": "screenshot-wide.webp", "sizes": "1280x800", "type": "image/webp", "form_factor": "wide", "label": "Inventory on a computer" },
+    { "src": "screenshot-narrow.webp", "sizes": "780x1688", "type": "image/webp", "form_factor": "narrow", "label": "Inventory on a phone" }
   ]
 }
