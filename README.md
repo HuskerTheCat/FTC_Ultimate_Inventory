@@ -1,4 +1,4 @@
-# FTC Ultimate Inventory
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="docs/brand-dark.png"><img src="docs/brand-light.png" alt="FTC Ultimate Inventory" height="76"></picture></h1>
 
 The ultimate inventory tool for FTC teams. Track each part's name, part number, quantity, location, supplier and category, with live updates across every teammate's device.
 

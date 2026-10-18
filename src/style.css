@@ -2,6 +2,8 @@
 @import '@fontsource/barlow/latin-500.css';
 @import '@fontsource/barlow/latin-600.css';
 @import '@fontsource/barlow/latin-700.css';
+@import '@fontsource/orbitron/latin-500.css';
+@import '@fontsource/orbitron/latin-800.css';
 
 :root {
   --bg: #0e1221;
@@ -78,6 +80,9 @@ a { color: var(--accent); }
   background: url(../public/icon.svg) center / contain no-repeat;
 }
 .center > .card { box-shadow: none; }
+/* The app's name in the title font, as on the link preview: "Inventory" lighter and blue, under "FTC Ultimate". */
+.brand { font: 800 1.6rem/1.15 Orbitron, sans-serif; letter-spacing: 0; }
+.brand .app-name { display: block; font-weight: 500; color: var(--accent); }
 .email { overflow-wrap: anywhere; }
 .center-text { text-align: center; padding: 32px 0; }
 #empty p { margin: 0 0 4px; }
@@ -88,6 +93,7 @@ a { color: var(--accent); }
   .center { width: 100%; margin: auto; }
   .center > h1:first-child { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
   .center > h1:first-child::before { flex: none; width: 44px; height: 44px; margin: 0; }
+  .center > h1.brand::before { width: 60px; height: 60px; }
   .center.wide { max-width: 880px; display: grid; grid-template-columns: 1fr 1fr; }
   .center.wide > :is(h1, .error, .link) { grid-column: 1 / -1; }
   .center.wide > .link { justify-self: center; }

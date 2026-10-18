@@ -284,7 +284,7 @@ const joinCodeFrom = (text) => new URLSearchParams(text.split('#')[1]).get('join
 function renderWelcome() {
   app.innerHTML = `
     <main class="center wide">
-      <h1>FTC Ultimate Inventory</h1>
+      <h1 class="brand"><span>FTC Ultimate <span class="app-name">Inventory</span></span></h1>
       <p id="error" class="error" role="alert" hidden></p>
       <form id="signin" class="card">
         <h2>Sign in to your team</h2>
