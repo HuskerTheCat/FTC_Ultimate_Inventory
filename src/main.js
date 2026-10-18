@@ -79,6 +79,10 @@ const DEFAULT_FILTERS = { search: '', category: '', location: '', tag: '', low: 
 
 let fb = firebase;
 const app = document.getElementById('app');
+// A supplier photo that can't load (offline, or taken down) shows the same faint box as a part without one.
+app.addEventListener('error', (e) => {
+  if (e.target.matches?.('img.row-photo')) e.target.outerHTML = '<span class="row-photo no-photo"></span>';
+}, true);
 const state = {
   connection: null, user: null, parts: [], projects: [], uses: [], members: [], locations: [], orders: [], printed: new Set(), loaded: new Set(), pendingLink: null, picker: null, newProjectId: null,
   projectId: fb.MAIN_PROJECT, ...DEFAULT_FILTERS, selected: null,
