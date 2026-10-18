@@ -14,6 +14,9 @@ const WEB_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/';
 const PRIVACY_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/privacy.html';
 const SETUP_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/setup.html';
 const HELP_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/docs/how-to.html';
+const GUIDES_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/guides.html';
+// Top right of the first screens (before signing in), where the ☰ menu's Help isn't there yet.
+const GUIDES_LINK = `<a class="guides-link" href="${GUIDES_URL}" target="_blank" rel="noopener">Guides</a>`;
 // The AGPL license asks anyone hosting a version of the app to offer its source; forks should point this at their own code.
 const SOURCE_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory';
 const STORAGE_KEY = 'ftc-inventory-connection';
@@ -309,6 +312,7 @@ function renderWelcome() {
         <h2>Just looking?</h2>
         <button id="demo" class="secondary">Try the demo</button>
       </div>
+      ${GUIDES_LINK}
     </main>
     <dialog id="dialog"></dialog>`;
 
@@ -365,6 +369,7 @@ function renderSetup() {
         <button>Create team</button>
       </form>
       <button id="back" class="link">Back</button>
+      ${GUIDES_LINK}
     </main>`;
 
   copyButton(app.querySelector('#copy-rules'), RULES);
@@ -422,6 +427,7 @@ function renderSignIn() {
         <button type="button" id="reset" class="link">Forgot password?</button>
       </form>
       <button id="switch" class="link">Use a different team</button>
+      ${GUIDES_LINK}
     </main>`;
   if (state.signInError) showError(state.signInError);
   state.signInError = null;
@@ -481,6 +487,7 @@ function renderVerify(user, onVerified) {
         <button id="resend" class="secondary">Send it again</button>
       </div>
       <button id="different" class="link">Use a different email</button>
+      ${GUIDES_LINK}
     </main>`;
   let checking = false;
   const timer = setInterval(async () => {

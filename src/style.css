@@ -92,6 +92,12 @@ body:has(> #app > .center)::after, body.guide::after { background: var(--topo-li
 /* The app's name in the title font, as on the link preview: "Inventory" lighter and blue, under "FTC Ultimate". */
 .brand { font: 800 1.6rem/1.15 Orbitron, sans-serif; letter-spacing: 0; }
 .brand .app-name { display: block; font-weight: 500; color: var(--accent); }
+/* Guides button, top right of the first screens. */
+#app:has(> .center) { position: relative; }
+.guides-link { position: absolute; top: 16px; right: 24px; padding: 6px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font-weight: 600; text-decoration: none; }
+.guides-link:hover { background: var(--raised); }
+/* Phones: level with the logo above the title, clear of it. */
+@media (max-width: 759px) { .guides-link { top: 67px; } }
 .email { overflow-wrap: anywhere; }
 .center-text { text-align: center; padding: 32px 0; }
 #empty p { margin: 0 0 4px; }
