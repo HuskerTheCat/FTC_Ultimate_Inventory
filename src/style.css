@@ -335,7 +335,10 @@ tbody tr.loading:hover { background: none; }
   animation: shimmer 1.6s linear infinite;
 }
 .skeleton.title { width: 220px; max-width: 60%; height: 1.75rem; }
-td.name .skeleton { height: 1.05em; }
+td.name .skeleton.line { height: 1.05em; }
+.skeleton.row-photo { width: 44px; height: 44px; border-radius: 8px; }
+.skeleton.pill { width: 56px; height: 1.3rem; border-radius: 999px; }
+tr.loading .with-photo > div:last-child { flex: 1; min-width: 0; }
 td.qty .skeleton { width: 96px; height: 1.3em; }
 @keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
 @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
@@ -475,7 +478,7 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   td:is(.check, .packed) input { width: 24px; min-height: 24px; margin: 0; }
   td.name { grid-column: 2; grid-row: 1; font-size: 1.02rem; }
   .with-photo { gap: 10px; }
-  .row-photo { width: 40px; height: 40px; }
+  .row-photo, .skeleton.row-photo { width: 40px; height: 40px; }
   td.name .notes { max-width: 100%; }
   td.name .tags { margin-top: 4px; }
   td.qty { grid-column: 3; grid-row: 1; display: flex; align-items: center; gap: 2px; margin-left: 8px; }

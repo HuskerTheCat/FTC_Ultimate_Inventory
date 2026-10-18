@@ -248,7 +248,10 @@ function forgetConnection() {
 // Grey placeholder rows shaped like part rows, shown until the inventory arrives.
 const skeletonRows = () => [70, 45, 60, 80, 50, 65].map((width) => `
   <tr class="loading" aria-hidden="true">
-    <td class="name"><div class="skeleton" style="width: ${width}%"></div></td>
+    <td class="name"><div class="with-photo">
+      <div class="skeleton row-photo"></div>
+      <div><div class="skeleton line" style="width: ${width}%"></div><div class="tags"><div class="skeleton pill"></div><div class="skeleton pill"></div></div></div>
+    </div></td>
     <td data-label="Part #"><div class="skeleton"></div></td>
     <td data-label="Qty" class="qty"><div class="skeleton"></div></td>
     <td data-label="Location"><div class="skeleton"></div></td>
