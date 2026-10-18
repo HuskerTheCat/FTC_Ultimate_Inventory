@@ -13,6 +13,7 @@ import { PROGRAMS, recordTeam, recordDeletedTeam, findTeamProject, teamProject, 
 const WEB_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/';
 const PRIVACY_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/PRIVACY.md';
 const SETUP_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/SETUP.md';
+const HELP_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/docs/HOW-TO.md';
 // The AGPL license asks anyone hosting a version of the app to offer its source; forks should point this at their own code.
 const SOURCE_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory';
 const STORAGE_KEY = 'ftc-inventory-connection';
@@ -521,8 +522,10 @@ function renderInventory() {
             <button id="invite" class="menu-item">Team</button>
             <button id="bug" class="menu-item">Report bug</button>
             <button id="feature" class="menu-item">Request feature</button>
+            <a class="menu-item" href="${HELP_URL}" target="_blank" rel="noopener">Help</a>
             <button id="theme" class="menu-item" role="switch" aria-checked="${document.documentElement.dataset.theme === 'light'}">Pain and suffering mode<span class="switch" aria-hidden="true"></span></button>
             <button id="signout" class="menu-item">Sign out</button>
+            <p class="menu-version">Version ${esc(__APP_VERSION__)}</p>
           </div>
         </div>
       </div>
@@ -584,7 +587,7 @@ function renderInventory() {
       <thead><tr></tr></thead>
       <tbody id="rows">${skeletonRows()}</tbody>
     </table>
-    <p id="empty" class="muted center-text" hidden></p>
+    <div id="empty" class="muted center-text" hidden><p></p><button id="show-all" class="link" hidden>Show all parts</button></div>
     <p id="elsewhere" class="muted center-text" hidden></p>
     <div id="getting-started" class="card getting-started" hidden>
       <h2>Add your first parts</h2>
@@ -606,7 +609,7 @@ function renderInventory() {
     button.onclick = () => showMenu(button, button.getAttribute('aria-expanded') !== 'true');
   });
   // Choosing anything in a menu closes it.
-  app.querySelectorAll('.menu').forEach((menu) => menu.addEventListener('click', (e) => e.target.closest('button:not([role="switch"])') && closeMenus()));
+  app.querySelectorAll('.menu').forEach((menu) => menu.addEventListener('click', (e) => e.target.closest('a, button:not([role="switch"])') && closeMenus()));
   app.querySelector('#project-menu').onclick = (e) => {
     if (e.target.closest('#new-project')) return openProjectDialog();
     const id = e.target.closest('[data-project]')?.dataset.project;
@@ -629,6 +632,7 @@ function renderInventory() {
   app.querySelector('#tag').onchange = (e) => { state.tag = e.target.value; renderRows(); };
   app.querySelector('#low').onclick = () => { state.low = !state.low; renderRows(); };
   app.querySelector('#reset-filters').onclick = resetFilters;
+  app.querySelector('#show-all').onclick = resetFilters;
   app.querySelector('#print-labels').onclick = openLabelsDialog;
   app.querySelector('#sort').onchange = (e) => { Object.assign(state, { sort: e.target.value, sortDir: 1 }); renderRows(); };
   app.querySelector('#sort-dir').onclick = () => { state.sortDir = -state.sortDir; renderRows(); };
@@ -889,7 +893,8 @@ function renderRows() {
   gettingStarted.hidden = state.parts.length > 0 || usesParts;
   const empty = app.querySelector('#empty');
   empty.hidden = rows.length > 0 || !gettingStarted.hidden;
-  empty.textContent = all.length ? 'No parts match your filters.'
+  app.querySelector('#show-all').hidden = !all.length;
+  empty.querySelector('p').textContent = all.length ? 'No parts match your filters.'
     : usesParts ? 'No parts yet. Tap “+ Add parts” to pick parts this project uses.'
       : 'No parts yet. Tap “+ Add part” to add the first one.';
   renderElsewhere(usesParts);
@@ -2683,6 +2688,18 @@ function openBulkEditDialog() {
 
 const ACTIONS = { added: 'added', edited: 'edited', quantity: 'changed', deleted: 'deleted', used: 'changed use of', arrived: 'received' };
 
+// "Today 3:04 PM", "Yesterday 3:04 PM", or "Oct 12, 3:04 PM", with the year when it isn't this year.
+function whenText(date) {
+  const now = new Date();
+  const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const days = Math.round((startOfDay(now) - startOfDay(date)) / 86400000);
+  const time = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  if (days === 0) return `Today ${time}`;
+  if (days === 1) return `Yesterday ${time}`;
+  const year = date.getFullYear() === now.getFullYear() ? undefined : 'numeric';
+  return `${date.toLocaleDateString([], { month: 'short', day: 'numeric', year })}, ${time}`;
+}
+
 function openLogDialog() {
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `
@@ -2697,7 +2714,7 @@ function openLogDialog() {
       <li>
         <div><strong>${esc(nameByUid(e.by, e.byName))}</strong> ${ACTIONS[e.action]} <strong>${esc(e.part)}</strong></div>
         ${e.details ? `<div class="small">${esc(e.details)}</div>` : ''}
-        <div class="muted small">${esc(e.at.toDate().toLocaleString())}</div>
+        <div class="muted small">${esc(whenText(e.at.toDate()))}</div>
       </li>`).join('') : '<li class="muted">No changes yet.</li>';
   }, showError);
   dialog.addEventListener('close', stopLog, { once: true });
