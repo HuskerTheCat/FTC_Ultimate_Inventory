@@ -19,6 +19,8 @@ The examples use the team **12345 Example Team**; your app shows your own team's
 
 ---
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+
 ## Banners
 
 ### Offline
@@ -64,6 +66,8 @@ Your team's Firebase project isn't using the app's security rules (for example, 
 
 ---
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+
 ## Joining a team
 
 ### "That join code is not valid. Ask your team admin to copy it again."
@@ -104,6 +108,8 @@ Use **☰ → Sign out**, then **Use a different team**.
 
 ---
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+
 ## Signing in
 
 ### "There's already an account with that email. Sign in instead."
@@ -129,6 +135,8 @@ Your team isn't on the central team list. It gets added (or added back) the next
 If you're the admin and no device is signed in to the team, choose **Start setup**, fill in your team number and paste your team's `firebaseConfig` again, then click **Create team**. The app sees the team already exists: click **Sign in to it** and sign in with your admin email and password. Your team goes back on the list, so teammates can sign in by number again.
 
 ---
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
 
 ## Setting up a team (admins)
 
@@ -162,6 +170,8 @@ Then click **Create team** again.
 Only the admin sees this. Another team already registered that number, or the wrong number was typed at setup. Join codes still work for everyone. Use **☰ → Report bug** with your team number to get it fixed.
 
 ---
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
 
 ## Using the app
 
@@ -235,6 +245,8 @@ They're hidden in the demo. Join or set up a real team to use them.
 
 ---
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+
 ## Installing and updating
 
 ### Windows says "Windows protected your PC".
@@ -254,6 +266,8 @@ New versions can take a few minutes to reach everyone. Wait a few minutes, then 
 No. Your team's inventory lives in its Firebase project. Only changes made offline and not yet sent are stored on the device, so open the app online before uninstalling.
 
 ---
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
 
 ## Still stuck?
 

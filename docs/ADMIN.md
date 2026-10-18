@@ -16,6 +16,8 @@ Everything below is on the **☰ → Team** screen unless it says otherwise. Tea
 
 ---
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+
 ## 1. Invite teammates
 
 Open **☰ → Team**. New teammates scan the QR code on your screen, or you send them the join code or the join link (use the **Copy** buttons). They join, create an account, and they're in. The [setup guide](../SETUP.md#6-invite-your-team) has the details.
@@ -25,6 +27,8 @@ Open **☰ → Team**. New teammates scan the QR code on your screen, or you sen
 - Someone who already joined uses **Sign in to your team** with your program and team number on a new device. They don't need the code again.
 
 ---
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
 
 ## 2. Keep the Members list clean
 
@@ -47,6 +51,8 @@ Removed someone by mistake? Send them the new join code. They join again and use
 
 ---
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+
 ## 3. Reset the join code
 
 If the join code or link was shared somewhere it shouldn't be, tap **Reset join code**. The old code, link and QR code stop working right away.
@@ -55,6 +61,8 @@ People already on the team stay signed in; only new teammates need the new code.
 
 ---
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+
 ## 4. Update the Firebase rules
 
 When a new version of the app needs newer security rules, everyone on the team sees a blue **Your Firebase rules are out of date** banner. Only the person who owns your team's Firebase project can fix it. Tap the banner: it has a **Copy rules** button and a link straight to your project's rules. [Updating the rules](../SETUP.md#updating-the-rules) in the setup guide has the full steps. It doesn't change any of your data, and the app keeps working until you do it.
@@ -62,6 +70,8 @@ When a new version of the app needs newer security rules, everyone on the team s
 A red **Your Firebase is configured incorrectly and your account is not secure** banner means your project isn't using the app's rules at all, so anyone could read your inventory. Follow the same steps right away.
 
 ---
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
 
 ## 5. Back up the team
 
@@ -74,6 +84,8 @@ To bring things back, choose **☰ → Restore backup**, pick the file and pick 
 **Moving to a new Firebase project:** export a backup, set up the new team (see the [team setup guide](../SETUP.md)), then restore the backup there. Everything keeps its ID, so the QR labels you've already printed still work. Teammates join the new team with its join code.
 
 ---
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
 
 ## 6. Hand the team to a new admin
 
@@ -93,6 +105,8 @@ The new admin can then remove the old admin's account from Members if they're le
 The same steps work if the owner's account is lost (for example, a school email that was closed). Anyone who can open the Firebase project can make another member the owner.
 
 ---
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
 
 ## 7. Delete the team
 

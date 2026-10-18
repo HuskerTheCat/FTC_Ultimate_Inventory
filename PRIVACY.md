@@ -2,6 +2,8 @@
 
 FTC Ultimate Inventory is made by HuskerTheCat for FTC/FRC robotics teams. This page says what the app logs to the developer's server, and what it doesn't.
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
+
 ## What gets logged to the central server
 
 - **When a new team is set up:** the team name, program, team number, Firebase project ID, a security key, and the date. Anyone with the app can look up a team's name and Firebase project ID by its program and team number, which is how teammates sign in on a new device.
@@ -12,9 +14,13 @@ That's all. Users names, emails, passwords, accounts, parts lists, projects, and
 
 **Firebase is run by Google under [Google's privacy policy](https://policies.google.com/privacy).**
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
+
 ## Supplier photos
 
 Part photos from the parts catalog load straight from the supplier's own website (goBILDA, REV, AndyMark, ServoCity, TETRIX or Studica). Like any website, the supplier can see your device's IP address when one of its photos loads. The app sends them nothing else about you or your team.
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
 
 ## Removal and questions
 

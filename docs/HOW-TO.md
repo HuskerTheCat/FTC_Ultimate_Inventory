@@ -22,6 +22,8 @@ Something not working? See [Troubleshooting and FAQ](TROUBLESHOOTING.md). Runnin
 
 ---
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+
 ## 1. Get into your team
 
 Get the app from the [README](../README.md): use the website, or install the Windows or Android app. On an iPhone or iPad, [add the website to your Home Screen](../SETUP.md#install-on-iphone-or-ipad).
@@ -45,6 +47,8 @@ A brand-new team's inventory is empty, so it shows **Add your first parts** with
 > <img src="how-to/phone-team.png" alt="The Team screen with the join QR code and join code" width="200">
 
 ---
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
 
 ## 2. Find your way around
 
@@ -73,6 +77,8 @@ On a phone, each part is a card with its location and part number under the name
 
 ---
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+
 ## 3. Add and change parts
 
 Tap **+ Add part**. The quickest way to fill it in is **Search the parts catalog** at the top: type a few words of the name or the part number, like `u-beam 8mm`, and tap the part. The catalog has goBILDA, REV, AndyMark, ServoCity, TETRIX and Studica parts; pick one supplier in the menu next to the search to see only theirs.
@@ -98,6 +104,8 @@ To change a part, tap it, edit, and **Save**. To change just the quantity, use *
 
 ---
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+
 ## 4. Find parts fast
 
 Type in **Search** to narrow the list as you type. If parts in your other inventories match too, a line under the list says where (for example *Also found in Pit spares (2)*); tap it to search there. **Filters** opens more options:
@@ -112,6 +120,8 @@ The Filters button shows how many filters are on, so you never forget one. **Res
 
 ---
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+
 ## 5. Locations and QR labels
 
 Your team keeps one list of locations (bins, shelves, drawers). Open **☰ → Locations** to add, rename or delete them, or print one bin's label. A location can only be deleted if there are no parts assigned to it.
@@ -125,6 +135,8 @@ The app remembers which labels you've printed, so only new ones are checked. The
 <img src="how-to/labels.png" alt="The QR labels dialog" width="360">
 
 ---
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
 
 ## 6. Inventories, projects and packing lists
 
@@ -152,6 +164,8 @@ From the inventory, **Add to** on any part puts it straight into a project or pa
 
 ---
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+
 ## 7. Order list
 
 Open **☰ → Orders** to track parts you've ordered.
@@ -165,6 +179,8 @@ Open **☰ → Orders** to track parts you've ordered.
 
 ---
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+
 ## 8. Edit many parts at once
 
 Choose **⋯ → Select parts**, tap the parts you want (or **Select all shown** to take everything your search and filters show), then **Edit selected**. You can set the location, category, low-stock number and tags for all of them at once. Anything left on "Keep" stays as it is on each part.
@@ -172,6 +188,8 @@ Choose **⋯ → Select parts**, tap the parts you want (or **Select all shown**
 <img src="how-to/bulk-edit.png" alt="Editing two parts at once" width="360">
 
 ---
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
 
 ## 9. Import, export and backups
 
@@ -205,6 +223,8 @@ If your team has nothing in it yet, like a new team, the app skips the choice an
 
 ---
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+
 ## 10. Change log, Undo and Trash
 
 - **Undo**: after most changes, an **Undo** button shows at the bottom of the screen for a few seconds.
@@ -217,6 +237,8 @@ If your team has nothing in it yet, like a new team, the app skips the choice an
 </p>
 
 ---
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
 
 ## 11. Team, sign out and other tips
 

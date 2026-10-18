@@ -4,6 +4,8 @@ One person per team does this once, in about 10 minutes. Everyone else only need
 
 Your team gets its own free Firebase project, so your inventory, logins and usage are completely separate from every other team. The free plan (Spark) has no credit card attached, so it can never charge you.
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
+
 ## 1. Create a Firebase project
 
 1. Go to [console.firebase.google.com](https://console.firebase.google.com) and sign in with a Google account the team can keep (a team or coach account works well).
@@ -11,6 +13,8 @@ Your team gets its own free Firebase project, so your inventory, logins and usag
    Your project ID (shown under the name) becomes the start of your join code, so a short one keeps the code short.
 
    <img src="docs/setup/1-project-name.png" alt="Naming the Firebase project, with the project ID under the name" width="460">
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
 
 ## 2. Turn on email sign-in
 
@@ -21,6 +25,8 @@ Your team gets its own free Firebase project, so your inventory, logins and usag
 2. On the **Sign-in method** tab, choose **Email/Password**, switch on the first toggle, and click **Save**.
 
    <img src="docs/setup/2-email-password.png" alt="Email/Password switched on, with the Save button" width="560">
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
 
 ## 3. Create the database
 
@@ -39,6 +45,8 @@ Your team gets its own free Firebase project, so your inventory, logins and usag
 
 These rules are what keep your inventory private: only people who joined with your team's code can read or change it.
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
+
 ## 4. Copy your connection info
 
 1. In the left menu, open **Settings → General** and scroll down to **Your apps**.
@@ -55,12 +63,16 @@ These rules are what keep your inventory private: only people who joined with yo
 
    <img src="docs/setup/4-firebase-config.png" alt="The firebaseConfig block to copy" width="420">
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
+
 ## 5. Create your team in the app
 
 1. On the app's **Set up a new team** screen, enter your team name and number, paste the block you copied, and click **Create team**.
 2. The app checks your Firebase project first. If a step above was missed, it says which one, with a **Fix it in Firebase** link to the right page. Fix it, then click **Create team** again.
 3. Enter your name, email and a password, and click **Create account**.
 4. Open the link in the email Firebase sends you (check spam if it's not there). The app moves on by itself, and you are now the team's first member.
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
 
 ## 6. Invite your team
 
@@ -69,6 +81,8 @@ Click **Team**. Teammates can scan the QR code or open the link on any device, o
 Only share the join code with your team: anyone who has it can join. As the team owner, you can remove people from the same **Team** screen. Removing someone also makes a new join code, so their old one stops working. If a code ever gets shared by mistake, use **Reset join code**.
 
 Then send your team the [how-to guide](docs/HOW-TO.md). It walks through every main feature with pictures. Keep the [team admin guide](docs/ADMIN.md) for later: it covers removing members, backups and handing the team to a new admin.
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
 
 ## Install on iPhone or iPad
 
@@ -80,6 +94,8 @@ There is no App Store app. Instead, the website installs like an app, with its o
 4. Open the app from the new icon on your Home Screen.
 
 Then scan your team's join QR code with **Scan QR** in the app, or paste the join code. The Home Screen app keeps its own sign-in separate from Safari, so join from the app itself rather than from the link in Safari.
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
 
 ## Updating the rules
 

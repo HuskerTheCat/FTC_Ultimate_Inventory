@@ -25,6 +25,8 @@ The ultimate inventory tool for FTC teams. Track each part's name, part number, 
 
 Every team stores its data in its own free Firebase project. Setting a team up takes one person about 10 minutes: see the **[team setup guide](SETUP.md)**. Then share the **[how-to guide](docs/HOW-TO.md)** with your team: it walks through every main feature with pictures.
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
+
 ## Screenshots
 
 ![Inventory on a computer](docs/screenshots/desktop-inventory.png)
@@ -40,6 +42,8 @@ Every team stores its data in its own free Firebase project. Setting a team up t
 
 ![Low stock filter, spreadsheet import and CSV export](docs/screenshots/desktop-low-stock-csv.png)
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
+
 ## How it works
 
 The app is one plain JavaScript web app (`src/`). Electron wraps it for Windows (`electron/`) and Capacitor wraps it for Android, so all three look and work the same. The app talks directly to the team's Firebase project: Firebase Auth for sign-in and Firestore for the parts list. [`firestore.rules`](firestore.rules) only lets team members read or write, and a teammate can only join with the team secret inside the join code.
@@ -53,9 +57,13 @@ The first badge shows when a weekly run last found new or changed parts, and the
 
 Manual update: [Update part catalog](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/actions/workflows/catalog.yml)
 
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
+
 ## Privacy
 
 Everyone must accept the [privacy policy](PRIVACY.md) to join a team. The app only logs each new team's name and number and any bug reports and feature requests to a central server. It is a separate Firebase project ([`src/hub.js`](src/hub.js), rules in [`hub.rules`](hub.rules)). Nothing about individual users is sent.
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
 
 ## Development
 
@@ -73,6 +81,8 @@ apiKey: "x", authDomain: "x", projectId: "demo-inventory", appId: "x"
 ```
 
 Pushing to `main` publishes the website. Running the **Build apps** workflow from the Actions tab builds the Windows installer and Android APK and attaches them to a release.
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
 
 ## License
 
