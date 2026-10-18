@@ -1,5 +1,5 @@
 // Installs the debug APK on the running emulator and walks the main screens in the app's WebView:
-// join a team, create an account, see the inventory, check the phone header fits, open the scanner, open the demo,
+// join a team, create an account and verify its email, see the inventory, check the phone header fits, open the scanner, open the demo,
 // and tap the update banner (this build's version is older than the latest release) to open Android's installer.
 // The test team lives in the local Firestore emulator (seed-emulator.mjs), reached through `adb reverse`.
 import { mkdirSync } from 'node:fs';
@@ -37,6 +37,13 @@ await page.getByPlaceholder('Email').fill('android@example.com');
 await page.getByPlaceholder('Password').fill('smoke-test-password');
 await page.locator('input[name=privacy]').check();
 await page.getByRole('button', { name: 'Create account' }).click();
+await page.getByText('Check your email').waitFor();
+
+console.log('Verify the email through the Auth emulator');
+const { oobCodes } = await (await fetch('http://127.0.0.1:9099/emulator/v1/projects/demo-ftc/oobCodes')).json();
+const verify = oobCodes.find((code) => code.requestType === 'VERIFY_EMAIL' && code.email === 'android@example.com');
+if (!verify) throw new Error('No verification email in the Auth emulator');
+await fetch(verify.oobLink);
 await page.getByText('Seeded test part').first().waitFor().catch(async (error) => {
   // The run's screenshots can't always be opened, so say what the screen shows.
   console.log(`Screen text: ${(await page.textContent('body')).replace(/\s+/g, ' ').trim()}`);
