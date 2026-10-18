@@ -64,7 +64,7 @@ These rules are what keep your inventory private: only people who joined with yo
 
 ## 6. Invite your team
 
-Click **Team**. Teammates can scan the QR code or open the link on any device, or in the Windows, Android or iPhone app choose **Scan QR** under **Join a team** (or type the short join code, for example `example-team-12345-k7qm3x9p2r`). Then they create an account, open the link in the email Firebase sends them, and they're in. To use the same account on another phone or computer, choose **Sign in to your team**, pick your program and enter your team number, then sign in with the same email and password.
+Click **Team**. Teammates can scan the QR code or open the link on any device, or in the Windows, Android or iPhone app choose **Scan QR** under **New to the team?** (or type the short join code, for example `example-team-12345-k7qm3x9p2r`). Then they create an account, open the link in the email Firebase sends them, and they're in. To use the same account on another phone or computer, choose **Sign in to your team**, pick your program and enter your team number, then sign in with the same email and password.
 
 Only share the join code with your team: anyone who has it can join. As the team owner, you can remove people from the same **Team** screen. Removing someone also makes a new join code, so their old one stops working. If a code ever gets shared by mistake, use **Reset join code**.
 

@@ -80,6 +80,15 @@ a { color: var(--accent); }
   background: url(../public/icon.svg) center / contain no-repeat;
 }
 .center > .card { box-shadow: none; }
+/* The sign-in card holds two forms: sign in, and join with a code. Stacked on phones, side by side below. */
+.split > form { display: flex; flex-direction: column; gap: 12px; }
+.split > form + form { border-top: 1px solid var(--border); padding-top: 20px; margin-top: 8px; }
+/* The first screens sit on the topographic map of the link preview: dark blue fading to a lighter blue in one corner, thin contour lines over it. */
+body:has(> #app > .center) { --topo-from: #0e1221; --topo-to: #3460d6; --topo-line: #5b9bff; --topo-line-opacity: 0.3; }
+:root[data-theme="light"] body:has(> #app > .center) { --topo-from: #eef1f7; --topo-to: #b9cdf7; --topo-line: #2563d9; --topo-line-opacity: 0.22; }
+body:has(> #app > .center)::before, body:has(> #app > .center)::after { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+body:has(> #app > .center)::before { background: linear-gradient(110deg, var(--topo-from) 55%, var(--topo-to) 100%); }
+body:has(> #app > .center)::after { background: var(--topo-line); opacity: var(--topo-line-opacity); -webkit-mask: url(./topo.svg) center / cover; mask: url(./topo.svg) center / cover; }
 /* The app's name in the title font, as on the link preview: "Inventory" lighter and blue, under "FTC Ultimate". */
 .brand { font: 800 1.6rem/1.15 Orbitron, sans-serif; letter-spacing: 0; }
 .brand .app-name { display: block; font-weight: 500; color: var(--accent); }
@@ -97,6 +106,8 @@ a { color: var(--accent); }
   .center.wide { max-width: 880px; display: grid; grid-template-columns: 1fr 1fr; }
   .center.wide > :is(h1, .error, .link) { grid-column: 1 / -1; }
   .center.wide > .link { justify-self: center; }
+  .center.wide > .split { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+  .split > form + form { border-top: 0; border-left: 1px solid var(--border); padding: 0 0 0 20px; margin: 0; }
 }
 .card {
   background: var(--surface);

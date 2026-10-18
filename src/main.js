@@ -286,19 +286,21 @@ function renderWelcome() {
     <main class="center wide">
       <h1 class="brand"><span>FTC Ultimate <span class="app-name">Inventory</span></span></h1>
       <p id="error" class="error" role="alert" hidden></p>
-      <form id="signin" class="card">
-        <h2>Sign in to your team</h2>
-        ${teamFields()}
-        <button>Next</button>
-      </form>
-      <form id="join" class="card">
-        <h2>Join a team</h2>
-        <input name="code" required autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Join code" />
-        <div class="row">
-          <button>Join team</button>
-          <button type="button" id="scan-join" class="secondary">Scan QR</button>
-        </div>
-      </form>
+      <div class="card split">
+        <form id="signin">
+          <h2>Sign in to your team</h2>
+          ${teamFields()}
+          <button>Next</button>
+        </form>
+        <form id="join">
+          <h2>New to the team? Enter your join code</h2>
+          <input name="code" required autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Join code" />
+          <div class="row">
+            <button>Join team</button>
+            <button type="button" id="scan-join" class="secondary">Scan QR</button>
+          </div>
+        </form>
+      </div>
       <div class="card">
         <h2>Set up a new team</h2>
         <button id="setup" class="secondary">Start setup</button>

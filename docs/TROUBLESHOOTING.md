@@ -76,7 +76,7 @@ The app couldn't find a team for that code or number. Check the code with your a
 
 ### "You're not on 12345 Example Team. Ask your team admin for the join code."
 
-**Sign in to your team** is only for people already on the team. If you're new, choose **Use a different team**, then **Join a team** with the join code and create your account.
+**Sign in to your team** is only for people already on the team. If you're new, choose **Use a different team**, then **New to the team?** with the join code and create your account.
 
 ### "Couldn't join 12345 Example Team. Ask your team admin for a fresh join code."
 
@@ -124,7 +124,7 @@ Signing in and joining need the internet. If other websites work, the network ma
 
 ### "FTC team 12345 can't sign in by number yet. Join with your team's join code instead. Team admins can sign in from Set up a new team."
 
-Your team isn't on the central team list. It gets added (or added back) the next time the admin opens the app online on a device where they set up the team or signed in by team number. Until then, use **Join a team** with the join code, then **Sign in** with your existing email and password.
+Your team isn't on the central team list. It gets added (or added back) the next time the admin opens the app online on a device where they set up the team or signed in by team number. Until then, use **New to the team?** with the join code, then **Sign in** with your existing email and password.
 
 If you're the admin and no device is signed in to the team, choose **Start setup**, fill in your team number and paste your team's `firebaseConfig` again, then click **Create team**. The app sees the team already exists: click **Sign in to it** and sign in with your admin email and password. Your team goes back on the list, so teammates can sign in by number again.
 

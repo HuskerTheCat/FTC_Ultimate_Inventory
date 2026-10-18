@@ -29,7 +29,7 @@ Get the app from the [README](../README.md): use the website, or install the Win
 The first screen has three ways in:
 
 - **Sign in to your team**: you already have an account and you're on a new device. Pick your program, enter your team number, then sign in with your email and password.
-- **Join a team**: you're new. Paste the join code your team admin sent you, or tap **Scan QR** and point the camera at the team's join QR code. Opening the join link does the same thing.
+- **New to the team?**: you're new. Paste the join code your team admin sent you, or tap **Scan QR** and point the camera at the team's join QR code. Opening the join link does the same thing.
 - **Set up a new team**: only one person per team does this, once. It lists the setup steps and checks your Firebase project before creating the team. The [team setup guide](../SETUP.md) has each step in detail.
 
 <img src="how-to/welcome.png" alt="The first screen: sign in, join a team, or set up a new team" width="560">
