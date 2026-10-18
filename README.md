@@ -2,18 +2,7 @@
 
 Track your team's parts on every teammate's phone and computer, with live updates.
 
-<p align="center">
-  <img src="docs/screenshots/desktop-inventory.png" alt="Inventory on a computer" width="800"><br>
-  <sub>Search, filter and edit parts on a computer.</sub>
-</p>
-
-<table align="center">
-  <tr>
-    <td align="center" valign="top"><img src="docs/how-to/phone-inventory.png" alt="Inventory on a phone" width="240"><br><sub>Count parts from your phone.</sub></td>
-    <td align="center" valign="top"><img src="docs/how-to/phone-packing.png" alt="Packing list on a phone" width="240"><br><sub>Check parts off as you pack.</sub></td>
-    <td align="center" valign="top"><img src="docs/how-to/phone-main-menu.png" alt="Menu on a phone" width="240"><br><sub>Orders, locations, change log and trash.</sub></td>
-  </tr>
-</table>
+<img src="docs/hero.jpg" alt="Inventory on a computer and a phone" width="800">
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="720"></picture>
 
