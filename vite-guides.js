@@ -33,10 +33,12 @@ function headingRenderer() {
 }
 
 // On the website the header picture becomes a text heading and the divider pictures go; the styles draw both.
+// The README's hero image goes too: it has its own topographic background, which clashes with the page's.
 function pageHtml(file, css) {
   const markdown = readFileSync(file, 'utf8')
     .replace(/^<h1><picture>.*?alt="([^"]+)".*<\/h1>$/m, '# $1')
-    .replace(/^<picture>.*divider.*<\/picture>\n/gm, '');
+    .replace(/^<picture>.*divider.*<\/picture>\n/gm, '')
+    .replace(/^<img src="docs\/hero\.jpg".*\n/m, '');
   const title = markdown.match(/^# (.+)$/m)?.[1];
   if (!title) throw new Error(`${file} has no title`);
   const marked = new Marked({
