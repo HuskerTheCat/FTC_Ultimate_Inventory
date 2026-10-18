@@ -1878,7 +1878,7 @@ function openOrdersDialog() {
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>Order list</h2>
-      <p class="muted small">Parts the team is waiting on. They show in the inventory as on order, and projects and packing lists can use them already. Tap an order to change it, and Arrived when it comes in. New items go into ${esc(project(fb.MAIN_PROJECT).name)}.</p>
+      <p class="muted small">Parts the team is waiting on.</p>
       <ul id="order-list" class="members"></ul>
       <h2 id="order-form-title">Add to the order list</h2>
       <input name="name" maxlength="200" list="order-parts" placeholder="Item, or pick a part you already have" />
