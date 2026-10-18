@@ -16,3 +16,4 @@ The FTC Ultimate apps, Inventory, [Scout](https://github.com/HuskerTheCat/FTC_Ul
 ## Changes
 
 - 2026-10-18: Suite notes started. Inventory rules version 5; Scout's and Design's sections not in the rules file yet.
+- 2026-10-18: Home page: the line between Sign in and Join code was 6px right of center; now exactly centered, in line with the gap between the two boxes below. CSS only (`.split` in `src/style.css`, computers and tablets block); the same fix applies to Scout and Design.
