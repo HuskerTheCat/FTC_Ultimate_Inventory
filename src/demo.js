@@ -89,7 +89,7 @@ const SAMPLE_PARTS = [
   ['Flanged ball bearing 8mm', '1611-0814-0008', 16, 'Bin 4', 'goBILDA', 'Hardware/Bearings', []],
   ['Surgical tubing (1 m)', '', 3, 'Bin 2', 'McMaster-Carr', 'Hardware/Intake', ['intake']],
   ['Zip ties (100 pack)', '', 2, 'Tool wall', 'Amazon', 'Supplies', []],
-  ['2.5mm hex driver', '', 3, 'Tool wall', 'goBILDA', 'Tools', []],
+  ['7mm combination wrench', '4202-0070-1070', 3, 'Tool wall', 'goBILDA', 'Tools', []],
 ];
 
 // The product link the part catalog gives each sample part number, like autofill does in the app.
@@ -131,7 +131,7 @@ const SAMPLE_USES = [
 
 // [part name, quantity to pack, packed]
 const SAMPLE_PACKING = [
-  ['12V Slim battery', 2, true], ['Zip ties (100 pack)', 1, true], ['2.5mm hex driver', 2, false],
+  ['12V Slim battery', 2, true], ['Zip ties (100 pack)', 1, true], ['7mm combination wrench', 2, false],
   ['Smart Robot Servo', 1, false], ['M4 x 8mm socket head screw (25 pack)', 1, false],
   ['Control Hub (spare)', 1, false], ['Battery charger', 1, true],
 ];
