@@ -1,4 +1,4 @@
-<h1><picture><source media="(prefers-color-scheme: dark)" srcset="header/troubleshooting-dark.png"><img src="header/troubleshooting-light.png" alt="Troubleshooting and FAQ" width="440"></picture></h1>
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="header/troubleshooting-dark.png"><img src="header/troubleshooting-light.png" alt="Troubleshooting and FAQ" width="720"></picture></h1>
 
 What each banner and message in the app means, and how to fix it. The app shows two kinds of messages:
 
@@ -19,7 +19,7 @@ The examples use the team **12345 Example Team**; your app shows your own team's
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## Banners
 
@@ -66,7 +66,7 @@ Your team's Firebase project isn't using the app's security rules (for example, 
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## Joining a team
 
@@ -108,7 +108,7 @@ Use **☰ → Sign out**, then **Use a different team**.
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## Signing in
 
@@ -136,7 +136,7 @@ If you're the admin and no device is signed in to the team, choose **Start setup
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## Setting up a team (admins)
 
@@ -171,7 +171,7 @@ Only the admin sees this. Another team already registered that number, or the wr
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## Using the app
 
@@ -245,7 +245,7 @@ They're hidden in the demo. Join or set up a real team to use them.
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## Installing and updating
 
@@ -267,7 +267,7 @@ No. Your team's inventory lives in its Firebase project. Only changes made offli
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## Still stuck?
 

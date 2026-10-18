@@ -1,4 +1,4 @@
-<h1><picture><source media="(prefers-color-scheme: dark)" srcset="header/how-to-dark.png"><img src="header/how-to-light.png" alt="How to use FTC Ultimate Inventory" width="440"></picture></h1>
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="header/how-to-dark.png"><img src="header/how-to-light.png" alt="How to use FTC Ultimate Inventory" width="720"></picture></h1>
 
 A walkthrough of the basics and the most useful features, for everyone on the team. The pictures come from the [demo](https://huskerthecat.github.io/FTC_Ultimate_Inventory/?demo), so you can follow along there without setting anything up.
 
@@ -22,7 +22,7 @@ Something not working? See [Troubleshooting and FAQ](TROUBLESHOOTING.md). Runnin
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 1. Get into your team
 
@@ -48,7 +48,7 @@ A brand-new team's inventory is empty, so it shows **Add your first parts** with
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 2. Find your way around
 
@@ -77,7 +77,7 @@ On a phone, each part is a card with its location and part number under the name
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 3. Add and change parts
 
@@ -104,7 +104,7 @@ To change a part, tap it, edit, and **Save**. To change just the quantity, use *
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 4. Find parts fast
 
@@ -120,7 +120,7 @@ The Filters button shows how many filters are on, so you never forget one. **Res
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 5. Locations and QR labels
 
@@ -136,7 +136,7 @@ The app remembers which labels you've printed, so only new ones are checked. The
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 6. Inventories, projects and packing lists
 
@@ -164,7 +164,7 @@ From the inventory, **Add to** on any part puts it straight into a project or pa
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 7. Order list
 
@@ -179,7 +179,7 @@ Open **☰ → Orders** to track parts you've ordered.
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 8. Edit many parts at once
 
@@ -189,7 +189,7 @@ Choose **⋯ → Select parts**, tap the parts you want (or **Select all shown**
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 9. Import, export and backups
 
@@ -223,7 +223,7 @@ If your team has nothing in it yet, like a new team, the app skips the choice an
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 10. Change log, Undo and Trash
 
@@ -238,7 +238,7 @@ If your team has nothing in it yet, like a new team, the app skips the choice an
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 11. Team, sign out and other tips
 

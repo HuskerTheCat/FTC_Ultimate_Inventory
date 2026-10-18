@@ -1,4 +1,4 @@
-<h1><picture><source media="(prefers-color-scheme: dark)" srcset="header/admin-dark.png"><img src="header/admin-light.png" alt="Team admin guide" width="440"></picture></h1>
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="header/admin-dark.png"><img src="header/admin-light.png" alt="Team admin guide" width="720"></picture></h1>
 
 For the person who runs the team's inventory: the one who set up the team in the app, shown as **Owner** in the Members list. Setting up a new team is covered in the [team setup guide](../SETUP.md), and everyday use in the [how-to guide](HOW-TO.md).
 
@@ -16,7 +16,7 @@ Everything below is on the **☰ → Team** screen unless it says otherwise. Tea
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 1. Invite teammates
 
@@ -28,7 +28,7 @@ Open **☰ → Team**. New teammates scan the QR code on your screen, or you sen
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 2. Keep the Members list clean
 
@@ -51,7 +51,7 @@ Removed someone by mistake? Send them the new join code. They join again and use
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 3. Reset the join code
 
@@ -61,7 +61,7 @@ People already on the team stay signed in; only new teammates need the new code.
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 4. Update the Firebase rules
 
@@ -71,7 +71,7 @@ A red **Your Firebase is configured incorrectly and your account is not secure**
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 5. Back up the team
 
@@ -85,7 +85,7 @@ To bring things back, choose **☰ → Restore backup**, pick the file and pick 
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 6. Hand the team to a new admin
 
@@ -106,7 +106,7 @@ The same steps work if the owner's account is lost (for example, a school email 
 
 ---
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
 ## 7. Delete the team
 

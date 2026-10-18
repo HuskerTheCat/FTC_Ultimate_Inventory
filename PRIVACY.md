@@ -1,8 +1,8 @@
-<h1><picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/privacy-dark.png"><img src="docs/header/privacy-light.png" alt="Privacy policy" width="440"></picture></h1>
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/privacy-dark.png"><img src="docs/header/privacy-light.png" alt="Privacy policy" width="720"></picture></h1>
 
 FTC Ultimate Inventory is made by HuskerTheCat for FTC/FRC robotics teams. This page says what the app logs to the developer's server, and what it doesn't.
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="720"></picture>
 
 ## What gets logged to the central server
 
@@ -14,13 +14,13 @@ That's all. Users names, emails, passwords, accounts, parts lists, projects, and
 
 **Firebase is run by Google under [Google's privacy policy](https://policies.google.com/privacy).**
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="720"></picture>
 
 ## Supplier photos
 
 Part photos from the parts catalog load straight from the supplier's own website (goBILDA, REV, AndyMark, ServoCity, TETRIX or Studica). Like any website, the supplier can see your device's IP address when one of its photos loads. The app sends them nothing else about you or your team.
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="440"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="720"></picture>
 
 ## Removal and questions
 
