@@ -1,9 +1,10 @@
 name: Android check
 
-# Builds the Android debug APK for each pull request and smoke-tests it on an emulator.
+# Builds the Android debug APK for each pull request (or from the Actions tab) and smoke-tests it on an emulator.
 # Uses only local Firebase emulators and demo mode, never a real team's project or the hub.
 on:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read

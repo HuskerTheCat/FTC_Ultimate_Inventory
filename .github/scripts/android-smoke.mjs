@@ -1,5 +1,6 @@
 // Installs the debug APK on the running emulator and walks the main screens in the app's WebView:
-// join a team, create an account, see the inventory, check the phone header fits, open the scanner, open the demo.
+// join a team, create an account, see the inventory, check the phone header fits, open the scanner, open the demo,
+// and tap the update banner (this build's version is older than the latest release) to open Android's installer.
 // The test team lives in the local Firestore emulator (seed-emulator.mjs), reached through `adb reverse`.
 import { mkdirSync } from 'node:fs';
 import { _android } from 'playwright';
@@ -65,6 +66,17 @@ await page.getByRole('button', { name: 'Use a different team' }).click();
 await page.getByRole('button', { name: 'Try the demo' }).click();
 await page.locator('#demo-banner').waitFor();
 await shot('5-demo');
+
+console.log('Update banner downloads the latest release and opens the installer');
+await device.shell(`appops set ${PKG} REQUEST_INSTALL_PACKAGES allow`);
+await page.getByText('Your app is out of date, tap here to update').click();
+for (let tries = 0; ; tries++) {
+  const focus = (await device.shell('dumpsys window | grep mCurrentFocus')).toString();
+  if (focus.includes('packageinstaller')) break;
+  if (tries === 60) throw new Error(`The installer didn't open: ${focus}`);
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+}
+await shot('6-installer');
 
 console.log('Android smoke test passed');
 await device.close();

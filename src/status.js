@@ -6,6 +6,8 @@ import { getNews } from './hub.js';
 // version with the latest GitHub release.
 const RELEASES_API = 'https://api.github.com/repos/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest';
 const RELEASES_PAGE = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest';
+const LATEST_APK = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest/download/FTC-Ultimate-Inventory.apk';
+const ANDROID_UPDATE_TEXT = 'Your app is out of date, tap here to update';
 const WEB_CHECK_MS = 15 * 60 * 1000;
 // The last news message this device closed, so it stays closed until the developer writes a new one.
 const CLOSED_NEWS_KEY = 'ftc-inventory-closed-news';
@@ -39,7 +41,28 @@ async function checkApp() {
   const response = await fetch(RELEASES_API);
   if (!response.ok) throw new Error(`GitHub releases: ${response.status}`);
   const { tag_name } = await response.json();
-  if (tag_name !== `v${__APP_VERSION__}`) showUpdate(`Update available (${tag_name}), tap to download`, RELEASES_PAGE, '_blank');
+  if (tag_name === `v${__APP_VERSION__}`) return;
+  if (window.Capacitor?.isNativePlatform()) showAndroidUpdate();
+  else showUpdate(`Update available (${tag_name}), tap to download`, RELEASES_PAGE, '_blank');
+}
+
+// Android downloads the new APK itself and opens Android's installer, which installs it over this app
+// when both are signed with the same key.
+function showAndroidUpdate() {
+  showUpdate(ANDROID_UPDATE_TEXT, LATEST_APK);
+  updateBanner.onclick = async (event) => {
+    event.preventDefault();
+    if (updateBanner.textContent !== ANDROID_UPDATE_TEXT) return;
+    updateBanner.textContent = 'Downloading update…';
+    try {
+      const { Filesystem, Directory } = await import('@capacitor/filesystem');
+      const { FileOpener } = await import('@capacitor-community/file-opener');
+      const { path } = await Filesystem.downloadFile({ url: LATEST_APK, path: 'update.apk', directory: Directory.Cache });
+      await FileOpener.open({ filePath: path, contentType: 'application/vnd.android.package-archive' });
+    } finally {
+      updateBanner.textContent = ANDROID_UPDATE_TEXT;
+    }
+  };
 }
 
 async function showNews() {
