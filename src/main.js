@@ -1878,7 +1878,6 @@ function openOrdersDialog() {
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>Order list</h2>
-      <p class="muted small">Parts the team is waiting on.</p>
       <ul id="order-list" class="members"></ul>
       <h2 id="order-form-title">Add to the order list</h2>
       <input name="name" maxlength="200" list="order-parts" placeholder="Item, or pick a part you already have" />
