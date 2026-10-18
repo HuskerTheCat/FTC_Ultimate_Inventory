@@ -13,7 +13,6 @@ import { PROGRAMS, recordTeam, recordDeletedTeam, findTeamProject, teamProject, 
 const WEB_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/';
 const PRIVACY_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/PRIVACY.md';
 const SETUP_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/SETUP.md';
-const GUIDE_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/docs/HOW-TO.md';
 // The AGPL license asks anyone hosting a version of the app to offer its source; forks should point this at their own code.
 const SOURCE_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory';
 const STORAGE_KEY = 'ftc-inventory-connection';
@@ -281,13 +280,11 @@ function renderWelcome() {
       <p id="error" class="error" role="alert" hidden></p>
       <form id="signin" class="card">
         <h2>Sign in to your team</h2>
-        <p class="muted">Already have an account? Enter your team number, then sign in with your email. New to the team? Join it first with your join code.</p>
         ${teamFields()}
         <button>Next</button>
       </form>
       <form id="join" class="card">
         <h2>Join a team</h2>
-        <p class="muted">New to the team? Scan the QR code or paste the join code your team admin shared with you, then create your account.</p>
         <input name="code" required autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Join code" />
         <div class="row">
           <button>Join team</button>
@@ -296,12 +293,10 @@ function renderWelcome() {
       </form>
       <div class="card">
         <h2>Set up a new team</h2>
-        <p class="muted">For one person per team, once. Your team gets its own free Firebase project.</p>
         <button id="setup" class="secondary">Start setup</button>
       </div>
       <div class="card">
         <h2>Just looking?</h2>
-        <p class="muted">Try the app with sample parts. Nothing is saved.</p>
         <button id="demo" class="secondary">Try the demo</button>
       </div>
     </main>
@@ -343,7 +338,6 @@ function renderSetup() {
       <h1>Set up a new team</h1>
       <p id="error" class="error" role="alert" hidden></p>
       <div class="card">
-        <p class="muted">One person per team does this once, in about 10 minutes. The <a href="${SETUP_URL}" target="_blank" rel="noopener">setup guide</a> shows each step in detail.</p>
         <ol class="steps">
           <li>Create a free project at <a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a>.</li>
           <li>In Authentication, turn on <strong>Email/Password</strong> sign-in.</li>
@@ -591,7 +585,6 @@ function renderInventory() {
     <p id="elsewhere" class="muted center-text" hidden></p>
     <div id="getting-started" class="card getting-started" hidden>
       <h2>Add your first parts</h2>
-      <p class="muted">Scanning a goBILDA, REV, AndyMark, ServoCity, TETRIX or Studica package fills in the part for you. Parts already in a spreadsheet can be pasted straight in.</p>
       <div class="row">
         <button data-start="#add">+ Add part</button>
         <button data-start="#scan" class="secondary">Scan a package</button>
@@ -599,7 +592,6 @@ function renderInventory() {
         <button data-start="#locations" class="secondary">Add locations</button>
         ${DEMO ? '' : '<button data-start="#invite" class="secondary">Invite your team</button>'}
       </div>
-      <p class="muted small">New to the app? The <a href="${GUIDE_URL}" target="_blank" rel="noopener">how-to guide</a> shows every feature with pictures.</p>
     </div>
     <div id="undo" class="toast" role="status" hidden><span></span><button class="link">Undo</button></div>
     <dialog id="dialog"></dialog>
@@ -1731,8 +1723,6 @@ function openLabelsDialog() {
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>QR labels</h2>
-      <p class="muted">Stick these on bins and parts. Scanning one with the app or a phone camera opens that bin or part.</p>
-      <p class="muted small">Labels not printed yet are checked. The list follows your filters.</p>
       <div class="row">
         <button type="button" class="secondary" data-select="new">Not yet printed</button>
         <button type="button" class="secondary" data-select="all">All</button>
@@ -1814,7 +1804,6 @@ function openLocationsDialog() {
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>Locations</h2>
-      <p class="muted small">Parts pick their location from this list. Delete a location after moving its parts.</p>
       <div class="password">
         <input id="new-location" maxlength="200" placeholder="e.g. Bin 3" />
         <button type="button" id="add-location">Add</button>
@@ -2106,7 +2095,6 @@ function openAddToDialog(part) {
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>Add ${esc(part.name)} to</h2>
-      <p class="muted">${esc(project(part.projectId).name)} has ${part.quantity}, and ${part.quantity - inUse(part.id)} are free.</p>
       <label>How many<input name="quantity" type="number" min="1" step="1" required value="1" /></label>
       <ul class="picker">${['project', 'packing'].map((key) => targets.filter((p) => typeOf(p) === key).map((p) => {
         const using = useOf(p.id, part.id)?.quantity ?? 0;
@@ -2133,7 +2121,6 @@ function openUseDialog(use) {
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>${esc(part.name)}</h2>
-      <p class="muted">${esc(project(part.projectId).name)} has ${part.quantity}, and ${part.quantity - inUse(part.id)} are free.${onOrder(part.id) ? ` ${onOrder(part.id)} more are on order.` : ''}</p>
       <label>${isPacking(use.projectId) ? 'How many to pack' : 'How many this project uses'}<input name="quantity" type="number" min="0" step="1" required value="${use.quantity}" /></label>
       <div class="row">
         <button value="save">Save</button>
@@ -2172,9 +2159,7 @@ function openPartDialog(part, carry = null, note = '') {
         <h2>${part ? 'Edit part' : 'Add part'}</h2>
         <img class="part-photo" alt="" referrerpolicy="no-referrer" hidden />
       </div>
-      ${carry?.added ? `<p class="muted small">${carry.added} added so far. Location, category and tags are kept from the last part.</p>` : ''}
       ${note ? `<p class="muted small">${esc(note)}</p>` : ''}
-      ${part && onOrder(part.id) ? `<p class="muted small">${onOrder(part.id)} on order. Tap Arrived in Orders when they come in.</p>` : ''}
       ${part ? '' : `<div class="field catalog-search">
         <label for="catalog-search">Search the parts catalog</label>
         <div class="catalog-row">
@@ -2555,7 +2540,6 @@ async function openTrashDialog() {
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>Trash</h2>
-      <p class="muted small">Deleted parts, projects, packing lists and orders stay here for ${TRASH_DAYS} days, then they're gone for good.</p>
       <ul id="trash-list" class="members stacked"><li class="muted">Loading…</li></ul>
       <div class="row"><button value="close" class="secondary">Close</button></div>
     </form>`;
@@ -2790,7 +2774,6 @@ async function openTeamDialog() {
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>Invite teammates</h2>
-      <p class="muted">Teammates scan this or open the link, then sign in. In the Windows, Android or iPhone app, they choose Scan QR under Join a team, or paste the join code. To use your account on another device, choose Sign in to your team and enter your team number.</p>
       <canvas id="qr"></canvas>
       <div class="field">Join code
         <div class="password">
