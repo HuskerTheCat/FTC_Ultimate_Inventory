@@ -2,7 +2,7 @@ import QRCode from 'qrcode';
 import * as firebase from './firebase.js';
 import { parseFirebaseConfig, encodeJoinCode, decodeJoinCode, findTeam, newSecret } from './joincode.js';
 import { scanCode, BARCODES } from './scanner.js';
-import { codeKey, findProduct, searchCatalog, catalogSuppliers } from './catalog.js';
+import { codeKey, findProduct, searchCatalog, catalogSuppliers, catalogLoaded, catalogImage } from './catalog.js';
 import { printLabels, printSheet } from './labels.js';
 import { toCsv, parseCsv } from './csv.js';
 import { BACKUP_COLLECTIONS, makeBackup, readBackup } from './backup.js';
@@ -686,6 +686,8 @@ function renderInventory() {
     Object.assign(state, { sort: key, sortDir: key === state.sort ? -state.sortDir : 1 });
     renderRows();
   };
+  // A photo that can't load (offline) leaves an empty space, so the names stay lined up.
+  app.querySelector('#rows').addEventListener('error', (e) => (e.target.style.visibility = 'hidden'), true);
   app.querySelector('#rows').onclick = (e) => {
     if (e.target.closest('a')) return;
     if (e.target.dataset.project) return switchProject(e.target.dataset.project);
@@ -880,9 +882,11 @@ function renderRows() {
     `<th class="${key === state.sort ? `sorted${state.sortDir < 0 ? ' desc' : ''}` : ''}" ${key === state.sort ? `aria-sort="${state.sortDir < 0 ? 'descending' : 'ascending'}"` : ''}><button type="button" class="sort" data-sort="${key}">${label}</button></th>`).join('');
 
   const rows = visibleRows();
+  // Names line up beside the photos, so every row keeps room for one when any part on screen has a photo.
+  const photos = rows.some((p) => catalogImage(p.partNumber));
   app.querySelector('#rows').innerHTML = groupRows(rows).map(([name, group]) =>
     (name ? `<tr class="group"><th colspan="${columns.length + (state.selected ? 1 : 0)}">${esc(name)} <span class="muted small">${countParts(group.length)}</span></th></tr>` : '')
-    + group.map((p) => rowHtml(p, columns)).join('')).join('');
+    + group.map((p) => rowHtml(p, columns, photos)).join('')).join('');
   restoreFocus();
 
   // A team with no parts yet gets ways to start instead of the empty message.
@@ -948,14 +952,16 @@ function focusKeeper(focused) {
   };
 }
 
-function rowHtml(p, columns) {
+function rowHtml(p, columns, photos) {
   const selected = state.selected?.has(p.id);
   const label = (key) => columns.find(([k]) => k === key)?.[1];
+  const image = catalogImage(p.partNumber);
+  const name = `<button type="button" class="part-name">${esc(p.name)}</button>${partChips(lowBadge(p.id) + orderBadge(p.id) + conditionBadge(p.condition), p.tags)}${notesLine(p.notes)}`;
   return `
     <tr data-id="${esc(p.id)}" class="${selected ? 'selected' : ''} ${p.packed ? 'packed' : ''} ${waiting(p.id) ? 'waiting' : ''}">
       ${state.selected ? `<td class="check"><input type="checkbox" aria-label="Select ${esc(p.name)}" ${selected ? 'checked' : ''} /></td>` : ''}
       ${label('packed') ? `<td data-label="Packed" class="packed"><input type="checkbox" data-packed="1" aria-label="Packed" ${p.packed ? 'checked' : ''} /></td>` : ''}
-      <td data-label="Item" class="name"><button type="button" class="part-name">${esc(p.name)}</button>${partChips(lowBadge(p.id) + orderBadge(p.id) + conditionBadge(p.condition), p.tags)}${notesLine(p.notes)}</td>
+      <td data-label="Item" class="name">${photos ? `<div class="with-photo">${image ? catalogPhoto(image, 'row-photo') : '<span class="row-photo"></span>'}<div>${name}</div></div>` : name}</td>
       <td class="card-meta muted small">${esc(cardMeta(p, !label('inUse')))}</td>
       <td data-label="Part #">${esc(p.partNumber)}${partLink(p)}</td>
       <td data-label="${label('quantity')}" class="qty">
@@ -1603,8 +1609,9 @@ async function showCatalogPhoto(form) {
   if (image) photo.src = image;
 }
 
-// A catalog part's photo for the catalog search results. It sends the supplier's website no address of the page it's on.
-const catalogThumb = (image) => `<img class="thumb" src="${esc(image)}" alt="" loading="lazy" referrerpolicy="no-referrer" />`;
+// A catalog part's photo, for the inventory and the catalog search results. It sends the supplier's website no address
+// of the page it's on.
+const catalogPhoto = (image, className) => `<img class="${className}" src="${esc(image)}" alt="" loading="lazy" referrerpolicy="no-referrer" />`;
 
 // Lists catalog parts matching what's typed in the part form's catalog search, from every supplier or the one picked.
 // Picking a part fills in its name, part number, supplier, link and category, leaving quantity and location to the user.
@@ -1633,7 +1640,7 @@ function searchCatalogInto(form, field) {
     if (results instanceof Error) return (list.innerHTML = `<li class="muted small">${esc(results.message)}</li>`);
     found = results;
     list.innerHTML = found.map((p, i) => `<li><button type="button" class="secondary" data-index="${i}">
-        ${p.image ? catalogThumb(p.image) : '<span class="thumb"></span>'}
+        ${p.image ? catalogPhoto(p.image, 'thumb') : '<span class="thumb"></span>'}
         <span><strong>${esc(p.name)}</strong><span class="muted small">${esc(p.supplier)} · ${esc(p.partNumber)}</span></span>
       </button></li>`).join('') || '<li class="muted small">No catalog parts match. Fill in the part yourself below.</li>';
   };
@@ -3036,6 +3043,9 @@ async function start() {
   };
   fb.watchUser(enterTeam);
 }
+
+// The inventory shows the catalog's photos once the catalog has loaded.
+catalogLoaded.then(renderRows);
 
 // The website keeps its own files on the device so it opens offline (see sw.js). The apps ship with theirs.
 if (import.meta.env.PROD && import.meta.env.MODE !== 'app') navigator.serviceWorker.register('sw.js').catch(console.error);

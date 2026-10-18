@@ -46,6 +46,14 @@ const catalog = import.meta.env.MODE === 'app'
 const products = catalog.then(index);
 products.catch(() => {}); // reported below, when a lookup needs the catalog
 
+// The loaded catalog, for lookups that can't wait for it, like drawing the inventory.
+let loadedProducts = null;
+export const catalogLoaded = products.then((loadedNow) => { loadedProducts = loadedNow; });
+catalogLoaded.catch(() => {});
+
+// The supplier's photo of a part number, or '' when the catalog has none or hasn't loaded yet.
+export const catalogImage = (code) => (code && loadedProducts?.byCode.get(codeKey(code))?.image) || '';
+
 function loaded() {
   return products.catch((error) => {
     console.error(error);

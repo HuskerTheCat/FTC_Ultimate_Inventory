@@ -405,7 +405,10 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
 .catalog-search .picker button { justify-content: flex-start; }
 .catalog-search .picker button > span:last-child { flex: 1; display: flex; flex-direction: column; }
 /* Supplier photos are shot on white, so they sit on a white tile in both themes. */
-.thumb, .part-photo { flex: none; object-fit: contain; background: #fff; border-radius: 8px; }
+.thumb, .part-photo, img.row-photo { flex: none; object-fit: contain; background: #fff; border-radius: 8px; }
+/* Photos sit beside part names in the inventory. */
+.with-photo { display: flex; align-items: center; gap: 12px; }
+.row-photo { flex: none; width: 44px; height: 44px; }
 .thumb { width: 44px; height: 44px; }
 .part-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .part-photo { width: 64px; height: 64px; border: 1px solid var(--border); }
@@ -471,6 +474,8 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   td:is(.check, .packed) { grid-column: 1; grid-row: 1; width: auto; margin-right: 10px; }
   td:is(.check, .packed) input { width: 24px; min-height: 24px; margin: 0; }
   td.name { grid-column: 2; grid-row: 1; font-size: 1.02rem; }
+  .with-photo { gap: 10px; }
+  .row-photo { width: 40px; height: 40px; }
   td.name .notes { max-width: 100%; }
   td.name .tags { margin-top: 4px; }
   td.qty { grid-column: 3; grid-row: 1; display: flex; align-items: center; gap: 2px; margin-left: 8px; }
