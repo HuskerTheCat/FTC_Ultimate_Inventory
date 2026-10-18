@@ -956,8 +956,8 @@ function rowHtml(p, columns, photos) {
     <tr data-id="${esc(p.id)}" class="${selected ? 'selected' : ''} ${p.packed ? 'packed' : ''} ${waiting(p.id) ? 'waiting' : ''}">
       ${state.selected ? `<td class="check"><input type="checkbox" aria-label="Select ${esc(p.name)}" ${selected ? 'checked' : ''} /></td>` : ''}
       ${label('packed') ? `<td data-label="Packed" class="packed"><input type="checkbox" data-packed="1" aria-label="Packed" ${p.packed ? 'checked' : ''} /></td>` : ''}
-      <td data-label="Item" class="name">${photos ? `<div class="with-photo">${image ? catalogPhoto(image, 'row-photo') : '<span class="row-photo"></span>'}<div>${name}</div></div>` : name}</td>
-      <td class="card-meta muted small">${esc(cardMeta(p, !label('inUse')))}</td>
+      <td data-label="Item" class="name">${photos ? `<div class="with-photo">${image ? catalogPhoto(image, 'row-photo') : '<span class="row-photo no-photo"></span>'}<div>${name}</div></div>` : name}</td>
+      <td class="card-meta muted small">${cardMeta(p, !label('inUse'))}</td>
       <td data-label="Part #">${esc(p.partNumber)}${partLink(p)}</td>
       <td data-label="${label('quantity')}" class="qty">
         <button class="step" data-delta="-1" ${p.quantity > 0 ? '' : 'disabled'} aria-label="Remove one: ${esc(p.name)}">−</button>
@@ -1471,7 +1471,9 @@ const conditionBadge = (condition) => ['used', 'broken'].includes(condition)
   ? `<small class="badge ${condition}">${CONDITIONS[condition]}</small>` : '';
 // Phones show a part as a short card, with its location (and inventory, outside inventories) and part number on one
 // line under the name. Supplier and category are left to the part dialog there.
-const cardMeta = (p, withInventory) => [p.location, withInventory && inventoryNote(p), p.partNumber].filter(Boolean).join(' · ');
+// Each piece is its own span, so a line breaks between pieces instead of inside a part number.
+const cardMeta = (p, withInventory) => [p.location, withInventory && inventoryNote(p), p.partNumber].filter(Boolean)
+  .map((text) => `<span>${esc(text)}</span>`).join(' · ');
 // The part's link, in the Part # column, which phones' short cards leave out.
 const partLink = (p) => p.link ? `<a class="part-link small" href="${esc(p.link)}" target="_blank" rel="noopener" aria-label="Link: ${esc(p.name)}">Link ↗</a>` : '';
 const notesLine = (notes) => notes ?`<div class="notes muted small">${esc(notes.split('\n')[0])}</div>` : '';
