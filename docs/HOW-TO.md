@@ -1,10 +1,10 @@
 <h1><picture><source media="(prefers-color-scheme: dark)" srcset="header/how-to-dark.png"><img src="header/how-to-light.png" alt="How to use FTC Ultimate Inventory" width="720"></picture></h1>
 
-A walkthrough of the basics and the most useful features, for everyone on the team. The pictures come from the [demo](https://huskerthecat.github.io/FTC_Ultimate_Inventory/?demo), so you can follow along there without setting anything up.
+The basics and the most useful features. Follow along in the [demo](https://huskerthecat.github.io/FTC_Ultimate_Inventory/?demo), no setup needed.
 
-The website, the Windows app and the Android app all look and work the same. On a phone, the parts table turns into cards, but every button is still there.
+The website, Windows app and Android app work the same. On a phone, the parts table becomes cards.
 
-Something not working? See [Troubleshooting and FAQ](TROUBLESHOOTING.md). Running the team? See the [team admin guide](ADMIN.md). For a one-page sheet to post in the shop, print the [quick start](QUICK-START.md).
+Something wrong? [Troubleshooting and FAQ](TROUBLESHOOTING.md). Running the team? [Team admin guide](ADMIN.md). Shop poster: [quick start](QUICK-START.md).
 
 **Contents**
 
@@ -26,23 +26,23 @@ Something not working? See [Troubleshooting and FAQ](TROUBLESHOOTING.md). Runnin
 
 ## 1. Get into your team
 
-Get the app from the [README](../README.md): use the website, or install the Windows or Android app. On an iPhone or iPad, [add the website to your Home Screen](../SETUP.md#install-on-iphone-or-ipad).
+Get the app from the [README](../README.md). On an iPhone or iPad, [add the website to your Home Screen](../SETUP.md#install-on-iphone-or-ipad).
 
 The first screen has three ways in:
 
-- **Sign in to your team**: you already have an account and you're on a new device. Pick your program, enter your team number, then sign in with your email and password.
-- **New to the team?**: you're new. Paste the join code your team admin sent you, or tap **Scan QR** and point the camera at the team's join QR code. Opening the join link does the same thing.
-- **Set up a new team**: only one person per team does this, once. It lists the setup steps and checks your Firebase project before creating the team. The [team setup guide](../SETUP.md) has each step in detail.
+- **Sign in to your team**: you have an account and you're on a new device. Pick your program, enter your team number, then sign in.
+- **New to the team?**: you're new. Paste the join code from your admin, or tap **Scan QR** and scan the team's QR code. The join link does the same.
+- **Set up a new team**: one person per team, once. See the [team setup guide](../SETUP.md).
 
 <img src="how-to/welcome.png" alt="The first screen: sign in, join a team, or set up a new team" width="560">
 
-After joining, enter your name, email and a password, tick the privacy policy box, and tap **Create account**. Your name is what teammates see in the change log. Then open the link in the email you get, and the app carries on by itself. This only happens once. Next time, just **Sign in**.
+After joining, enter your name (shown in the change log), email and a password, tick the privacy policy box and tap **Create account**. Open the link in the email you get; the app carries on by itself. Next time, just **Sign in**.
 
 <img src="how-to/phone-create-account.png" alt="Creating an account after joining a team" width="200">
 
-A brand-new team's inventory is empty, so it shows **Add your first parts** with buttons to add a part, scan a package, import a spreadsheet, add locations and invite your team.
+A new team's inventory starts with **Add your first parts** and buttons to add a part, scan a package, import a spreadsheet, add locations and invite your team.
 
-> **Admins:** to invite people, open **☰ → Team**. Teammates scan the QR code on your screen, or you send them the join code or link. Only share these with your team: anyone who has them can join. The [team admin guide](ADMIN.md) covers the rest of running the team.
+> **Admins:** to invite people, open **☰ → Team** and share the QR code, join code or link. Anyone who has them can join. More in the [team admin guide](ADMIN.md).
 >
 > <img src="how-to/phone-team.png" alt="The Team screen with the join QR code and join code" width="200">
 
@@ -66,9 +66,9 @@ A brand-new team's inventory is empty, so it shows **Add your first parts** with
 10. **Add to** puts the part in a project or packing list. Above it, **In use** shows how many are free and which projects use the part.
 11. **Badges** (square, with an outline) flag parts that are **Low stock**, **on order**, used or broken. The round chips next to them are the part's tags; click one to show only parts with that tag.
 
-Click a part's name (or anywhere on its row) to open and edit it. On a computer, click a column heading to sort by it, and click it again to reverse the order.
+Click a part to open and edit it. On a computer, click a column heading to sort, and again to reverse.
 
-On a phone, each part is a card with its location and part number under the name. **+ Add part** floats at the bottom right, and the ☰ menu holds the same items.
+On a phone, each part is a card. **+ Add part** floats at the bottom right.
 
 <p>
   <img src="how-to/phone-inventory.png" alt="The inventory on a phone" width="200">
@@ -81,26 +81,26 @@ On a phone, each part is a card with its location and part number under the name
 
 ## 3. Add and change parts
 
-Tap **+ Add part**. The quickest way to fill it in is **Search the parts catalog** at the top: type a few words of the name or the part number, like `u-beam 8mm`, and tap the part. The catalog has goBILDA, REV, AndyMark, ServoCity, TETRIX and Studica parts; pick one supplier in the menu next to the search to see only theirs.
+Tap **+ Add part**. Quickest: **Search the parts catalog** at the top, type a few words or a part number, like `u-beam 8mm`, and tap the part. It covers goBILDA, REV, AndyMark, ServoCity, TETRIX and Studica; the menu next to the search narrows it to one supplier.
 
 <img src="how-to/catalog-search.png" alt="Searching the parts catalog in Add part" width="480">
 
-The part's name, part number, supplier, category and product link fill in, and the supplier's photo of the part shows at the top when you're online. Add how many you have and where they are, and **Save**. Only the item name and quantity are required, so parts that aren't in the catalog are just typed in.
+The name, part number, supplier, category and link fill in, plus the supplier's photo when online. Add the quantity and location, then **Save**. Only the name and quantity are required, so parts not in the catalog are just typed in.
 
 <img src="how-to/add-part.png" alt="The Add part dialog, filled in from the catalog" width="480">
 
-- **Typing a part number** from those suppliers fills in the item name, supplier and product link too. Or tap **Scan** next to Barcode and scan the barcode on the package.
-- **Low stock at** flags the part once its quantity drops to that number or below (optional).
-- **Location** comes from your team's list of locations (see [section 5](#5-locations-and-qr-labels)). Pick **+ New location…** to add one without leaving the part.
+- **Part number or barcode:** typing one of those suppliers' part numbers fills in the rest. Or tap **Scan** next to Barcode and scan the package.
+- **Low stock at** (optional) flags the part at that quantity or below.
+- **Location** comes from your team's list ([section 5](#5-locations-and-qr-labels)). **+ New location…** adds one on the spot.
 - **Category** can have subcategories: `Electronics/Sensors` shows as Electronics › Sensors.
-- **Tags** are short labels like `spare` or `competition`. Tap a tag on any part to show only parts with that tag.
-- **More details** holds the unit, condition and notes. It opens by itself on parts that have any of them.
-- **Save and add another** keeps the location, category and tags for the next part, which is handy when you're entering a whole bin.
-- If you're filtered to one location (or just scanned a bin's label), **+ Add part** starts in that location.
+- **Tags** are short labels like `spare` or `competition`. Tap one to show only parts with it.
+- **More details** holds unit, condition and notes.
+- **Save and add another** keeps the location, category and tags, handy for a whole bin.
+- Filtered to one location, or just scanned a bin? **+ Add part** starts there.
 
-The app warns you before adding a part with the same name or part number as one you already have.
+The app warns you about a duplicate name or part number.
 
-To change a part, tap it, edit, and **Save**. To change just the quantity, use **−** and **+** on the list. **Delete** is at the bottom of the part dialog; deleted parts go to [Trash](#10-change-log-undo-and-trash).
+To change a part, tap it, edit and **Save**. For just the quantity, use **−** and **+** on the list. **Delete** is at the bottom of the dialog and goes to [Trash](#10-change-log-undo-and-trash).
 
 ---
 
@@ -108,13 +108,13 @@ To change a part, tap it, edit, and **Save**. To change just the quantity, use *
 
 ## 4. Find parts fast
 
-Type in **Search** to narrow the list as you type. If parts in your other inventories match too, a line under the list says where (for example *Also found in Pit spares (2)*); tap it to search there. **Filters** opens more options:
+**Search** narrows the list as you type. Matches in your other inventories show under the list (*Also found in Pit spares (2)*); tap to search there. **Filters** has more:
 
 - **Filter** by category, location or tag, or tap **Low stock** to see only parts that need restocking.
 - **Sort** by any column, or by **Recently changed**.
 - **Group** by category, location or supplier.
 
-The Filters button shows how many filters are on, so you never forget one. **Reset filters** turns them all off.
+The Filters button shows how many are on. **Reset filters** clears them.
 
 <img src="how-to/filters.png" alt="Filters showing only low-stock parts, grouped by location" width="640">
 
@@ -124,13 +124,13 @@ The Filters button shows how many filters are on, so you never forget one. **Res
 
 ## 5. Locations and QR labels
 
-Your team keeps one list of locations (bins, shelves, drawers). Open **☰ → Locations** to add, rename or delete them, or print one bin's label. A location can only be deleted if there are no parts assigned to it.
+Your team has one list of locations (bins, shelves, drawers). **☰ → Locations** adds, renames and deletes them (only empty ones) and prints a bin's label.
 
 <img src="how-to/locations.png" alt="The Locations list" width="360">
 
-**QR labels** are printed from **⋯ → Print QR labels**. Stick them on bins and parts. Scanning one with the app's **Scan** button, or with any phone camera, opens that bin (showing just its parts) or that part, ready to take one with **−**.
+**⋯ → Print QR labels** prints labels for bins and parts. Scanning one with **Scan** or any phone camera opens that bin or part, ready to take one with **−**.
 
-The app remembers which labels you've printed, so only new ones are checked. The list follows your filters, so filter to one location first to print just its labels. A single part's label can also be printed from its dialog with **Print label**.
+The app remembers which labels are printed, so only new ones are checked. The list follows your filters, so filter to one location to print just its labels. A part's dialog has **Print label** for one.
 
 <img src="how-to/labels.png" alt="The QR labels dialog" width="360">
 
@@ -140,22 +140,22 @@ The app remembers which labels you've printed, so only new ones are checked. The
 
 ## 6. Inventories, projects and packing lists
 
-Open the **list picker** at the top to switch views or make a new one with **New inventory, project or list**.
+Use the **list picker** at the top to switch views or make a **New inventory, project or list**.
 
 <p>
   <img src="how-to/list-picker.png" alt="The list picker" height="200">
   <img src="how-to/new-list.png" alt="Making a new project" height="200">
 </p>
 
-- **Inventory**: holds parts. Every team starts with **Main Inventory**, and you can add more (for example *Pit spares*).
-- **Project**: the parts a robot or build uses, picked from any inventory. Parts used by a project stay in their inventory but show as **in use**, so the inventory shows how many are still free.
-- **Packing list**: what to bring to a competition. Check parts off as you pack them. Only checked parts count as in use, so unchecking them when you get home frees them again. The list shows how many are packed (*Packed 3 of 7*), and **⋯ → Unpack all** unchecks everything at once after an event (it asks first, and **Undo** packs them again).
+- **Inventory**: holds parts. Teams start with **Main Inventory** and can add more (like *Pit spares*).
+- **Project**: the parts a robot or build uses, from any inventory. They stay in their inventory but show as **in use**, so you see how many are free.
+- **Packing list**: what to bring to a competition. Check parts off as you pack; only checked parts count as in use (*Packed 3 of 7*). **⋯ → Unpack all** unchecks everything after an event (it asks first).
 
-In a project or packing list, **+ Add parts** opens a list of every part in every inventory; tap a part to add one more. Use **−** and **+** to change how many it uses, or tap the part to type a number or remove it.
+In a project or packing list, **+ Add parts** lists every part in every inventory; tap one to add it. **−** and **+** change how many it uses; tap the part to type a number or remove it.
 
 <img src="how-to/project.png" alt="A robot project showing the parts it uses" width="640">
 
-From the inventory, **Add to** on any part puts it straight into a project or packing list.
+In the inventory, **Add to** on a part sends it to a project or packing list.
 
 <p>
   <img src="how-to/phone-add-to.png" alt="Adding a part to a project or packing list" width="200">
@@ -172,10 +172,10 @@ Open **☰ → Orders** to track parts you've ordered.
 
 <img src="how-to/orders.png" alt="The order list" width="360">
 
-- Add an order by typing the item, or pick a part you already have. Typing a supported part number fills in the rest. A link and notes are optional.
-- New items show up in Main Inventory right away as **on order**, so projects and packing lists can use them before they arrive.
-- When a box comes in, tap **Arrived**. The parts are added to the inventory. If only some came, enter how many; the rest stays on the order list.
-- Tap an order to change it. **Print** makes a paper copy of the list.
+- Add an order by typing the item or picking a part you have. A supported part number fills in the rest. Link and notes are optional.
+- New items appear in Main Inventory right away as **on order**, so projects and packing lists can use them early.
+- When it arrives, tap **Arrived** to add it to the inventory. If only some came, enter how many; the rest stays on the list.
+- Tap an order to change it. **Print** prints the list.
 
 ---
 
@@ -183,7 +183,7 @@ Open **☰ → Orders** to track parts you've ordered.
 
 ## 8. Edit many parts at once
 
-Choose **⋯ → Select parts**, tap the parts you want (or **Select all shown** to take everything your search and filters show), then **Edit selected**. You can set the location, category, low-stock number and tags for all of them at once. Anything left on "Keep" stays as it is on each part.
+**⋯ → Select parts**, tap the parts (or **Select all shown** for everything your search and filters show), then **Edit selected**. Set location, category, low-stock number and tags for all at once. Anything left on "Keep" stays as is.
 
 <img src="how-to/bulk-edit.png" alt="Editing two parts at once" width="360">
 
@@ -193,33 +193,33 @@ Choose **⋯ → Select parts**, tap the parts you want (or **Select all shown**
 
 ## 9. Import, export and backups
 
-Already keep your parts in a spreadsheet? Bring them in with **⋯ → Import spreadsheet**, whatever your columns are called.
+Keep your parts in a spreadsheet? Import them whatever the columns are called.
 
-1. In Excel, Google Sheets or any other spreadsheet, select your parts along with the row of column names above them, and copy them.
-2. In the app, open the inventory they belong in, choose **⋯ → Import spreadsheet** and paste into the box. You can also choose a CSV file instead, like a backup from **Export CSV**.
-3. Check what the app found. Each column has a menu saying what it holds, like **Item**, **Qty** or **Location**, picked from the column's name. Fix any it got wrong, and pick **Leave out** for columns the app doesn't need, like prices. The column with each part's name must be **Item**.
+1. In Excel or Google Sheets, copy your parts along with the row of column names.
+2. In the app, open the inventory, choose **⋯ → Import spreadsheet** and paste. Or choose a CSV file.
+3. Check each column's menu (**Item**, **Qty**, **Location**…). Fix any it got wrong and pick **Leave out** for ones you don't need, like prices. Some column must be **Item**.
 4. Click **Import**.
 
 <img src="how-to/import-preview.png" alt="The import preview, with what each column holds" width="420">
 
-Rows the app can't add are listed with the reason, like a quantity that isn't a number (*250 pcs* and *1,200* are fine). Parts already in the inventory (same name or part number) are skipped, so nothing you already have is changed, and importing the same parts twice adds nothing. **Undo** removes the whole import.
+Rows the app can't add are listed with the reason (*250 pcs* and *1,200* are fine as quantities). Parts already there (same name or part number) are skipped, so importing twice adds nothing. **Undo** removes the whole import.
 
-The same menu has **Export CSV**, which saves every part in the inventory as a spreadsheet file, for a backup or to open in Excel or Google Sheets. Export works on the website and the Windows app, not the Android app. **Print list** prints the parts on screen, grouped the same way.
+**Export CSV** (same menu) saves the inventory as a spreadsheet file, on the website and Windows app but not Android. **Print list** prints what's on screen.
 
 <img src="how-to/more-menu.png" alt="The ⋯ menu" height="260">
 
 ### Back up the whole team
 
-**☰ → Export backup** saves everything your team has in one `.inv` file: every inventory, project and packing list, every part, the orders, the locations and which QR labels are printed. It doesn't hold the members, the change log or the trash. Export works on the website and the Windows app, not the Android app. Keep the file somewhere the team can find it, like a shared drive.
+**☰ → Export backup** saves everything in one `.inv` file: inventories, projects, packing lists, parts, orders, locations and which QR labels are printed. Not members, the change log or the trash. Works on the website and Windows app, not Android. Keep it on a shared drive.
 
-**☰ → Restore backup** opens a `.inv` file. On a computer the file picker shows `.inv` files; a phone lists all files, and the app checks that the one you pick is a backup. Then pick how to restore it. Before anything changes, the app lists what each way will do.
+**☰ → Restore backup** opens a `.inv` file, then you pick how. The app lists what each way will do before anything changes.
 
-- **Add** brings in what's in the backup and your team doesn't have, like parts deleted since. Nothing you have is changed or deleted. **Exclude duplicates** (on to start) leaves out parts your team already has, and parts with the same name or part number in the same inventory. Turn it off to add every part in the backup again, as copies.
-- **Replace** makes your team match the backup: it adds what's missing, sets back what changed (quantities, names, which inventory a part is in) and removes what isn't in the backup. Removed parts, projects and orders go to [Trash](#10-change-log-undo-and-trash) for 30 days. So it can't happen by accident, you type your team number first (or your team's name, if you joined with a code or link).
+- **Add** brings in what the team doesn't have, like parts deleted since. Nothing you have changes. **Exclude duplicates** (on by default) skips parts with the same name or part number in the same inventory; turn it off to add them again as copies.
+- **Replace** makes the team match the backup: adds what's missing, resets quantities, names and inventories, and removes what isn't in the backup. Removed items go to [Trash](#10-change-log-undo-and-trash) for 30 days. You type your team number first (or the team name, if you joined with a code or link).
 
 <img src="how-to/restore-backup.png" alt="Restore backup, with Add picked and what it will add" width="420">
 
-If your team has nothing in it yet, like a new team, the app skips the choice and just restores the backup. Everything comes back under the same IDs, so printed QR labels keep working, even in a new Firebase project. Restoring needs an internet connection.
+A new, empty team skips the choice. IDs are kept, so printed QR labels still work, even in a new Firebase project. Restoring needs internet.
 
 ---
 
@@ -227,9 +227,9 @@ If your team has nothing in it yet, like a new team, the app skips the choice an
 
 ## 10. Change log, Undo and Trash
 
-- **Undo**: after most changes, an **Undo** button shows at the bottom of the screen for a few seconds.
-- **☰ → Change log** shows who added, changed, used, received or deleted what, and when.
-- **☰ → Trash** keeps deleted parts, projects, packing lists and orders for 30 days. Tap **Restore** to bring one back. Only the team owner can **Delete forever**.
+- **Undo** shows at the bottom for a few seconds after most changes.
+- **☰ → Change log** shows who changed what, and when.
+- **☰ → Trash** keeps deleted items for 30 days. Tap **Restore** to bring one back. Only the owner can **Delete forever**.
 
 <p>
   <img src="how-to/change-log.png" alt="The change log" width="380">
@@ -242,12 +242,10 @@ If your team has nothing in it yet, like a new team, the app skips the choice an
 
 ## 11. Team, sign out and other tips
 
-- **☰ → Team** shows the join QR code and code, lets you change **your name**, and lists the members. The team owner can remove members, **Reset join code** if it was shared by mistake, and delete the team (see the [team admin guide](ADMIN.md)).
-- **Works offline.** No wifi at the venue? Keep editing. Changes are saved on the device and sync when it's back online. The website opens offline too, after it has been used online once.
-- **Everyone sees changes live**, so two people can count parts at the same time from different devices.
-- **Blue banner saying your Firebase rules are out of date?** Your team's admin needs to [update the rules](../SETUP.md#updating-the-rules). The app will keep working in the meantime, but some new features may not work correctly until your Firebase rules are up to date.
-- **A banner or message you don't understand?** [Troubleshooting and FAQ](TROUBLESHOOTING.md) explains each one and how to fix it.
-- **☰ → Report bug** logs a short description of the problem to a central server, with your team name and app version. Please don't include personal info.
-- **☰ → Request feature** sends an idea for the app to its developer the same way.
-- **☰ → Pain and suffering mode** is a switch for a light theme. Turn it off to go back to Normal mode. Each device remembers its own choice.
-- **☰ → Sign out** also removes the team's data saved on that device, which is good practice on a shared computer.
+- **☰ → Team** shows the join QR code and code, lets you change your name, and lists members. Owners can remove members, **Reset join code** and delete the team ([admin guide](ADMIN.md)).
+- **Works offline.** Edits are saved on the device and sync when you're back online. The website opens offline after one online visit.
+- **Changes show live**, so two people can count at once.
+- **Banner you don't understand?** See [Troubleshooting and FAQ](TROUBLESHOOTING.md). For a blue rules banner, your admin needs to [update the rules](../SETUP.md#updating-the-rules).
+- **☰ → Report bug** and **☰ → Request feature** send a note to the developer with your team name and app version. Keep personal info out.
+- **☰ → Pain and suffering mode** switches to a light theme; turn it off for Normal mode. Each device remembers its choice.
+- **☰ → Sign out** also removes the team's data from that device, good practice on a shared computer.

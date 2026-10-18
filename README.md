@@ -1,29 +1,34 @@
 <h1><picture><source media="(prefers-color-scheme: dark)" srcset="docs/brand-dark.png"><img src="docs/brand-light.png" alt="FTC Ultimate Inventory" height="76"></picture></h1>
 
-The ultimate inventory tool for FTC teams. Track each part's name, part number, quantity, location, supplier and category, with live updates across every teammate's device.
+The inventory tool for FTC teams. Track each part's name, part number, quantity, location, supplier and category, with live updates on every teammate's device.
 
-- **Inventories and projects:** keep several inventories, and make robot projects that pick parts from any of them. Each inventory shows how many of each part are free and which projects use it.
-- **Packing lists:** list what to bring to a competition and check parts off as you pack them. Packed parts show as in use in the inventory until you uncheck them.
-- **Order list:** keep track of parts on order. When one arrives, tap **Arrived** to add it to the inventory.
-- **QR labels:** print labels for bins and parts, all at once or just the ones you pick. The app remembers which labels are printed, so new parts are easy to find. Scanning one with the app or a phone camera opens that bin or part.
-- **Package barcodes:** scan the barcode on a goBILDA, REV, AndyMark, ServoCity, TETRIX or Studica package and the app fills in the part's name, part number, supplier, category and product link from a built-in catalog of their parts (works offline), and shows the supplier's photo of it when online. Typing one of their part numbers fills in the rest the same way, or search the catalog by name in Add part and tap the part. Scanning a part you already have opens it. A barcode the catalog doesn't know is remembered on the part you add for it.
-- **Organizing:** a fixed list of locations, units, condition, notes and a link on each part, a warning before adding a duplicate, grouping, sorting and a printable inventory sheet.
-- **Low-stock alerts:** give a part a **Low stock at** number and it's flagged once the number free (not used by a project or packing list) drops to that number. The **Low stock** filter lists just those parts.
-- **Subcategories and tags:** write categories like `Hardware/Screws` and tag parts (`spare`, `competition`) to filter by them.
-- **Trash:** deleted parts, projects, packing lists and orders wait in **Trash** for 30 days, so they can be brought back.
-- **Spreadsheet import and CSV export:** paste your parts straight from Excel or Google Sheets, whatever your columns are called, or save an inventory as a CSV file. Import only adds parts and skips ones already there.
-- **Team backups:** save everything the team has in one `.inv` file, and restore it to bring back what's missing, roll the team back to the backup, or move to a new Firebase project. Restoring shows what it will do first, and anything it removes goes to the Trash.
-- **Works offline:** no wifi at the venue? Keep editing. Changes are saved on the device and sync when it's back online. The website opens offline too, after it has been used online once.
+- **Inventories and projects:** keep several inventories, and build robot projects from parts in any of them. Each part shows how many are free and which projects use it.
+- **Packing lists:** check parts off as you pack for a competition. Packed parts show as in use.
+- **Order list:** track parts on order. Tap **Arrived** to add one to the inventory.
+- **QR labels:** print labels for bins and parts. Scanning one opens that bin or part.
+- **Barcode scan and catalog:** scan a goBILDA, REV, AndyMark, ServoCity, TETRIX or Studica package, or type its part number, and the app fills in the name, supplier, category and link from a built-in offline catalog. You can also search the catalog by name when adding a part.
+- **Organizing:** locations, units, condition, notes, links, grouping, sorting, subcategories (`Hardware/Screws`), tags and a printable sheet.
+- **Low-stock alerts:** set **Low stock at** on a part and use the **Low stock** filter to list what's running out.
+- **Trash:** deleted items stay in **Trash** for 30 days.
+- **Import and export:** paste parts from Excel or Google Sheets, or export a CSV.
+- **Team backups:** save everything to one `.inv` file and restore it later, or move to a new Firebase project.
+- **Offline:** keep editing without wifi. Changes sync when you're back online.
 
-- **Try it:** [live demo with sample parts](https://huskerthecat.github.io/FTC_Ultimate_Inventory/?demo), no setup needed. Changes aren't saved.
-- **How to use it:** the [how-to guide](docs/HOW-TO.md) walks through every main feature with pictures.
-- **Help:** [troubleshooting and FAQ](docs/TROUBLESHOOTING.md), a one-page [quick start](docs/QUICK-START.md) to print for the shop, and the [team admin guide](docs/ADMIN.md).
-- **Web:** [huskerthecat.github.io/FTC_Ultimate_Inventory](https://huskerthecat.github.io/FTC_Ultimate_Inventory/) (works on ChromeOS, Mac, Linux and phones, and can be installed from Chrome or Edge)
+**Get the app**
+
+- **Try it:** [live demo](https://huskerthecat.github.io/FTC_Ultimate_Inventory/?demo) with sample parts, nothing saved.
+- **Web:** [huskerthecat.github.io/FTC_Ultimate_Inventory](https://huskerthecat.github.io/FTC_Ultimate_Inventory/) works on any computer or phone and can be installed from Chrome or Edge.
 - **Windows:** [download the installer](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest/download/FTC-Ultimate-Inventory-Setup.exe)
 - **Android:** [download the app](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest/download/FTC-Ultimate-Inventory.apk)
 - **iPhone and iPad:** [add the website to your Home Screen](SETUP.md#install-on-iphone-or-ipad)
 
-Every team stores its data in its own free Firebase project. Setting a team up takes one person about 10 minutes: see the **[team setup guide](SETUP.md)**. Then share the **[how-to guide](docs/HOW-TO.md)** with your team: it walks through every main feature with pictures.
+**Guides**
+
+- [Team setup](SETUP.md): one person, about 10 minutes. Each team stores its data in its own free Firebase project.
+- [How to use it](docs/HOW-TO.md): every main feature, with pictures.
+- [Quick start](docs/QUICK-START.md): one page to print for the shop.
+- [Troubleshooting and FAQ](docs/TROUBLESHOOTING.md)
+- [Team admin guide](docs/ADMIN.md)
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="720"></picture>
 
@@ -46,22 +51,20 @@ Every team stores its data in its own free Firebase project. Setting a team up t
 
 ## How it works
 
-The app is one plain JavaScript web app (`src/`). Electron wraps it for Windows (`electron/`) and Capacitor wraps it for Android, so all three look and work the same. The app talks directly to the team's Firebase project: Firebase Auth for sign-in and Firestore for the parts list. [`firestore.rules`](firestore.rules) only lets team members read or write, and a teammate can only join with the team secret inside the join code.
+A plain JavaScript web app (`src/`), wrapped by Electron for Windows (`electron/`) and Capacitor for Android. It talks directly to the team's Firebase project: Firebase Auth for sign-in and Firestore for the data. [`firestore.rules`](firestore.rules) lets only team members read or write.
 
-The supplier catalog ([`src/catalog.json`](src/catalog.json)) is built from the product data each supplier publishes on its own store by [`.github/scripts/build-catalog.mjs`](.github/scripts/build-catalog.mjs). The **Update part catalog** workflow rebuilds it by itself every Monday and republishes the website. The Windows and Android apps download the newest catalog from the website each time they open, and use the one they were built with when offline.
+The supplier catalog ([`src/catalog.json`](src/catalog.json)) is built from each supplier's public product data by [`.github/scripts/build-catalog.mjs`](.github/scripts/build-catalog.mjs). The **Update part catalog** workflow rebuilds it every Monday and republishes the website. The Windows and Android apps download the newest catalog on start and fall back to the one they shipped with when offline.
 
 [![Part catalog last changed](https://img.shields.io/github/last-commit/HuskerTheCat/FTC_Ultimate_Inventory/main?path=src%2Fcatalog.json&label=part%20catalog%20last%20changed)](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/commits/main/src/catalog.json)
 [![Update part catalog](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/actions/workflows/catalog.yml/badge.svg)](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/actions/workflows/catalog.yml)
 
-The first badge shows when a weekly run last found new or changed parts, and the second whether the last run worked.
-
-Manual update: [Update part catalog](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/actions/workflows/catalog.yml)
+Run it by hand: [Update part catalog](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/actions/workflows/catalog.yml)
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="720"></picture>
 
 ## Privacy
 
-Everyone must accept the [privacy policy](PRIVACY.md) to join a team. The app only logs each new team's name and number and any bug reports and feature requests to a central server. It is a separate Firebase project ([`src/hub.js`](src/hub.js), rules in [`hub.rules`](hub.rules)). Nothing about individual users is sent.
+The app logs only each new team's name and number, bug reports and feature requests to a separate central Firebase project ([`src/hub.js`](src/hub.js), [`hub.rules`](hub.rules)). Nothing about individual users is sent. See the [privacy policy](PRIVACY.md).
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="720"></picture>
 
@@ -74,16 +77,16 @@ npm run emulators    # local Firebase (needs Java)
 npm run desktop      # run the Windows/desktop app
 ```
 
-To use the local emulators, create a team with any config whose `projectId` starts with `demo-`, for example:
+For the local emulators, create a team with a config whose `projectId` starts with `demo-`:
 
 ```
 apiKey: "x", authDomain: "x", projectId: "demo-inventory", appId: "x"
 ```
 
-Pushing to `main` publishes the website. Running the **Build apps** workflow from the Actions tab builds the Windows installer and Android APK and attaches them to a release.
+Pushing to `main` publishes the website. The **Build apps** workflow builds the Windows installer and Android APK and attaches them to a release.
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="720"></picture>
 
 ## License
 
-Copyright (C) 2026 HuskerTheCat. Licensed under the [GNU AGPL v3](LICENSE): anyone who shares or hosts a modified version, including as a website, must publish its source code under the same license.
+Copyright (C) 2026 HuskerTheCat. Licensed under the [GNU AGPL v3](LICENSE): modified versions, including hosted ones, must publish their source under the same license.

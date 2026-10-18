@@ -1,8 +1,8 @@
 <h1><picture><source media="(prefers-color-scheme: dark)" srcset="header/admin-dark.png"><img src="header/admin-light.png" alt="Team admin guide" width="720"></picture></h1>
 
-For the person who runs the team's inventory: the one who set up the team in the app, shown as **Owner** in the Members list. Setting up a new team is covered in the [team setup guide](../SETUP.md), and everyday use in the [how-to guide](HOW-TO.md).
+For the team's owner, shown as **Owner** in the Members list. Setup is in the [team setup guide](../SETUP.md), everyday use in the [how-to guide](HOW-TO.md).
 
-Everything below is on the **☰ → Team** screen unless it says otherwise. Teammates see the same screen without the owner buttons.
+Everything is on the **☰ → Team** screen unless noted. Teammates see the same screen without the owner buttons.
 
 **Contents**
 
@@ -20,11 +20,11 @@ Everything below is on the **☰ → Team** screen unless it says otherwise. Tea
 
 ## 1. Invite teammates
 
-Open **☰ → Team**. New teammates scan the QR code on your screen, or you send them the join code or the join link (use the **Copy** buttons). They join, create an account, and they're in. The [setup guide](../SETUP.md#6-invite-your-team) has the details.
+Open **☰ → Team**. New teammates scan the QR code, or you send the join code or link with the **Copy** buttons. Details are in the [setup guide](../SETUP.md#6-invite-your-team).
 
-- Every member can open **Team** and share the code, not just you.
-- Only share it with your team: anyone who has it can join. Don't post it anywhere public, like a team website or a Discord server others can see.
-- Someone who already joined uses **Sign in to your team** with your program and team number on a new device. They don't need the code again.
+- Every member can share the code, not just you.
+- Anyone who has the code can join, so don't post it anywhere public.
+- Existing members on a new device use **Sign in to your team** with your program and team number. They don't need the code.
 
 ---
 
@@ -34,20 +34,20 @@ Open **☰ → Team**. New teammates scan the QR code on your screen, or you sen
 
 <img src="help/team-members.png" alt="The Members list with Remove buttons, and Reset join code and Delete team below it" width="200">
 
-Check the Members list every so often, and at least at the end of each season:
+Check the list at least once a season:
 
-- **Remove people who've left**, especially graduates who signed up with a school email.
-- **Remove emails that look wrong**, like `jordan@gmial.com` above. New members confirm their email when they join, but people who joined before the app checked emails didn't. Whoever ends up with a wrong or old inbox (a typo'd address someone else registers, or a school address given to a new student later) could use **Forgot password?** and get into your team. If the person is real, ask them to join again with the right email.
+- **Remove people who've left**, especially graduates with school emails.
+- **Remove emails that look wrong**, like `jordan@gmial.com` above. Members who joined before email verification existed may have a typo'd address, and whoever owns that inbox could use **Forgot password?** to get in. If the person is real, ask them to join again with the right email.
 
-To remove someone, tap **Remove** next to their name. This:
+Tap **Remove** next to a name to:
 
-- signs them out on all their devices and shows them **You no longer have access** to the team,
-- makes a new join code, so the old code can't get them back in,
-- keeps their entries in the change log.
+- sign them out everywhere with **You no longer have access**,
+- make a new join code, so the old one can't bring them back,
+- keep their entries in the change log.
 
-Their account still exists in your Firebase project but can't see anything. To erase it completely, open the [Firebase console](https://console.firebase.google.com), go to **Security → Authentication → Users**, and delete their account there.
+Their account still exists but sees nothing. To erase it, open the [Firebase console](https://console.firebase.google.com) → **Security → Authentication → Users** and delete it.
 
-Removed someone by mistake? Send them the new join code. They join again and use **Sign in** (not **Create account**) with their old password, unless you deleted their account.
+Removed someone by mistake? Send them the new join code. They use **Sign in** (not **Create account**) with their old password, unless you deleted their account.
 
 ---
 
@@ -55,9 +55,7 @@ Removed someone by mistake? Send them the new join code. They join again and use
 
 ## 3. Reset the join code
 
-If the join code or link was shared somewhere it shouldn't be, tap **Reset join code**. The old code, link and QR code stop working right away.
-
-People already on the team stay signed in; only new teammates need the new code. If you printed the QR code and posted it in your shop, print the new one.
+If the code or link got shared where it shouldn't, tap **Reset join code**. The old code, link and QR code stop working immediately. Current members stay signed in. Reprint any QR code you posted.
 
 ---
 
@@ -65,9 +63,9 @@ People already on the team stay signed in; only new teammates need the new code.
 
 ## 4. Update the Firebase rules
 
-When a new version of the app needs newer security rules, everyone on the team sees a blue **Your Firebase rules are out of date** banner. Only the person who owns your team's Firebase project can fix it. Tap the banner: it has a **Copy rules** button and a link straight to your project's rules. [Updating the rules](../SETUP.md#updating-the-rules) in the setup guide has the full steps. It doesn't change any of your data, and the app keeps working until you do it.
+A blue **Your Firebase rules are out of date** banner means a new app version needs newer rules. Only the owner of the Firebase project can fix it. Tap the banner for **Copy rules** and a link to your rules. Full steps: [Updating the rules](../SETUP.md#updating-the-rules). No data changes, and the app keeps working until you do it.
 
-A red **Your Firebase is configured incorrectly and your account is not secure** banner means your project isn't using the app's rules at all, so anyone could read your inventory. Follow the same steps right away.
+A red **Your Firebase is configured incorrectly and your account is not secure** banner means your project isn't using the app's rules, so anyone could read your inventory. Fix it right away.
 
 ---
 
@@ -75,13 +73,13 @@ A red **Your Firebase is configured incorrectly and your account is not secure**
 
 ## 5. Back up the team
 
-Your inventory is stored safely in your Firebase project, and deleted items stay in **☰ → Trash** for 30 days. A backup file protects against bigger mistakes, like a bulk edit gone wrong or a deleted Firebase project.
+Deleted items stay in **☰ → Trash** for 30 days. A backup file protects against bigger mistakes, like a bad bulk edit or a deleted Firebase project.
 
-Choose **☰ → Export backup** (on the website or the Windows app; the Android app can't save files). It saves one `.inv` file with every inventory, project, packing list, part, order and location, and which QR labels are printed. It doesn't hold the members, the change log or the trash. Do it before each season and after a big inventory count, and keep the files somewhere the team can find them, like a shared drive.
+**☰ → Export backup** (website or Windows app; Android can't save files) saves one `.inv` file with every inventory, project, packing list, part, order and location, and which QR labels are printed. It doesn't include members, the change log or the trash. Make one before each season and after a big count, and keep it on a shared drive.
 
-To bring things back, choose **☰ → Restore backup**, pick the file and pick how: **Add** only brings in what the team doesn't have, and **Replace** makes the team match the backup, after you type your team number. What Replace removes goes to the Trash for 30 days. The app shows what each way will do before anything changes. See [Import, export and backups](HOW-TO.md#9-import-export-and-backups).
+**☰ → Restore backup**: pick the file, then **Add** (only what's missing) or **Replace** (make the team match the backup; type your team number). Replace sends removed items to the Trash. The app previews the result first. See [Import, export and backups](HOW-TO.md#9-import-export-and-backups).
 
-**Moving to a new Firebase project:** export a backup, set up the new team (see the [team setup guide](../SETUP.md)), then restore the backup there. Everything keeps its ID, so the QR labels you've already printed still work. Teammates join the new team with its join code.
+**Moving to a new Firebase project:** export a backup, [set up the new team](../SETUP.md), restore the backup there, and have teammates join with the new code. IDs are kept, so printed QR labels still work.
 
 ---
 
@@ -91,18 +89,18 @@ To bring things back, choose **☰ → Restore backup**, pick the file and pick 
 
 Before you graduate or step down, hand over two things.
 
-**The Firebase project.** If it's under your own Google account, add the new admin to it: in the [Firebase console](https://console.firebase.google.com), open the project, open **Settings → Users and permissions**, click **Add member**, enter their Google email, pick the **Owner** role and click **Add member**. A team or coach Google account avoids this step in future.
+**The Firebase project.** In the [Firebase console](https://console.firebase.google.com), open the project → **Settings → Users and permissions** → **Add member**, enter their Google email and pick **Owner**. A team or coach Google account avoids this step in future.
 
-**The owner role in the app.** This is done in the Firebase console too, once the new admin has joined the team in the app:
+**The owner role in the app.** Once the new admin has joined the team in the app, set it in the Firebase console:
 
 1. In the Firebase console, open **Databases & Storage → Firestore** and the **Data** tab.
-2. Open the **members** collection and click through the documents until you find the one whose **email** is the new admin's. Copy its document ID (the long code at the top).
-3. Open the **team** collection, then the **info** document. Hover over the **owner** field, click its pencil icon, paste the new admin's ID in place of the old one, and click **Update**. Don't change the other fields.
-4. The new admin closes and reopens the app. They now see **Owner** next to their name, and the **Remove**, **Reset join code** and **Delete team** buttons.
+2. Open the **members** collection and find the document whose **email** is the new admin's. Copy its document ID.
+3. Open **team → info**, click the pencil on the **owner** field, paste the new ID, and click **Update**. Leave the other fields alone.
+4. The new admin reopens the app and now sees **Owner** and the **Remove**, **Reset join code** and **Delete team** buttons.
 
-The new admin can then remove the old admin's account from Members if they're leaving.
+The new admin can then remove the old admin from Members.
 
-The same steps work if the owner's account is lost (for example, a school email that was closed). Anyone who can open the Firebase project can make another member the owner.
+The same steps work if the owner's account is lost. Anyone who can open the Firebase project can make another member the owner.
 
 ---
 
@@ -110,10 +108,10 @@ The same steps work if the owner's account is lost (for example, a school email 
 
 ## 7. Delete the team
 
-Only do this if your team is done with the app for good. If you just want a fresh start, delete parts or inventories instead.
+Only if your team is done with the app for good. For a fresh start, delete parts or inventories instead.
 
-1. Export a backup first (**☰ → Export backup**) if you might want the data later.
+1. Export a backup first if you might want the data.
 2. Open **☰ → Team** and tap **Delete team**.
-3. Type your team number to confirm, for example `FTC 12345`. You can add a reason; it's logged to a central server, so please don't include personal info.
+3. Type your team number to confirm, for example `FTC 12345`. An optional reason is logged to a central server, so keep personal info out.
 
-This takes your team off the central team list, so nobody can sign in with your team number, and this device leaves the team. **It doesn't erase anything in your Firebase project**: teammates can still open the inventory until you delete the project. To erase the inventory and everyone's accounts, open your Firebase project's **Settings → General**, scroll to the bottom and click **Delete project**. The app shows a link to it after you delete the team.
+This removes your team from the central list (nobody can sign in by team number) and this device leaves the team. **It doesn't erase your Firebase project**: teammates can still open the inventory until you delete it. To erase the inventory and all accounts, open the project's **Settings → General** and click **Delete project** at the bottom. The app links to it after you delete the team.
