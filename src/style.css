@@ -390,6 +390,10 @@ dialog::backdrop { background: var(--backdrop); backdrop-filter: blur(3px); }
 dialog .card { padding: 24px; border: none; }
 /* The last row of buttons stays in view while a long form scrolls. */
 dialog .card > .row:last-child { position: sticky; bottom: 0; margin: 4px -24px -24px; padding: 14px 24px; background: var(--surface); border-top: 1px solid var(--border); }
+/* On phones those buttons share each line evenly, so one that wraps fills its own line instead of hanging alone. */
+@media screen and (max-width: 700px) {
+  dialog .card > .row:last-child > button { flex: 1 1 auto; margin-left: 0; }
+}
 /* The part form gets two columns on wide screens. */
 dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
 @media (min-width: 701px) {
