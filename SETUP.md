@@ -1,4 +1,4 @@
-# Team setup guide
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/setup-dark.png"><img src="docs/header/setup-light.png" alt="Team setup guide" width="440"></picture></h1>
 
 One person per team does this once, in about 10 minutes. Everyone else only needs the join link. Once your team is set up, the [how-to guide](docs/HOW-TO.md) shows everyone how to use the app.
 

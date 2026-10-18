@@ -1,4 +1,4 @@
-# Team admin guide
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="header/admin-dark.png"><img src="header/admin-light.png" alt="Team admin guide" width="440"></picture></h1>
 
 For the person who runs the team's inventory: the one who set up the team in the app, shown as **Owner** in the Members list. Setting up a new team is covered in the [team setup guide](../SETUP.md), and everyday use in the [how-to guide](HOW-TO.md).
 

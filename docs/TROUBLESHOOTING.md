@@ -1,4 +1,4 @@
-# Troubleshooting and FAQ
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="header/troubleshooting-dark.png"><img src="header/troubleshooting-light.png" alt="Troubleshooting and FAQ" width="440"></picture></h1>
 
 What each banner and message in the app means, and how to fix it. The app shows two kinds of messages:
 

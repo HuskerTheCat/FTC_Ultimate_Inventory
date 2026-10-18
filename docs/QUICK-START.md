@@ -1,4 +1,4 @@
-# FTC Ultimate Inventory: quick start
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="header/quick-start-dark.png"><img src="header/quick-start-light.png" alt="FTC Ultimate Inventory: quick start" width="440"></picture></h1>
 
 Our team's parts list, on any computer or phone. It works offline too: changes sync once you're back online. Print the [PDF version](QUICK-START.pdf) (one page) and post it in the shop.
 

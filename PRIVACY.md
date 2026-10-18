@@ -1,4 +1,4 @@
-# Privacy policy
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/privacy-dark.png"><img src="docs/header/privacy-light.png" alt="Privacy policy" width="440"></picture></h1>
 
 FTC Ultimate Inventory is made by HuskerTheCat for FTC/FRC robotics teams. This page says what the app logs to the developer's server, and what it doesn't.
 

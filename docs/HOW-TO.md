@@ -1,4 +1,4 @@
-# How to use FTC Ultimate Inventory
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="header/how-to-dark.png"><img src="header/how-to-light.png" alt="How to use FTC Ultimate Inventory" width="440"></picture></h1>
 
 A walkthrough of the basics and the most useful features, for everyone on the team. The pictures come from the [demo](https://huskerthecat.github.io/FTC_Ultimate_Inventory/?demo), so you can follow along there without setting anything up.
 
