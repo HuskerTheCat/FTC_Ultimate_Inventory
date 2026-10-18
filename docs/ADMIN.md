@@ -32,7 +32,7 @@ Open **☰ → Team**. New teammates scan the QR code, or you send the join code
 
 ## 2. Keep the Members list clean
 
-<img src="help/team-members.png" alt="The Members list with Remove buttons, and Reset join code and Delete team below it" width="200">
+<img src="help/team-members.png" alt="The Members list with Remove buttons, and Reset join code and Delete team below it" width="220">
 
 Check the list at least once a season:
 

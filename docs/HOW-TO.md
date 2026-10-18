@@ -34,17 +34,17 @@ The first screen has three ways in:
 - **New to the team?**: you're new. Paste the join code from your admin, or tap **Scan QR** and scan the team's QR code. The join link does the same.
 - **Set up a new team**: one person per team, once. See the [team setup guide](../SETUP.md).
 
-<img src="how-to/welcome.png" alt="The first screen: sign in, join a team, or set up a new team" width="560">
+<img src="how-to/welcome.png" alt="The first screen: sign in, join a team, or set up a new team" width="640">
 
 After joining, enter your name (shown in the change log), email and a password, tick the privacy policy box and tap **Create account**. Open the link in the email you get; the app carries on by itself. Next time, just **Sign in**.
 
-<img src="how-to/phone-create-account.png" alt="Creating an account after joining a team" width="200">
+<img src="how-to/phone-create-account.png" alt="Creating an account after joining a team" width="220">
 
 A new team's inventory starts with **Add your first parts** and buttons to add a part, scan a package, import a spreadsheet, add locations and invite your team.
 
 > **Admins:** to invite people, open **☰ → Team** and share the QR code, join code or link. Anyone who has them can join. More in the [team admin guide](ADMIN.md).
 >
-> <img src="how-to/phone-team.png" alt="The Team screen with the join QR code and join code" width="200">
+> <img src="how-to/phone-team.png" alt="The Team screen with the join QR code and join code" width="220">
 
 ---
 
@@ -52,7 +52,7 @@ A new team's inventory starts with **Add your first parts** and buttons to add a
 
 ## 2. Find your way around
 
-<img src="how-to/desktop-tour.png" alt="The inventory on a computer, with numbered buttons" width="720">
+<img src="how-to/desktop-tour.png" alt="The inventory on a computer, with numbered buttons" width="800">
 
 1. **List picker.** Switch between inventories, projects and packing lists, or make a new one.
 2. **Rename or delete** the inventory, project or list you're looking at.
@@ -71,8 +71,8 @@ Click a part to open and edit it. On a computer, click a column heading to sort,
 On a phone, each part is a card. **+ Add part** floats at the bottom right.
 
 <p>
-  <img src="how-to/phone-inventory.png" alt="The inventory on a phone" width="200">
-  <img src="how-to/phone-main-menu.png" alt="The ☰ menu on a phone" width="200">
+  <img src="how-to/phone-inventory.png" alt="The inventory on a phone" width="220">
+  <img src="how-to/phone-main-menu.png" alt="The ☰ menu on a phone" width="220">
 </p>
 
 ---
@@ -83,11 +83,11 @@ On a phone, each part is a card. **+ Add part** floats at the bottom right.
 
 Tap **+ Add part**. Quickest: **Search the parts catalog** at the top, type a few words or a part number, like `u-beam 8mm`, and tap the part. It covers goBILDA, REV, AndyMark, ServoCity, TETRIX and Studica; the menu next to the search narrows it to one supplier.
 
-<img src="how-to/catalog-search.png" alt="Searching the parts catalog in Add part" width="480">
+<img src="how-to/catalog-search.png" alt="Searching the parts catalog in Add part" width="440">
 
 The name, part number, supplier, category and link fill in, plus the supplier's photo when online. Add the quantity and location, then **Save**. Only the name and quantity are required, so parts not in the catalog are just typed in.
 
-<img src="how-to/add-part.png" alt="The Add part dialog, filled in from the catalog" width="480">
+<img src="how-to/add-part.png" alt="The Add part dialog, filled in from the catalog" width="440">
 
 - **Part number or barcode:** typing one of those suppliers' part numbers fills in the rest. Or tap **Scan** next to Barcode and scan the package.
 - **Low stock at** (optional) flags the part at that quantity or below.
@@ -116,7 +116,7 @@ To change a part, tap it, edit and **Save**. For just the quantity, use **−** 
 
 The Filters button shows how many are on. **Reset filters** clears them.
 
-<img src="how-to/filters.png" alt="Filters showing only low-stock parts, grouped by location" width="640">
+<img src="how-to/filters.png" alt="Filters showing only low-stock parts, grouped by location" width="800">
 
 ---
 
@@ -126,13 +126,13 @@ The Filters button shows how many are on. **Reset filters** clears them.
 
 Your team has one list of locations (bins, shelves, drawers). **☰ → Locations** adds, renames and deletes them (only empty ones) and prints a bin's label.
 
-<img src="how-to/locations.png" alt="The Locations list" width="360">
+<img src="how-to/locations.png" alt="The Locations list" width="440">
 
 **⋯ → Print QR labels** prints labels for bins and parts. Scanning one with **Scan** or any phone camera opens that bin or part, ready to take one with **−**.
 
 The app remembers which labels are printed, so only new ones are checked. The list follows your filters, so filter to one location to print just its labels. A part's dialog has **Print label** for one.
 
-<img src="how-to/labels.png" alt="The QR labels dialog" width="360">
+<img src="how-to/labels.png" alt="The QR labels dialog" width="440">
 
 ---
 
@@ -153,13 +153,13 @@ Use the **list picker** at the top to switch views or make a **New inventory, pr
 
 In a project or packing list, **+ Add parts** lists every part in every inventory; tap one to add it. **−** and **+** change how many it uses; tap the part to type a number or remove it.
 
-<img src="how-to/project.png" alt="A robot project showing the parts it uses" width="640">
+<img src="how-to/project.png" alt="A robot project showing the parts it uses" width="800">
 
 In the inventory, **Add to** on a part sends it to a project or packing list.
 
 <p>
-  <img src="how-to/phone-add-to.png" alt="Adding a part to a project or packing list" width="200">
-  <img src="how-to/phone-packing.png" alt="A packing list with packed parts checked off" width="200">
+  <img src="how-to/phone-add-to.png" alt="Adding a part to a project or packing list" width="220">
+  <img src="how-to/phone-packing.png" alt="A packing list with packed parts checked off" width="220">
 </p>
 
 ---
@@ -170,7 +170,7 @@ In the inventory, **Add to** on a part sends it to a project or packing list.
 
 Open **☰ → Orders** to track parts you've ordered.
 
-<img src="how-to/orders.png" alt="The order list" width="360">
+<img src="how-to/orders.png" alt="The order list" width="440">
 
 - Add an order by typing the item or picking a part you have. A supported part number fills in the rest. Link and notes are optional.
 - New items appear in Main Inventory right away as **on order**, so projects and packing lists can use them early.
@@ -185,7 +185,7 @@ Open **☰ → Orders** to track parts you've ordered.
 
 **⋯ → Select parts**, tap the parts (or **Select all shown** for everything your search and filters show), then **Edit selected**. Set location, category, low-stock number and tags for all at once. Anything left on "Keep" stays as is.
 
-<img src="how-to/bulk-edit.png" alt="Editing two parts at once" width="360">
+<img src="how-to/bulk-edit.png" alt="Editing two parts at once" width="440">
 
 ---
 
@@ -200,7 +200,7 @@ Keep your parts in a spreadsheet? Import them whatever the columns are called.
 3. Check each column's menu (**Item**, **Qty**, **Location**…). Fix any it got wrong and pick **Leave out** for ones you don't need, like prices. Some column must be **Item**.
 4. Click **Import**.
 
-<img src="how-to/import-preview.png" alt="The import preview, with what each column holds" width="420">
+<img src="how-to/import-preview.png" alt="The import preview, with what each column holds" width="440">
 
 Rows the app can't add are listed with the reason (*250 pcs* and *1,200* are fine as quantities). Parts already there (same name or part number) are skipped, so importing twice adds nothing. **Undo** removes the whole import.
 
@@ -217,7 +217,7 @@ Rows the app can't add are listed with the reason (*250 pcs* and *1,200* are fin
 - **Add** brings in what the team doesn't have, like parts deleted since. Nothing you have changes. **Exclude duplicates** (on by default) skips parts with the same name or part number in the same inventory; turn it off to add them again as copies.
 - **Replace** makes the team match the backup: adds what's missing, resets quantities, names and inventories, and removes what isn't in the backup. Removed items go to [Trash](#10-change-log-undo-and-trash) for 30 days. You type your team number first (or the team name, if you joined with a code or link).
 
-<img src="how-to/restore-backup.png" alt="Restore backup, with Add picked and what it will add" width="420">
+<img src="how-to/restore-backup.png" alt="Restore backup, with Add picked and what it will add" width="440">
 
 A new, empty team skips the choice. IDs are kept, so printed QR labels still work, even in a new Firebase project. Restoring needs internet.
 

@@ -34,18 +34,18 @@ The inventory tool for FTC teams. Track each part's name, part number, quantity,
 
 ## Screenshots
 
-![Inventory on a computer](docs/screenshots/desktop-inventory.png)
+<img src="docs/screenshots/desktop-inventory.png" alt="Inventory on a computer" width="800">
 
 <p>
-  <img src="docs/screenshots/phone-inventory.png" alt="Inventory on a phone" width="260">
-  <img src="docs/screenshots/phone-packing.png" alt="Packing list on a phone" width="260">
+  <img src="docs/screenshots/phone-inventory.png" alt="Inventory on a phone" width="240">
+  <img src="docs/screenshots/phone-packing.png" alt="Packing list on a phone" width="240">
 </p>
 
-![A robot project with the parts it uses](docs/screenshots/desktop-project.png)
+<img src="docs/screenshots/desktop-project.png" alt="A robot project with the parts it uses" width="800">
 
-![Order list](docs/screenshots/desktop-orders.png)
+<img src="docs/screenshots/desktop-orders.png" alt="Order list" width="400">
 
-![Low stock filter, spreadsheet import and CSV export](docs/screenshots/desktop-low-stock-csv.png)
+<img src="docs/screenshots/desktop-low-stock-csv.png" alt="Low stock filter, spreadsheet import and CSV export" width="800">
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="720"></picture>
 
