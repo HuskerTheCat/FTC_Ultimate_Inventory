@@ -1,3 +1,4 @@
+import './parallax.js';
 import QRCode from 'qrcode';
 import * as firebase from './firebase.js';
 import { parseFirebaseConfig, encodeJoinCode, decodeJoinCode, findTeam, newSecret } from './joincode.js';

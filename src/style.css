@@ -84,20 +84,13 @@ a { color: var(--accent); }
 .split > form { display: flex; flex-direction: column; gap: 12px; }
 .split > form + form { border-top: 1px solid var(--border); padding-top: 20px; margin-top: 8px; }
 /* The first screens sit on the topographic map of the link preview: dark blue fading to a lighter blue in one corner, thin contour lines over it. */
-body:has(> #app > .center), body.guide { position: relative; --topo-from: #0e1221; --topo-to: #3460d6; --topo-line: #5b9bff; --topo-line-opacity: 0.3; }
+body:has(> #app > .center), body.guide { --topo-from: #0e1221; --topo-to: #3460d6; --topo-line: #5b9bff; --topo-line-opacity: 0.3; }
 :root[data-theme="light"] body:has(> #app > .center), :root[data-theme="light"] body.guide { --topo-from: #eef1f7; --topo-to: #b9cdf7; --topo-line: #2563d9; --topo-line-opacity: 0.22; }
 /* The gradient stays put. It is as tall as the screen with a phone's address bar hidden, so it still fills the screen once the bar slides away. */
 body:has(> #app > .center)::before, body.guide::before { content: ''; position: fixed; top: 0; left: 0; right: 0; height: 100lvh; z-index: -1; pointer-events: none; background: linear-gradient(110deg, var(--topo-from) 55%, var(--topo-to) 100%); }
-/* The contour lines cover the whole page and scroll with it. */
-body:has(> #app > .center)::after, body.guide::after { content: ''; position: absolute; inset: 0; min-height: 100lvh; z-index: -1; pointer-events: none; background: var(--topo-line); opacity: var(--topo-line-opacity); -webkit-mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; }
-/* Tied to the scroll, the lines slide back down by half of it, so they drift at half the page's speed. will-change lets the browser run it alongside its own scrolling (without it Chrome moves the lines a frame late, which looks jumpy).
-   The layer is half the page plus half a screen tall, so at the bottom of the page it ends exactly at the page's end and never makes the page longer. Browsers without scroll-driven animations scroll the lines with the page. */
-@keyframes topo-drift { to { transform: translateY(calc(100% - 100lvh)); } }
-@supports (animation-timeline: scroll()) {
-  @media (prefers-reduced-motion: no-preference) {
-    body:has(> #app > .center)::after, body.guide::after { bottom: auto; height: calc(50% + 50lvh); will-change: transform; animation: topo-drift linear both; animation-timeline: scroll(root); }
-  }
-}
+/* The contour lines (src/parallax.js adds the .topo layer and moves it). The layer is one seamless tile taller than the screen, so the lines never run out. */
+.topo { display: none; }
+body:has(> #app > .center) > .topo, body.guide > .topo { display: block; position: fixed; top: 0; left: 0; right: 0; height: calc(100lvh + 2 * max(100vw, 1280px)); z-index: -1; pointer-events: none; will-change: transform; background: var(--topo-line); opacity: var(--topo-line-opacity); -webkit-mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; }
 /* The app's name in the title font, as on the link preview: "Inventory" lighter and blue, under "FTC Ultimate". */
 .brand { font: 800 1.6rem/1.15 Orbitron, sans-serif; letter-spacing: 0; }
 .brand .app-name { display: block; font-weight: 500; color: var(--accent); }
