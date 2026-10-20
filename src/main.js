@@ -2079,7 +2079,7 @@ function openListDialog() {
   dialog.showModal();
 }
 
-// Lists the parts in every inventory; tapping one adds one more to the current project.
+// Lists the parts in every inventory; tapping one adds one more to the current project, − takes one back.
 function openPicker() {
   const dialog = app.querySelector('#dialog');
   const current = currentProject();
@@ -2100,17 +2100,18 @@ function openPicker() {
       .map((p) => {
         const using = useOf(current.id, p.id)?.quantity ?? 0;
         const free = p.quantity - inUse(p.id);
-        return `<li><button type="button" class="secondary" data-id="${esc(p.id)}">
+        return `<li class="pick"><button type="button" class="secondary" data-id="${esc(p.id)}">
           <span><strong>${esc(p.name)}</strong>${partChips(orderBadge(p.id), [])} <span class="muted small">${esc([p.partNumber, p.location, inventoryNote(p)].filter(Boolean).join(' · '))}</span></span>
-          <span class="small ${free < 0 ? 'over' : ''}">${free} free${using ? ` · using ${using}` : ''}</span>
-        </button></li>`;
+          <span class="small count ${free < 0 ? 'over' : ''}">${free} free${using ? `<br>using ${using}` : ''}</span>
+        </button>${using ? `<button type="button" class="step" data-remove="${esc(p.id)}" aria-label="Remove one: ${esc(p.name)}">−</button>` : ''}</li>`;
       }).join('') || '<li class="muted">No parts match.</li>';
   };
   search.oninput = state.picker;
   search.onkeydown = (e) => { if (e.key === 'Enter') e.preventDefault(); };
   list.onclick = (e) => {
-    const id = e.target.closest('button')?.dataset.id;
+    const { id, remove } = e.target.closest('button')?.dataset ?? {};
     if (id) setUse(current.id, id, (useOf(current.id, id)?.quantity ?? 0) + 1);
+    if (remove) setUse(current.id, remove, useOf(current.id, remove).quantity - 1);
   };
   dialog.addEventListener('close', () => { state.picker = null; }, { once: true });
   state.picker();
