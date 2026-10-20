@@ -633,6 +633,9 @@ button.add-to svg { width: 16px; height: 16px; }
 .picker .target svg { flex: none; color: var(--muted); }
 .picker { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 50dvh; overflow: auto; }
 .picker button { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px; text-align: left; white-space: normal; }
+.picker .pick { display: flex; align-items: center; gap: 6px; }
+.picker .pick .count { flex: none; white-space: nowrap; text-align: right; }
+.picker .pick button.step { flex: none; justify-content: center; width: 44px; min-height: 44px; font-size: 1.25rem; }
 #camera { width: 100%; border-radius: 10px; background: #000; }
 
 /* QR label and inventory sheets, only shown when printing. */

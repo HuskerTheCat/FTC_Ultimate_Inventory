@@ -151,7 +151,7 @@ Use the **list picker** at the top to switch views or make a **New inventory, pr
 - **Project**: the parts a robot or build uses, from any inventory. They stay in their inventory but show as **in use**, so you see how many are free.
 - **Packing list**: what to bring to a competition. Check parts off as you pack; only checked parts count as in use (*Packed 3 of 7*). **⋯ → Unpack all** unchecks everything after an event (it asks first).
 
-In a project or packing list, **+ Add parts** lists every part in every inventory; tap one to add it. **−** and **+** change how many it uses; tap the part to type a number or remove it.
+In a project or packing list, **+ Add parts** lists every part in every inventory; tap one to add one more, or **−** to take one back. **−** and **+** change how many it uses; tap the part to type a number or remove it.
 
 <img src="how-to/project.png" alt="A robot project showing the parts it uses" width="800">
 
