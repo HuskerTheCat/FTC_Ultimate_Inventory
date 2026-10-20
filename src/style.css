@@ -367,7 +367,7 @@ th.sorted { color: var(--text); }
 th.sorted::after { content: " ▾"; color: var(--accent); }
 th.sorted.desc::after { content: " ▴"; }
 tbody tr { cursor: pointer; }
-tbody tr:hover { background: var(--row-hover); }
+@media (hover: hover) { tbody tr:hover { background: var(--row-hover); } }
 tbody tr.group { cursor: default; background: var(--bg); }
 tbody tr.selected { background: rgb(91 155 255 / 0.1); box-shadow: inset 3px 0 var(--accent); }
 td.check input { width: 18px; min-height: 18px; margin: 0 6px; accent-color: var(--accent); }
