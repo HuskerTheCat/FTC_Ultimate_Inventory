@@ -5,6 +5,8 @@ import { Marked } from 'marked';
 // The guides as pages on the website, made from the .md files at build time so the .md files stay the only copy.
 // The pages use the app's stylesheet: its colors, fonts, light mode and topographic background (the .guide rules in style.css).
 const GUIDES = ['README.md', 'SETUP.md', 'PRIVACY.md', 'docs/HOW-TO.md', 'docs/QUICK-START.md', 'docs/TROUBLESHOOTING.md', 'docs/ADMIN.md', 'docs/DEVELOPMENT.md'];
+// The scroll script of the app, inlined so the pages have the same moving background.
+const PARALLAX = readFileSync(new URL('./src/parallax.js', import.meta.url), 'utf8');
 const REPO_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/';
 
 // README becomes the guide list; the others keep their path in lower case, e.g. docs/HOW-TO.md -> docs/how-to.html.
@@ -61,6 +63,7 @@ function pageHtml(file, css) {
 <header><a class="brand" href="${root || './'}"><img src="${root}icon.svg" alt="" width="28" height="28">FTC Ultimate <span class="app-name">Inventory</span></a><a href="${root}guides.html">Guides</a></header>
 <main>
 ${marked.parse(markdown)}</main>
+<script>${PARALLAX}</script>
 </body>
 </html>
 `;

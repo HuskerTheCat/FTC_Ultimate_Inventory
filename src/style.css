@@ -88,13 +88,10 @@ body:has(> #app > .center), body.guide { --topo-from: #0e1221; --topo-to: #3460d
 :root[data-theme="light"] body:has(> #app > .center), :root[data-theme="light"] body.guide { --topo-from: #eef1f7; --topo-to: #b9cdf7; --topo-line: #2563d9; --topo-line-opacity: 0.22; }
 body:has(> #app > .center)::before, body:has(> #app > .center)::after, body.guide::before, body.guide::after { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; }
 body:has(> #app > .center)::before, body.guide::before { background: linear-gradient(110deg, var(--topo-from) 55%, var(--topo-to) 100%); }
-body:has(> #app > .center)::after, body.guide::after { background: var(--topo-line); opacity: var(--topo-line-opacity); -webkit-mask: url(./topo.svg) center / cover; mask: url(./topo.svg) center / cover; }
-/* The contour lines scroll slower than the page: a taller layer slides up over the whole scroll. Browsers without scroll-driven animations keep them still. */
-@keyframes topo-drift { to { transform: translateY(-40vh); } }
-@supports (animation-timeline: scroll()) {
-  @media (prefers-reduced-motion: no-preference) {
-    body:has(> #app > .center)::after, body.guide::after { bottom: -40vh; animation: topo-drift linear both; animation-timeline: scroll(root); }
-  }
+body:has(> #app > .center)::after, body.guide::after { background: var(--topo-line); opacity: var(--topo-line-opacity); -webkit-mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; }
+/* The contour lines scroll at half speed (src/parallax.js sets --topo-y). The layer is one seamless tile taller than the screen, so the lines never run out. */
+@media (prefers-reduced-motion: no-preference) {
+  body:has(> #app > .center)::after, body.guide::after { bottom: auto; height: calc(100vh + 2 * max(100vw, 1280px)); transform: translateY(calc(var(--topo-y, 0px) * -1)); will-change: transform; }
 }
 /* The app's name in the title font, as on the link preview: "Inventory" lighter and blue, under "FTC Ultimate". */
 .brand { font: 800 1.6rem/1.15 Orbitron, sans-serif; letter-spacing: 0; }
