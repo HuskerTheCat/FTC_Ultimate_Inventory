@@ -296,8 +296,8 @@ function renderWelcome() {
           <button>Next</button>
         </form>
         <form id="join">
-          <h2>New to the team? Enter your join code</h2>
-          <input name="code" required autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Join code" />
+          <h2>New to the team?</h2>
+          <input name="code" required autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Paste your join code" aria-label="Join code" />
           <div class="row">
             <button>Join team</button>
             <button type="button" id="scan-join" class="secondary">Scan QR</button>
@@ -519,23 +519,26 @@ function renderVerify(user, onVerified) {
 function renderInventory() {
   app.innerHTML = `<main>
     <header>
-      <h1>${esc(state.connection.teamName)}</h1>
+      <h1 class="team-brand"><span class="team">${esc(state.connection.teamName)}</span> <span class="app-name">Inventory</span></h1>
       <div class="row">
         <button id="scan" class="secondary">${ICON_SCAN}<span>Scan</span></button>
         <div class="menuwrap">
           <button id="main-menu-toggle" class="icon" aria-label="Menu" title="Menu" aria-haspopup="true" aria-expanded="false" aria-controls="main-menu">${ICON_MENU}</button>
           <div id="main-menu" class="menu right" hidden>
+            <h3>Lists</h3>
             <button id="orders" class="menu-item">Orders</button>
             <button id="locations" class="menu-item">Locations</button>
             <button id="log" class="menu-item">Change log</button>
             <button id="trash" class="menu-item">Trash</button>
+            <h3>Backup</h3>
             <button id="export-backup" class="menu-item">Export backup</button>
             <button id="restore-backup" class="menu-item">Restore backup</button>
-            <hr />
+            <h3>Team and help</h3>
             <button id="invite" class="menu-item">Team</button>
             <button id="bug" class="menu-item">Report bug</button>
             <button id="feature" class="menu-item">Request feature</button>
             <a class="menu-item" href="${HELP_URL}" target="_blank" rel="noopener">Help</a>
+            <hr />
             <button id="theme" class="menu-item" role="switch" aria-checked="${document.documentElement.dataset.theme === 'light'}">Pain and suffering mode<span class="switch" aria-hidden="true"></span></button>
             <button id="signout" class="menu-item">Sign out</button>
             <p class="menu-version">Version ${esc(__APP_VERSION__)}</p>
@@ -1496,15 +1499,16 @@ const cardMeta = (p, withInventory) => [p.location, withInventory && inventoryNo
 const partLink = (p) => p.link ? `<a class="part-link small" href="${esc(p.link)}" target="_blank" rel="noopener" aria-label="Link: ${esc(p.name)}">Link ↗</a>` : '';
 const notesLine = (notes) => notes ?`<div class="notes muted small">${esc(notes.split('\n')[0])}</div>` : '';
 
-// Free count plus a link to every project using this inventory part, one per line.
+// Free count plus a chip for every project using this inventory part, opening that project.
 function usedIn(part) {
   const uses = usesOfPart(part.id).filter(holdsPart);
   if (!uses.length) return '';
   const free = part.quantity - part.inUse;
-  const links = uses.map((u) =>
-    `<span class="small muted"><button class="link inline" data-project="${esc(u.projectId)}">${esc(project(u.projectId)?.name)}</button> (${u.quantity})</span>`).join('');
-  return `<div class="in-use"><span class="${free < 0 ? 'over' : ''}">${free < 0 ? `${-free} short` : `${free} free`}</span>
-    <span class="small muted">Used in</span>${links}</div>`;
+  const chips = uses.map((u) => {
+    const name = esc(project(u.projectId)?.name);
+    return `<button class="use" data-project="${esc(u.projectId)}" data-quantity="${u.quantity}" aria-label="Used in ${name}: ${u.quantity}">${name}</button>`;
+  }).join('');
+  return `<div class="in-use"><span class="${free < 0 ? 'over' : ''}">${free < 0 ? `${-free} short` : `${free} free`}</span>${chips}</div>`;
 }
 
 // ---------- links and labels ----------
@@ -1844,7 +1848,7 @@ function openLocationsDialog() {
         <span class="row">
           <button type="button" class="secondary" data-rename="${esc(l.id)}">Rename</button>
           <button type="button" class="secondary" data-label="${esc(l.name)}">Label</button>
-          <button type="button" class="danger" data-id="${esc(l.id)}" ${count ? 'disabled' : ''}>Delete</button>
+          <button type="button" class="danger" data-id="${esc(l.id)}" ${count ? `aria-disabled="true" data-count="${count}"` : ''}>Delete</button>
         </span>
       </li>`;
     }).join('') || '<li class="muted">No locations yet.</li>';
@@ -1863,7 +1867,9 @@ function openLocationsDialog() {
     add();
   };
   list.onclick = (e) => {
-    if (e.target.dataset.id) fb.deleteLocation(e.target.dataset.id).catch(showError);
+    const { id, count } = e.target.dataset;
+    if (id && count) return showMessage(`${state.locations.find((l) => l.id === id).name} still has parts`, `Move its ${count === '1' ? 'part' : `${count} parts`} to another location first.`);
+    if (id) fb.deleteLocation(id).catch(showError);
     if (e.target.dataset.label) printAndMark([locationLabel(e.target.dataset.label)]);
     if (e.target.dataset.rename) renameLocation(state.locations.find((l) => l.id === e.target.dataset.rename)).catch(showError);
   };
@@ -1936,7 +1942,7 @@ function openOrdersDialog() {
       return `<li>
         <span class="order-text" data-edit="${esc(o.id)}"><strong>${esc(o.name)}</strong> ×${o.quantity} <span class="muted small order-details">${details.join(' · ')}</span>${o.notes ? `<span class="small order-notes">${esc(o.notes)}</span>` : ''}</span>
         <span class="row">
-          <button type="button" data-arrived="${esc(o.id)}">Arrived</button>
+          <button type="button" class="secondary accent" data-arrived="${esc(o.id)}">Arrived</button>
           <button type="button" class="danger" data-remove="${esc(o.id)}">Remove</button>
         </span>
       </li>`;
@@ -2239,7 +2245,7 @@ function openPartDialog(part, carry = null, note = '') {
       ${part?.updatedBy ? `<p class="muted small">Last changed by ${esc(nameByEmail(part.updatedBy))}</p>` : ''}
       <div class="row">
         <button value="save">Save</button>
-        ${part ? '' : '<button value="next">Save and add another</button>'}
+        ${part ? '' : '<button value="next" class="secondary">Save and add another</button>'}
         <button value="cancel" formnovalidate class="secondary">Cancel</button>
         ${part ? '<button type="button" id="label" class="secondary">Print label</button>' : ''}
         ${part ? '<button value="delete" formnovalidate class="danger">Delete</button>' : ''}
@@ -2576,7 +2582,7 @@ async function openTrashDialog() {
       return `<li>
         <span><strong>${esc(e.name)}</strong> <span class="muted small">${esc(details)}</span></span>
         <span class="row">
-          <button type="button" data-restore="${i}">Restore</button>
+          <button type="button" class="secondary accent" data-restore="${i}">Restore</button>
           ${owner ? `<button type="button" class="danger" data-forever="${i}">Delete forever</button>` : ''}
         </span>
       </li>`;

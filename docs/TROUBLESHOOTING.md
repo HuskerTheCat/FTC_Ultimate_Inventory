@@ -55,7 +55,7 @@ Your Firebase project isn't using the app's rules (for example, test mode), so a
 
 ### Demo only
 
-**Demo only. Click to set up an account** means you're in the demo: sample parts, nothing saved. Tap it to join or set up your team.
+**Demo only. Set up your team →** means you're in the demo: sample parts, nothing saved. Tap it to join or set up your team.
 
 ---
 

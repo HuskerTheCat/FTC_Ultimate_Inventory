@@ -82,6 +82,8 @@ a { color: var(--accent); }
 .center > .card { box-shadow: none; }
 /* The sign-in card holds two forms: sign in, and join with a code. Stacked on phones, side by side below. */
 .split > form { display: flex; flex-direction: column; gap: 12px; }
+/* Join team and Scan QR share the width, like Next beside them. */
+.split > form .row { display: grid; grid-template-columns: 1fr 1fr; }
 .split > form + form { border-top: 1px solid var(--border); padding-top: 20px; margin-top: 8px; }
 /* The first screens sit on the topographic map of the link preview: dark blue fading to a lighter blue in one corner, thin contour lines over it. */
 body:has(> #app > .center), body.guide { position: relative; --topo-from: #0e1221; --topo-to: #3460d6; --topo-line: #5b9bff; --topo-line-opacity: 0.3; }
@@ -214,11 +216,32 @@ button.secondary:hover { background: var(--raised-hover); }
 button.danger { background: none; color: var(--danger); border-color: rgb(255 107 125 / 0.5); margin-left: auto; }
 button.danger:hover { background: rgb(255 107 125 / 0.1); }
 button.link { min-height: 0; background: none; border: none; color: var(--accent); padding: 4px; align-self: center; font-weight: 500; }
-button:disabled { opacity: 0.4; cursor: default; }
+/* A dialog has one gradient button; actions repeated on every row of a list are secondary, with blue text. */
+button.secondary.accent { color: var(--accent); }
+button:disabled, button[aria-disabled="true"] { opacity: 0.4; cursor: default; }
 
 /* Inventory: header, project picker, search and filters */
 header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
 header h1 { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The team's name with the app's, as in the other FTC Ultimate apps: the cube, the team in the title font, "Inventory" lighter and blue.
+   Phones put "Inventory" under the team's name, leaving it room beside Scan and the menu. */
+header h1.team-brand { display: flex; align-items: center; gap: 12px; font: 800 1.4rem/1.2 Orbitron, sans-serif; letter-spacing: 0; }
+.team-brand::before { content: ''; flex: none; width: 38px; height: 38px; background: url(../public/icon.svg) center / contain no-repeat; }
+.team-brand .team { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.team-brand .app-name { flex: none; font-weight: 500; color: var(--accent); }
+@media (max-width: 700px) {
+  header h1.team-brand { display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: center; gap: 2px 10px; font-size: 1.1rem; line-height: 1.15; }
+  .team-brand::before { grid-row: span 2; width: 36px; height: 36px; }
+  .team-brand .app-name { font-size: 0.85rem; }
+}
+/* The inventory screen has the first screens' contour lines behind its header, fading out above the parts. */
+body:has(> #app > main:not(.center)) { position: relative; }
+body:has(> #app > main:not(.center))::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 320px; z-index: -1; pointer-events: none; background: var(--accent); opacity: 0.2;
+  -webkit-mask: url(./topo.svg) center top / max(100vw, 1280px) auto, linear-gradient(#000 30%, transparent); -webkit-mask-composite: source-in;
+  mask: url(./topo.svg) center top / max(100vw, 1280px) auto, linear-gradient(#000 30%, transparent); mask-composite: intersect;
+}
+:root[data-theme="light"] body:has(> #app > main:not(.center))::after { opacity: 0.15; }
 header .row { flex-wrap: nowrap; }
 /* Buttons with an icon and a label: Scan, Filters and the part form's barcode Scan. */
 :is(#scan, #filters-toggle, #scan-barcode) { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border-color: var(--border); }
@@ -538,8 +561,8 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   td.card-meta span { display: inline-block; }
   /* Add to always sits under the stepper, beside location and part #. The free count and the projects using the part get the full width below. */
   td[data-label="In use"] { display: contents; }
-  td[data-label="In use"] .in-use { grid-column: 2 / -1; grid-row: 3; flex-flow: row wrap; align-items: baseline; gap: 0 8px; font-size: 0.85rem; }
-  td[data-label="In use"] .add-to { grid-column: 3; grid-row: 2; justify-self: end; margin: 4px 0 0 8px; }
+  td[data-label="In use"] .in-use { grid-column: 2 / -1; grid-row: 3; margin-top: 6px; font-size: 0.85rem; }
+  td[data-label="In use"] .add-to { grid-column: 3; grid-row: 2; justify-self: end; margin: 2px 0 0 8px; }
   tr:has(td[data-label="In use"]) td.card-meta { grid-column: 2; }
   tbody tr.waiting { border: 1px dashed var(--pending); box-shadow: none; }
   td.qty .skeleton { height: 40px; width: 120px; border-radius: 999px; }
@@ -562,7 +585,8 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
 .members li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
 .members li:last-child { border-bottom: none; }
 .members button { min-height: 34px; padding: 4px 12px; font-size: 0.9rem; }
-.members button.danger { margin-left: 0; }
+/* Remove and Delete repeat on every row, so they are red text without the outline. */
+.members button.danger { margin-left: 0; border-color: transparent; }
 /* Buttons under each item instead of beside it, for lists with longer details. */
 .members.stacked li { flex-direction: column; align-items: stretch; }
 /* Location rows: the buttons stay together, moving under the name when they don't fit beside it. */
@@ -596,9 +620,13 @@ label.check input { width: 18px; min-height: 18px; margin: 0; accent-color: var(
 .log li { border-bottom: 1px solid var(--border); padding-bottom: 10px; overflow-wrap: anywhere; }
 
 .over { color: var(--danger); font-weight: 600; }
-.in-use { display: flex; flex-direction: column; }
+/* In use: the free count, then one chip per project with how many it uses. */
+.in-use { display: flex; flex-flow: row wrap; align-items: center; gap: 4px 6px; }
+button.use { min-height: 0; padding: 1px 8px; border: none; border-radius: 6px; background: var(--raised); color: var(--text); font-size: 0.8rem; font-weight: 500; }
+button.use::after { content: attr(data-quantity); margin-left: 5px; color: var(--muted); font-weight: 400; }
+button.use:hover { background: var(--raised-hover); }
 button.link.inline { padding: 2px 0; align-self: auto; text-decoration: underline; font-size: inherit; }
-button.add-to { display: inline-flex; align-items: center; min-height: 30px; margin-top: 4px; padding: 2px 10px 2px 6px; gap: 4px; align-self: flex-start; background: none; border: 1px solid var(--border); border-radius: 999px; color: var(--accent); font-size: 0.85rem; font-weight: 500; }
+button.add-to { display: inline-flex; align-items: center; min-height: 26px; margin-top: 2px; padding: 2px 4px; gap: 4px; align-self: flex-start; background: none; border: none; border-radius: 8px; color: var(--accent); font-size: 0.85rem; font-weight: 500; }
 button.add-to:hover { background: var(--raised); }
 button.add-to svg { width: 16px; height: 16px; }
 .picker .target { display: flex; align-items: center; gap: 8px; }

@@ -63,7 +63,7 @@ A new team's inventory starts with **Add your first parts** and buttons to add a
 7. **⋯ menu.** Select parts, Print QR labels, Print list, Export CSV and Import spreadsheet.
 8. **Add part.**
 9. **− and +** change the quantity by one.
-10. **Add to** puts the part in a project or packing list. Above it, **In use** shows how many are free and which projects use the part.
+10. **Add to** puts the part in a project or packing list. **In use** shows how many are free, with a chip for each project using the part. Tap a chip to open that project.
 11. **Badges** (square, with an outline) flag parts that are **Low stock**, **on order**, used or broken. The round chips next to them are the part's tags; click one to show only parts with that tag.
 
 Click a part to open and edit it. On a computer, click a column heading to sort, and again to reverse.
