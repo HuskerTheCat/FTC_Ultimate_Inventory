@@ -2,7 +2,7 @@ import QRCode from 'qrcode';
 import * as firebase from './firebase.js';
 import { parseFirebaseConfig, encodeJoinCode, decodeJoinCode, findTeam, newSecret } from './joincode.js';
 import { scanCode, BARCODES } from './scanner.js';
-import { codeKey, findProduct, searchCatalog, catalogSuppliers, catalogLoaded, catalogImage } from './catalog.js';
+import { codeKey, findProduct, searchCatalog, catalogSuppliers, catalogSize, catalogLoaded, catalogImage } from './catalog.js';
 import { printLabels, printSheet } from './labels.js';
 import { toCsv, parseCsv } from './csv.js';
 import { BACKUP_COLLECTIONS, makeBackup, readBackup } from './backup.js';
@@ -683,10 +683,7 @@ function renderInventory() {
     title: 'Report a bug', label: 'What went wrong?', placeholder: 'What you did, what you expected, and what happened instead',
     goal: 'fix your issue', sent: 'Report submitted', send: sendBugReport,
   });
-  app.querySelector('#feature').onclick = () => openSendDialog({
-    title: 'Request a feature', label: 'What would you like the app to do?', placeholder: 'What you want to do and how it would help your team',
-    goal: 'implement your feature', sent: 'Request submitted', send: sendFeatureRequest,
-  });
+  app.querySelector('#feature').onclick = openFeatureRequest;
   app.querySelector('#theme').onclick = (e) => {
     const theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
     localStorage.setItem(THEME_KEY, theme);
@@ -1675,6 +1672,17 @@ function searchCatalogInto(form, field) {
   let found = [];
   let searches = 0;
   catalogSuppliers().then((names) => names.forEach((name) => supplier.add(new Option(name)))).catch(() => {}); // the search reports a failed load
+  const count = field.querySelector('.catalog-count');
+  catalogSize().then((size) => {
+    count.innerHTML = `${size.toLocaleString()} parts, with more always being added.${DEMO ? '' : ' <a href="#">Request a part here</a>'}`;
+    count.hidden = false;
+  }).catch(() => {});
+  count.onclick = (e) => {
+    if (!e.target.closest('a')) return;
+    e.preventDefault();
+    form.closest('dialog').close();
+    openFeatureRequest();
+  };
   const pick = (product) => {
     for (const key of ['name', 'partNumber', 'supplier', 'link']) form[key].value = product[key] ?? '';
     if (product.category) setCategory(form.category, canonicalCategory(product.category));
@@ -2231,6 +2239,7 @@ function openPartDialog(part, carry = null, note = '') {
           <select aria-label="Supplier"><option value="">All suppliers</option></select>
         </div>
         <ul class="picker" hidden></ul>
+        <p class="catalog-count muted small" hidden></p>
       </div>`}
       ${input('name', 'Item', 'required')}
       ${input('partNumber', 'Part number')}
@@ -2778,6 +2787,11 @@ function openLogDialog() {
 const FOLLOW_GITHUB = `You can follow the app's development on <a href="${SOURCE_URL}" target="_blank" rel="noopener">GitHub</a>.`;
 
 // Bug reports and feature requests go to the app's developer, not the team (see hub.js).
+const openFeatureRequest = () => openSendDialog({
+  title: 'Request a feature', label: 'What would you like the app to do?', placeholder: 'What you want to do and how it would help your team',
+  goal: 'implement your feature', sent: 'Request submitted', send: sendFeatureRequest,
+});
+
 function openSendDialog({ title, label, placeholder, goal, sent, send }) {
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `

@@ -7,7 +7,8 @@ const OUT = new URL('../../src/catalog.json', import.meta.url);
 const USER_AGENT = 'FTC-Ultimate-Inventory catalog builder (+https://github.com/HuskerTheCat/FTC_Ultimate_Inventory)';
 const PARALLEL = 4;
 // A supplier with fewer parts than this means its store changed and this script needs updating.
-const MIN_PARTS = 50;
+// Limelight and Axon only sell about ten parts each.
+const MIN_PARTS = 5;
 
 // Each supplier's parts as { partNumber, upc, name, category, url, image }, where image is the link to the supplier's photo. Earlier suppliers win when two list the same part number,
 // so goBILDA's own listing beats ServoCity's copy of it.
@@ -16,8 +17,12 @@ const SUPPLIERS = {
   'REV Robotics': () => bigCommerce('https://www.revrobotics.com', { variants: true }),
   AndyMark: () => shopify('https://andymark.com'),
   ServoCity: () => bigCommerce('https://www.servocity.com'),
-  TETRIX: () => shopify('https://www.pitsco.com', (product) => product.vendor.startsWith('TETRIX')),
+  TETRIX: () => shopify('https://www.pitsco.com', { include: (product) => product.vendor.startsWith('TETRIX') }),
   'Studica Robotics': () => nopCommerce('https://www.studica.com', 'studica-robotics-2'),
+  'SWYFT Robotics': () => nextShop('https://swyftrobotics.com'),
+  // Axon's own site is built on Shopify but doesn't serve the product list; its Shopify address does.
+  'Axon Robotics': () => shopify('https://axon-robotics.com', { feed: 'https://axon-robotics.myshopify.com' }),
+  Limelight: () => shopify('https://limelightvision.io'),
 };
 
 // First match wins, tried on the part's name and then on the supplier's own category.
@@ -145,13 +150,14 @@ async function readBigCommercePage(site, url, html, variants) {
   }));
 }
 
-// ---------- Shopify stores (AndyMark, Pitsco) ----------
+// ---------- Shopify stores (AndyMark, Pitsco, Axon, Limelight) ----------
 
 // The public product list has every part number, but no barcodes (none of these stores fill them in).
-async function shopify(site, include = () => true) {
+// `feed` is where the list is read when the store's own site doesn't serve it; parts still link to the site.
+async function shopify(site, { include = () => true, feed = site } = {}) {
   const products = [];
   for (let page = 1; ; page++) {
-    const { products: found } = JSON.parse(await fetchText(`${site}/products.json?limit=250&page=${page}`));
+    const { products: found } = JSON.parse(await fetchText(`${feed}/products.json?limit=250&page=${page}`));
     if (!found.length) break;
     products.push(...found.filter(include));
   }
@@ -164,6 +170,47 @@ async function shopify(site, include = () => true) {
     const image = photo ? `${photo}${photo.includes('?') ? '&' : '?'}width=320` : '';
     return { partNumber: variant.sku.trim(), upc: '', name, category: categoryOf(name, `${product.product_type} ${product.tags.join(' ')}`), url, image };
   }));
+}
+
+// ---------- Next.js stores (SWYFT) ----------
+
+// The sitemap lists every page. A product's page carries the product, with each variant's SKU, in the page data
+// Next.js sends along with the page. Other products can show up there too, so it's picked by the page's address.
+async function nextShop(site) {
+  const urls = [...(await fetchText(`${site}/sitemap.xml`)).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  console.log(`${site}: ${urls.length} pages`);
+  const pages = await inParallel(urls, async (url) => {
+    const html = await fetchText(url);
+    // The page data is pushed in as JavaScript strings.
+    const data = [...(html ?? '').matchAll(/self\.__next_f\.push\(\[1,("(?:[^"\\]|\\.)*")\]\)/g)].map((m) => JSON.parse(m[1])).join('');
+    const start = data.indexOf(`{"id":"${url.split('/').pop()}","slug"`);
+    const product = start >= 0 && jsonAt(data, start);
+    if (!Array.isArray(product?.variants)) return null;
+    // Missing values come as "$undefined".
+    const given = (value) => value && !value.startsWith('$');
+    return product.variants.filter((v) => given(v.sku)).map((variant) => {
+      const name = cleanName(product.variants.length === 1 ? product.name : `${product.name} (${variant.label})`);
+      const photo = [variant.image, product.image].find(given);
+      const image = photo ? `${photo}${photo.includes('?') ? '&' : '?'}width=320` : '';
+      return { partNumber: variant.sku.trim(), upc: '', name, category: categoryOf(name, product.category), url, image };
+    });
+  });
+  return pages.flat().filter(Boolean);
+}
+
+// The JSON object or array starting at `start` in text that goes on past it.
+function jsonAt(text, start) {
+  let depth = 0;
+  for (let i = start, inString = false; i < text.length; i++) {
+    const c = text[i];
+    if (inString) {
+      if (c === '\\') i++;
+      else if (c === '"') inString = false;
+    } else if (c === '"') inString = true;
+    else if (c === '{' || c === '[') depth++;
+    else if ((c === '}' || c === ']') && --depth === 0) return JSON.parse(text.slice(start, i + 1));
+  }
+  throw new Error(`Unfinished JSON at ${start}`);
 }
 
 // ---------- nopCommerce stores (Studica) ----------

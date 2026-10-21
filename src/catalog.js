@@ -73,6 +73,12 @@ export async function catalogSuppliers() {
   return [...new Set(all.map(({ product }) => product.supplier))];
 }
 
+// How many parts the catalog has.
+export async function catalogSize() {
+  const { all } = await loaded();
+  return all.length;
+}
+
 // Catalog parts with every word of the search in their name, part number or supplier, so "u-beam 8mm" finds
 // "1101 Series U-Beam (1 Hole, 8mm Length)". Only one supplier's parts when a supplier is given.
 // Parts whose words start with the searched words come first, then shorter names.

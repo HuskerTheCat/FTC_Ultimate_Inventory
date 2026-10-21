@@ -20,7 +20,7 @@ On a new device later, choose **Sign in to your team**, pick your program (**FTC
 
 **3. Add a part**
 
-1. Tap **Scan** at the top and scan the package's barcode. goBILDA, REV, AndyMark, ServoCity, TETRIX and Studica parts fill in by themselves. If the team already has it, it opens instead: tap **+** for each one, then **Done**.
+1. Tap **Scan** at the top and scan the package's barcode. goBILDA, REV, AndyMark, ServoCity, TETRIX, Studica, SWYFT, Axon and Limelight parts fill in by themselves. If the team already has it, it opens instead: tap **+** for each one, then **Done**.
 2. No barcode? Tap **+ Add part** and type the part number or the item name.
 3. Check the quantity, pick a **Location**, and tap **Save**. Locations are set up in **☰ → Locations**.
 
