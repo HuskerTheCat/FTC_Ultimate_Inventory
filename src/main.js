@@ -27,6 +27,12 @@ const APP_SWITCHER = `<div class="menuwrap">
     <a class="menu-item" href="https://huskerthecat.github.io/FTC_Ultimate_Design/" data-android="io.github.huskerthecat.ftcdesign"><span class="app-icon design"></span>Design</a>
   </div>
 </div>`;
+// The cube beside the name in Orbitron, "Inventory" under it in blue: the home page, the other first screens and the inventory header.
+// Screens with a title of their own pass tag 'div', so each screen has one h1.
+const lockup = (name, tag = 'h1') => `<div class="lockup">
+  ${APP_SWITCHER}
+  <${tag} class="brand"><span class="name">${name}</span><span class="app-name">Inventory</span></${tag}>
+</div>`;
 // The AGPL license asks anyone hosting a version of the app to offer its source; forks should point this at their own code.
 const SOURCE_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory';
 const STORAGE_KEY = 'ftc-inventory-connection';
@@ -297,10 +303,7 @@ const joinCodeFrom = (text) => new URLSearchParams(text.split('#')[1]).get('join
 function renderWelcome() {
   app.innerHTML = `
     <main class="center wide">
-      <div class="lockup">
-        ${APP_SWITCHER}
-        <h1 class="brand"><span>FTC Ultimate <span class="app-name">Inventory</span></span></h1>
-      </div>
+      ${lockup('FTC Ultimate')}
       <p id="error" class="error" role="alert" hidden></p>
       <div class="card split">
         <form id="signin">
@@ -363,6 +366,7 @@ function renderWelcome() {
 function renderSetup() {
   app.innerHTML = `
     <main class="center wide">
+      ${lockup('FTC Ultimate', 'div')}
       <h1>Set up a new team</h1>
       <p id="error" class="error" role="alert" hidden></p>
       <div class="card">
@@ -423,7 +427,7 @@ function renderSignIn() {
   const canJoin = Boolean(state.connection.secret);
   app.innerHTML = `
     <main class="center">
-      <h1>${esc(state.connection.teamName)}</h1>
+      ${lockup(esc(state.connection.teamName))}
       <p class="muted">${!canJoin ? 'Sign in with your email and password.' : owner ? 'Create the admin account for your team.' : 'Sign in, or create an account if this is your first time.'}</p>
       <p id="error" class="error" role="alert" hidden></p>
       <form id="auth" class="card">
@@ -493,6 +497,7 @@ const VERIFY_CHECK_MS = 3000;
 function renderVerify(user, onVerified) {
   app.innerHTML = `
     <main id="verify" class="center">
+      ${lockup('FTC Ultimate', 'div')}
       <h1>Check your email</h1>
       <p>We sent a link to <strong class="email">${esc(user.email)}</strong>. Open it to confirm it’s your email. This screen moves on by itself once you have.</p>
       <p class="muted">Not there? Check your spam or junk folder.</p>
@@ -533,10 +538,7 @@ function renderVerify(user, onVerified) {
 function renderInventory() {
   app.innerHTML = `<main>
     <header>
-      <div class="lockup">
-        ${APP_SWITCHER}
-        <h1 class="team-brand"><span class="team">${esc(state.connection.teamName)}</span> <span class="app-name">Inventory</span></h1>
-      </div>
+      ${lockup(esc(state.connection.teamName))}
       <div class="row">
         <button id="scan" class="secondary">${ICON_SCAN}<span>Scan</span></button>
         <div class="menuwrap">
