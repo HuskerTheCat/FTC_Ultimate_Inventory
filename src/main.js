@@ -19,7 +19,7 @@ const GUIDES_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/guides
 const GUIDES_LINK = `<a class="guides-link" href="${GUIDES_URL}" target="_blank" rel="noopener">Guides</a>`;
 // The cube on the home page and the inventory screen: a menu of the FTC Ultimate apps (see openSuiteApp).
 const APP_SWITCHER = `<div class="menuwrap">
-  <button id="apps-toggle" aria-label="FTC Ultimate apps" title="FTC Ultimate apps" aria-haspopup="true" aria-expanded="false" aria-controls="apps-menu"><span class="app-icon inventory"></span></button>
+  <button id="apps-toggle" aria-label="FTC Ultimate apps" title="FTC Ultimate apps" aria-haspopup="true" aria-expanded="false" aria-controls="apps-menu"><span class="app-icon inventory"></span><svg class="chevron" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   <div id="apps-menu" class="menu" hidden>
     <h3>FTC Ultimate</h3>
     <button class="menu-item" aria-current="true"><span class="app-icon inventory"></span>Inventory</button>
