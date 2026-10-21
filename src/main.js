@@ -23,7 +23,7 @@ const APP_SWITCHER = `<div class="menuwrap">
   <div id="apps-menu" class="menu" hidden>
     <h3>FTC Ultimate</h3>
     <button class="menu-item" aria-current="true"><span class="app-icon inventory"></span>Inventory</button>
-    <a class="menu-item" href="https://huskerthecat.github.io/FTC_Ultimate_Scout/" data-android="io.github.huskerthecat.ftcscout"><span class="app-icon scout"></span>Scout</a>
+    <a class="menu-item" href="https://huskerthecat.github.io/FTC_Ultimate_Competition/" data-android="io.github.huskerthecat.ftccompetition"><span class="app-icon competition"></span>Competition</a>
     <a class="menu-item" href="https://huskerthecat.github.io/FTC_Ultimate_Design/" data-android="io.github.huskerthecat.ftcdesign"><span class="app-icon design"></span>Design</a>
   </div>
 </div>`;
@@ -806,7 +806,7 @@ document.addEventListener('keydown', (e) => {
   wrap?.querySelector('[aria-haspopup]').focus();
 });
 
-// Scout and Design in the app switcher: their links go to their web pages, which the Windows app swaps for the
+// Competition and Design in the app switcher: their links go to their web pages, which the Windows app swaps for the
 // installed app (electron/main.cjs). The Android app opens the installed app by its package id instead, and
 // the web page in the browser when it isn't installed.
 async function openSuiteApp(e) {

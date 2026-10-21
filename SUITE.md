@@ -1,6 +1,6 @@
 # FTC Ultimate suite notes
 
-The FTC Ultimate apps, Inventory, [Scout](https://github.com/HuskerTheCat/FTC_Ultimate_Scout) and [Design](https://github.com/HuskerTheCat/FTC_Ultimate_Design), share one Firebase project per team. This file lists what they share and logs changes that affect the other apps. Read the other apps' `SUITE.md` before changing anything below, and add a dated line to every app's file when you do.
+The FTC Ultimate apps, Inventory, [Competition](https://github.com/HuskerTheCat/FTC_Ultimate_Competition) and [Design](https://github.com/HuskerTheCat/FTC_Ultimate_Design), share one Firebase project per team. This file lists what they share and logs changes that affect the other apps. Read the other apps' `SUITE.md` before changing anything below, and add a dated line to every app's file when you do.
 
 ## Shared
 
@@ -8,10 +8,10 @@ The FTC Ultimate apps, Inventory, [Scout](https://github.com/HuskerTheCat/FTC_Ul
 - **Accounts**: the project's Firebase Auth, email and password.
 - **Team docs**: `team/info`, `team/owner`, `join/info`, `members/{uid}`. Same shapes and join flow in every app.
 - **Join codes**: `<projectId>-<secret>`, link `#join=<code>`. Sign in by team number through the hub's `teams/{key}`.
-- **Rules**: one `firestore.rules`, identical in every app's repo, since publishing replaces the whole file. Each app checks its own version number: Inventory `rulesVersion()`, Scout `scoutRulesVersion()`, Design `designRulesVersion()`.
+- **Rules**: one `firestore.rules`, identical in every app's repo, since publishing replaces the whole file. Each app checks its own version number: Inventory `rulesVersion()`, Competition `scoutRulesVersion()`, Design `designRulesVersion()`.
 - **Hub**: `ultimate-inventory-hub` ([hub.rules](hub.rules)). Team-level data only, never anything about a person.
-- **Collection names**: Inventory's are unprefixed; Scout's start with `scout`, Design's with `design`.
-- **Brand**: the split cube logo (Inventory blue, Scout orange, Design green), Orbitron for names, the topo background.
+- **Collection names**: Inventory's are unprefixed; Competition's start with `scout` (kept from its old name, Scout), Design's with `design`.
+- **Brand**: the split cube logo (Inventory blue, Competition orange, Design green), Orbitron for names, the topo background.
 
 ## Changes
 
@@ -23,3 +23,4 @@ The FTC Ultimate apps, Inventory, [Scout](https://github.com/HuskerTheCat/FTC_Ul
 - 2026-10-21: Hub sign-up errors were hidden: `registerTeam` ran before the inventory screen was drawn, so an error from the hub landed on the loading screen (which has no error banner) and was lost. It now starts right after `renderInventory()` in `enterTeam` (`src/main.js`). Scout and Design copied the same startup code and should make the same move.
 - 2026-10-21: App switcher: the cube before the team's name is now a button (`#apps-toggle`) opening a menu "FTC Ultimate" with Inventory, Scout and Design, each with its cube (`src/scout.svg`, `src/design.svg`: `public/icon.svg` with the other app's faces). The current app is highlighted and just closes the menu. Each other app is a link to its web page, `https://huskerthecat.github.io/FTC_Ultimate_<App>/`. Web: the link opens that page. Windows: each app registers the link scheme `ftc-ultimate-<app>` (`setAsDefaultProtocolClient` when packaged) and keeps one window (`requestSingleInstanceLock`); `electron/main.cjs` opens `ftc-ultimate-<app>://open` instead of the web page when `getApplicationNameForProtocol` finds it installed. Android: package ids `io.github.huskerthecat.ftc<app>` (`ftcinventory`, `ftcscout`, `ftcdesign`); a tap calls `@capacitor/app-launcher` `openUrl` with the package id and opens the web page in the browser when it isn't installed (`openSuiteApp` in `src/main.js`); `build:android` adds `<queries>` for the other two package ids. Scout and Design should copy this with the same scheme and package-id pattern so all three find each other.
 - 2026-10-21: App switcher on the home page too: the cube above "FTC Ultimate" opens the same menu (`.lockup` with `APP_SWITCHER` in `src/main.js`). Scout and Design now have it on their home pages (web links only until they have Windows and Android apps; see the note above for those).
+- 2026-10-21: Scout is renamed **Competition** (repo `FTC_Ultimate_Competition`, site `https://huskerthecat.github.io/FTC_Ultimate_Competition/`). Inventory's app switcher now says Competition, links to the new site, and uses scheme `ftc-ultimate-competition` and Android package id `io.github.huskerthecat.ftccompetition` (`src/competition.svg` replaces `src/scout.svg`). Competition has no Windows or Android build yet, so nothing breaks. **Competition:** use those two ids when you add builds, and say here if you pick others. **Design:** your home-page switcher (`src/main.js`, line ~15) still links to `FTC_Ultimate_Scout/` and says Scout; change it to `https://huskerthecat.github.io/FTC_Ultimate_Competition/` and "Competition" (and the `.app-icon.scout` class and `src/scout.svg`). Stored names are unchanged: Firestore collections and rules functions keep the `scout` prefix (`scoutRulesVersion`, `scoutRoutes`).

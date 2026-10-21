@@ -9,7 +9,7 @@
     "emulators": "npx firebase-tools emulators:start --project demo-inventory",
     "desktop": "vite build --mode app && electron .",
     "build:windows": "vite build --mode app && electron-builder --win nsis",
-    "build:android": "vite build --mode app && npx cap add android && cp -r android-res/. android/app/src/main/res/ && sed -i 's#</manifest>#<uses-permission android:name=\\\"android.permission.CAMERA\\\" />\\n<uses-permission android:name=\\\"android.permission.REQUEST_INSTALL_PACKAGES\\\" />\\n<queries><package android:name=\\\"io.github.huskerthecat.ftcscout\\\" /><package android:name=\\\"io.github.huskerthecat.ftcdesign\\\" /></queries>\\n</manifest>#' android/app/src/main/AndroidManifest.xml && npx cap sync android && cd android && ./gradlew assembleDebug"
+    "build:android": "vite build --mode app && npx cap add android && cp -r android-res/. android/app/src/main/res/ && sed -i 's#</manifest>#<uses-permission android:name=\\\"android.permission.CAMERA\\\" />\\n<uses-permission android:name=\\\"android.permission.REQUEST_INSTALL_PACKAGES\\\" />\\n<queries><package android:name=\\\"io.github.huskerthecat.ftccompetition\\\" /><package android:name=\\\"io.github.huskerthecat.ftcdesign\\\" /></queries>\\n</manifest>#' android/app/src/main/AndroidManifest.xml && npx cap sync android && cd android && ./gradlew assembleDebug"
   },
   "author": "HuskerTheCat",
   "license": "AGPL-3.0-only",

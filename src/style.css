@@ -235,12 +235,12 @@ header .lockup { display: flex; align-items: center; gap: 8px; min-width: 0; }
 header h1.team-brand { display: flex; align-items: center; gap: 12px; font: 800 1.4rem/1.2 Orbitron, sans-serif; letter-spacing: 0; }
 .team-brand .team { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .team-brand .app-name { flex: none; font-weight: 500; color: var(--accent); }
-/* The cube opens the app switcher: Inventory, Scout and Design, each with its own cube. */
+/* The cube opens the app switcher: Inventory, Competition and Design, each with its own cube. */
 #apps-toggle { flex: none; min-height: 0; margin-left: -3px; padding: 3px; background: none; border: none; }
 #apps-toggle:hover, #apps-toggle[aria-expanded="true"] { background: var(--raised); }
 .app-icon { display: block; width: 38px; height: 38px; background: center / contain no-repeat; }
 .app-icon.inventory { background-image: url(../public/icon.svg); }
-.app-icon.scout { background-image: url(./scout.svg); }
+.app-icon.competition { background-image: url(./competition.svg); }
 .app-icon.design { background-image: url(./design.svg); }
 #apps-menu .app-icon { flex: none; width: 28px; height: 28px; }
 @media (max-width: 700px) {
