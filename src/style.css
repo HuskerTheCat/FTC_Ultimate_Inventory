@@ -243,6 +243,7 @@ header h1.team-brand { display: flex; align-items: center; gap: 12px; font: 800 
 .app-icon.competition { background-image: url(./competition.svg); }
 .app-icon.design { background-image: url(./design.svg); }
 #apps-menu .app-icon { flex: none; width: 28px; height: 28px; }
+#apps-menu .menu-item, #apps-menu h3 { font-family: Orbitron, sans-serif; }
 @media (max-width: 700px) {
   header h1.team-brand { display: grid; gap: 2px; font-size: 1.1rem; line-height: 1.15; }
   header #apps-toggle .app-icon { width: 36px; height: 36px; }
