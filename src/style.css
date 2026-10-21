@@ -658,7 +658,8 @@ button.find svg { width: 14px; height: 14px; }
 
 /* Storage grids: every spot is drawn as the front of a small drawer, with its pull. Wide grids scroll sideways. */
 dialog:has(.grid-dialog) { width: min(960px, calc(100% - 32px)); }
-.grid-box { position: relative; overflow-x: auto; padding: 2px 2px 6px; }
+/* The padding leaves room for the marked spot's glow, which the scroll box would cut off at its edges. */
+.grid-box { position: relative; overflow-x: auto; margin: -12px; padding: 12px 12px 16px; }
 .grid { display: grid; grid-template-columns: 18px repeat(var(--cols), minmax(32px, 52px)); gap: 4px; }
 .grid > span { align-self: center; text-align: center; font-size: 0.75rem; font-weight: 500; color: var(--muted); }
 .grid > span.on { color: var(--accent); font-weight: 700; }
@@ -666,7 +667,8 @@ button.spot { position: relative; height: 34px; min-height: 0; padding: 0 0 7px;
 button.spot::after { content: ''; position: absolute; left: 32%; right: 32%; bottom: 6px; height: 3px; border-radius: 2px; background: var(--field-border); opacity: 0.55; }
 button.spot.full { background: var(--raised); border-color: var(--field-border); }
 button.spot:hover { border-color: var(--accent); }
-button.spot[aria-pressed="true"] { background: var(--accent-gradient); border-color: transparent; color: var(--accent-text); }
+/* Above its neighbours, so its glow shows on every side. */
+button.spot[aria-pressed="true"] { z-index: 1; background: var(--accent-gradient); border-color: transparent; color: var(--accent-text); }
 button.spot[aria-pressed="true"]::after { background: currentColor; opacity: 0.85; }
 .grid-dialog.finding button.spot[aria-pressed="true"] { animation: found 0.9s ease-out 3; }
 @keyframes found { from { box-shadow: 0 0 0 0 rgb(91 155 255 / 0.8); } to { box-shadow: 0 0 0 12px rgb(91 155 255 / 0); } }
