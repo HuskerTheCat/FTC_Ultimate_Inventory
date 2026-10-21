@@ -8,6 +8,7 @@ import { toCsv, parseCsv } from './csv.js';
 import { BACKUP_COLLECTIONS, makeBackup, readBackup } from './backup.js';
 import { startStatusBanners, checkRules } from './status.js';
 import { RULES, consolePage, AUTH_PAGE, RULES_PAGE, AUTH_OFF_CODES, setupProblems } from './setup.js';
+import { CUBE, morphCube } from './cube.js';
 import { PROGRAMS, recordTeam, recordDeletedTeam, findTeamProject, teamProject, sendBugReport, sendFeatureRequest } from './hub.js';
 
 const WEB_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/';
@@ -19,12 +20,12 @@ const GUIDES_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/guides
 const GUIDES_LINK = `<a class="guides-link" href="${GUIDES_URL}" target="_blank" rel="noopener">Guides</a>`;
 // The cube on the home page and the inventory screen: a menu of the FTC Ultimate apps (see openSuiteApp).
 const APP_SWITCHER = `<div class="menuwrap">
-  <button id="apps-toggle" aria-label="FTC Ultimate apps" title="FTC Ultimate apps" aria-haspopup="true" aria-expanded="false" aria-controls="apps-menu"><span class="app-icon inventory"></span><svg class="chevron" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  <button id="apps-toggle" aria-label="FTC Ultimate apps" title="FTC Ultimate apps" aria-haspopup="true" aria-expanded="false" aria-controls="apps-menu">${CUBE}<svg class="chevron" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   <div id="apps-menu" class="menu" hidden>
     <h3>FTC Ultimate</h3>
     <button class="menu-item" aria-current="true"><span class="app-icon inventory"></span>Inventory</button>
-    <a class="menu-item" href="https://huskerthecat.github.io/FTC_Ultimate_Competition/" data-android="io.github.huskerthecat.ftccompetition"><span class="app-icon competition"></span>Competition</a>
-    <a class="menu-item" href="https://huskerthecat.github.io/FTC_Ultimate_Design/" data-android="io.github.huskerthecat.ftcdesign"><span class="app-icon design"></span>Design</a>
+    <a class="menu-item" href="https://huskerthecat.github.io/FTC_Ultimate_Competition/" data-app="competition" data-android="io.github.huskerthecat.ftccompetition"><span class="app-icon competition"></span>Competition</a>
+    <a class="menu-item" href="https://huskerthecat.github.io/FTC_Ultimate_Design/" data-app="design" data-android="io.github.huskerthecat.ftcdesign"><span class="app-icon design"></span>Design</a>
   </div>
 </div>`;
 // The cube beside the name in Orbitron, "Inventory" under it in blue: the home page, the other first screens and the inventory header.
@@ -789,6 +790,8 @@ function wireMenus() {
 function showMenu(button, open) {
   app.querySelector(`#${button.getAttribute('aria-controls')}`).hidden = !open;
   button.setAttribute('aria-expanded', String(open));
+  // The app switcher's cube turns into the suite cube while its menu is open.
+  if (button.id === 'apps-toggle') morphCube(button.querySelector('.cube'), open ? 'suite' : 'inventory');
 }
 
 // Closes every open menu except the one inside `keep`.
@@ -807,13 +810,22 @@ document.addEventListener('keydown', (e) => {
   wrap?.querySelector('[aria-haspopup]').focus();
 });
 
-// Competition and Design in the app switcher: their links go to their web pages, which the Windows app swaps for the
-// installed app (electron/main.cjs). The Android app opens the installed app by its package id instead, and
-// the web page in the browser when it isn't installed.
+// Competition and Design in the app switcher: the cube turns into the chosen app's cube, then its link goes to its web page,
+// which the Windows app swaps for the installed app (electron/main.cjs). The Android app opens the installed app by its
+// package id instead, and the web page in the browser when it isn't installed.
+// Ctrl, Shift or Cmd and a click opens the link as the browser normally would, without the cube.
 async function openSuiteApp(e) {
   const link = e.target.closest('[data-android]');
-  if (!link || !window.Capacitor?.isNativePlatform()) return;
+  if (!link || e.ctrlKey || e.shiftKey || e.metaKey) return;
   e.preventDefault();
+  const cube = app.querySelector('#apps-toggle .cube');
+  await morphCube(cube, link.dataset.app);
+  // Coming back to this page (the other app opened beside it, or the browser's Back button), the cube is Inventory's again.
+  setTimeout(() => morphCube(cube, 'inventory'), 2000);
+  if (!window.Capacitor?.isNativePlatform()) {
+    location.href = link.href;
+    return;
+  }
   const { AppLauncher } = await import('@capacitor/app-launcher');
   const { completed } = await AppLauncher.openUrl({ url: link.dataset.android });
   if (!completed) location.href = link.href;
