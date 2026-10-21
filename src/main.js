@@ -519,7 +519,18 @@ function renderVerify(user, onVerified) {
 function renderInventory() {
   app.innerHTML = `<main>
     <header>
-      <h1 class="team-brand"><span class="team">${esc(state.connection.teamName)}</span> <span class="app-name">Inventory</span></h1>
+      <div class="lockup">
+        <div class="menuwrap">
+          <button id="apps-toggle" aria-label="FTC Ultimate apps" title="FTC Ultimate apps" aria-haspopup="true" aria-expanded="false" aria-controls="apps-menu"><span class="app-icon inventory"></span></button>
+          <div id="apps-menu" class="menu" hidden>
+            <h3>FTC Ultimate</h3>
+            <button class="menu-item" aria-current="true"><span class="app-icon inventory"></span>Inventory</button>
+            <a class="menu-item" href="https://huskerthecat.github.io/FTC_Ultimate_Scout/" data-android="io.github.huskerthecat.ftcscout"><span class="app-icon scout"></span>Scout</a>
+            <a class="menu-item" href="https://huskerthecat.github.io/FTC_Ultimate_Design/" data-android="io.github.huskerthecat.ftcdesign"><span class="app-icon design"></span>Design</a>
+          </div>
+        </div>
+        <h1 class="team-brand"><span class="team">${esc(state.connection.teamName)}</span> <span class="app-name">Inventory</span></h1>
+      </div>
       <div class="row">
         <button id="scan" class="secondary">${ICON_SCAN}<span>Scan</span></button>
         <div class="menuwrap">
@@ -631,6 +642,7 @@ function renderInventory() {
     const id = e.target.closest('[data-project]')?.dataset.project;
     if (id) switchProject(id);
   };
+  app.querySelector('#apps-menu').addEventListener('click', openSuiteApp);
   app.querySelector('#filters-toggle').onclick = toggleFilters;
   app.querySelector('#locations').onclick = openLocationsDialog;
   app.querySelector('#orders').onclick = openOrdersDialog;
@@ -783,6 +795,18 @@ document.addEventListener('keydown', (e) => {
   closeMenus();
   wrap?.querySelector('[aria-haspopup]').focus();
 });
+
+// Scout and Design in the app switcher: their links go to their web pages, which the Windows app swaps for the
+// installed app (electron/main.cjs). The Android app opens the installed app by its package id instead, and
+// the web page in the browser when it isn't installed.
+async function openSuiteApp(e) {
+  const link = e.target.closest('[data-android]');
+  if (!link || !window.Capacitor?.isNativePlatform()) return;
+  e.preventDefault();
+  const { AppLauncher } = await import('@capacitor/app-launcher');
+  const { completed } = await AppLauncher.openUrl({ url: link.dataset.android });
+  if (!completed) location.href = link.href;
+}
 
 // The Filters button shows or hides the filter and sort controls.
 function toggleFilters(e) {

@@ -5,8 +5,18 @@ const { pathToFileURL } = require('node:url');
 
 const INDEX = path.join(__dirname, '../dist/index.html');
 
+// Each FTC Ultimate Windows app registers a link scheme (see SUITE.md). Scout and Design open Inventory with this one,
+// and the app switcher's links to their web pages open their Windows app instead when it's installed.
+const SCHEME = 'ftc-ultimate-inventory';
+const SUITE_APPS = {
+  'https://huskerthecat.github.io/FTC_Ultimate_Scout/': 'ftc-ultimate-scout://open',
+  'https://huskerthecat.github.io/FTC_Ultimate_Design/': 'ftc-ultimate-design://open',
+};
+
 const openInBrowser = (url) => {
-  if (url.startsWith('https://')) shell.openExternal(url);
+  const appLink = SUITE_APPS[url];
+  if (appLink && app.getApplicationNameForProtocol(appLink)) shell.openExternal(appLink);
+  else if (url.startsWith('https://')) shell.openExternal(url);
 };
 
 function createWindow() {
@@ -30,5 +40,13 @@ function createWindow() {
 }
 
 Menu.setApplicationMenu(null);
-app.whenReady().then(createWindow);
+if (app.isPackaged) app.setAsDefaultProtocolClient(SCHEME);
+// One window: opening the app again, or from Scout or Design, brings it to the front.
+if (!app.requestSingleInstanceLock()) app.quit();
+else app.whenReady().then(createWindow);
+app.on('second-instance', () => {
+  const [win] = BrowserWindow.getAllWindows();
+  if (win.isMinimized()) win.restore();
+  win.focus();
+});
 app.on('window-all-closed', () => app.quit());
