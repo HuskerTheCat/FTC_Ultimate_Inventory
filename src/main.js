@@ -3019,7 +3019,6 @@ async function start() {
       const createdTeam = await fb.ensureMembership(user, state.connection, state.newName || nameOf({ email: user.email }), state.acceptedPrivacy);
       // Signing in by team number reads join/info, so it must exist before the owner ever opens Team.
       if (createdTeam) fb.setJoinInfo(state.connection.config, state.connection.teamName).catch(showError);
-      registerTeam(user).catch(showError);
       state.newName = null;
       forgetSecret();
       await fb.ensureMainProject();
@@ -3036,6 +3035,8 @@ async function start() {
     }
     state.user = user;
     renderInventory();
+    // After the inventory is on screen, so an error from the central server shows in its banner.
+    registerTeam(user).catch(showError);
     checkRules(fb).catch(showError);
     fb.clearTrash(new Date(Date.now() - TRASH_DAYS * DAY_MS)).catch(showError);
     const onError = (error) => {
