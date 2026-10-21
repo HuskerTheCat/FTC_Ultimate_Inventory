@@ -23,6 +23,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm pkg set "version=$VERSION"
+        shell: bash
         env:
           VERSION: ${{ inputs.version }}
       - run: npm run build:windows
