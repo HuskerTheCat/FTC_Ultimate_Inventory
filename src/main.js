@@ -17,6 +17,16 @@ const HELP_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/docs/how
 const GUIDES_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/guides.html';
 // Top right of the first screens (before signing in), where the ☰ menu's Help isn't there yet.
 const GUIDES_LINK = `<a class="guides-link" href="${GUIDES_URL}" target="_blank" rel="noopener">Guides</a>`;
+// The cube on the home page and the inventory screen: a menu of the FTC Ultimate apps (see openSuiteApp).
+const APP_SWITCHER = `<div class="menuwrap">
+  <button id="apps-toggle" aria-label="FTC Ultimate apps" title="FTC Ultimate apps" aria-haspopup="true" aria-expanded="false" aria-controls="apps-menu"><span class="app-icon inventory"></span></button>
+  <div id="apps-menu" class="menu" hidden>
+    <h3>FTC Ultimate</h3>
+    <button class="menu-item" aria-current="true"><span class="app-icon inventory"></span>Inventory</button>
+    <a class="menu-item" href="https://huskerthecat.github.io/FTC_Ultimate_Scout/" data-android="io.github.huskerthecat.ftcscout"><span class="app-icon scout"></span>Scout</a>
+    <a class="menu-item" href="https://huskerthecat.github.io/FTC_Ultimate_Design/" data-android="io.github.huskerthecat.ftcdesign"><span class="app-icon design"></span>Design</a>
+  </div>
+</div>`;
 // The AGPL license asks anyone hosting a version of the app to offer its source; forks should point this at their own code.
 const SOURCE_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory';
 const STORAGE_KEY = 'ftc-inventory-connection';
@@ -287,7 +297,10 @@ const joinCodeFrom = (text) => new URLSearchParams(text.split('#')[1]).get('join
 function renderWelcome() {
   app.innerHTML = `
     <main class="center wide">
-      <h1 class="brand"><span>FTC Ultimate <span class="app-name">Inventory</span></span></h1>
+      <div class="lockup">
+        ${APP_SWITCHER}
+        <h1 class="brand"><span>FTC Ultimate <span class="app-name">Inventory</span></span></h1>
+      </div>
       <p id="error" class="error" role="alert" hidden></p>
       <div class="card split">
         <form id="signin">
@@ -316,6 +329,7 @@ function renderWelcome() {
     </main>
     <dialog id="dialog"></dialog>`;
 
+  wireMenus();
   app.querySelector('#demo').onclick = () => { location.search = 'demo'; };
   app.querySelector('#setup').onclick = renderSetup;
   app.querySelector('#signin').onsubmit = async (e) => {
@@ -520,15 +534,7 @@ function renderInventory() {
   app.innerHTML = `<main>
     <header>
       <div class="lockup">
-        <div class="menuwrap">
-          <button id="apps-toggle" aria-label="FTC Ultimate apps" title="FTC Ultimate apps" aria-haspopup="true" aria-expanded="false" aria-controls="apps-menu"><span class="app-icon inventory"></span></button>
-          <div id="apps-menu" class="menu" hidden>
-            <h3>FTC Ultimate</h3>
-            <button class="menu-item" aria-current="true"><span class="app-icon inventory"></span>Inventory</button>
-            <a class="menu-item" href="https://huskerthecat.github.io/FTC_Ultimate_Scout/" data-android="io.github.huskerthecat.ftcscout"><span class="app-icon scout"></span>Scout</a>
-            <a class="menu-item" href="https://huskerthecat.github.io/FTC_Ultimate_Design/" data-android="io.github.huskerthecat.ftcdesign"><span class="app-icon design"></span>Design</a>
-          </div>
-        </div>
+        ${APP_SWITCHER}
         <h1 class="team-brand"><span class="team">${esc(state.connection.teamName)}</span> <span class="app-name">Inventory</span></h1>
       </div>
       <div class="row">
@@ -632,17 +638,12 @@ function renderInventory() {
   </main>`;
 
   const dialog = app.querySelector('#dialog');
-  app.querySelectorAll('[aria-haspopup]').forEach((button) => {
-    button.onclick = () => showMenu(button, button.getAttribute('aria-expanded') !== 'true');
-  });
-  // Choosing anything in a menu closes it.
-  app.querySelectorAll('.menu').forEach((menu) => menu.addEventListener('click', (e) => e.target.closest('a, button:not([role="switch"])') && closeMenus()));
+  wireMenus();
   app.querySelector('#project-menu').onclick = (e) => {
     if (e.target.closest('#new-project')) return openProjectDialog();
     const id = e.target.closest('[data-project]')?.dataset.project;
     if (id) switchProject(id);
   };
-  app.querySelector('#apps-menu').addEventListener('click', openSuiteApp);
   app.querySelector('#filters-toggle').onclick = toggleFilters;
   app.querySelector('#locations').onclick = openLocationsDialog;
   app.querySelector('#orders').onclick = openOrdersDialog;
@@ -775,6 +776,15 @@ function renderProjectPicker() {
 }
 
 // Menus (the project picker, the header menu and More) open from their button.
+// Menu buttons open their menus, and choosing anything in a menu closes it.
+function wireMenus() {
+  app.querySelectorAll('[aria-haspopup]').forEach((button) => {
+    button.onclick = () => showMenu(button, button.getAttribute('aria-expanded') !== 'true');
+  });
+  app.querySelectorAll('.menu').forEach((menu) => menu.addEventListener('click', (e) => e.target.closest('a, button:not([role="switch"])') && closeMenus()));
+  app.querySelector('#apps-menu').addEventListener('click', openSuiteApp);
+}
+
 function showMenu(button, open) {
   app.querySelector(`#${button.getAttribute('aria-controls')}`).hidden = !open;
   button.setAttribute('aria-expanded', String(open));
