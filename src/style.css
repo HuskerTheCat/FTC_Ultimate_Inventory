@@ -107,8 +107,9 @@ body:has(> #app > .center)::after, body.guide::after { content: ''; position: ab
 /* Jumps to a section of a guide glide, speeding up and slowing down, and the lines glide with them. */
 @media (prefers-reduced-motion: no-preference) { :root:has(> body.guide) { scroll-behavior: smooth; } }
 /* The app's name in the title font, as on the link preview: "Inventory" lighter and blue, under "FTC Ultimate". */
-.brand { font: 800 1.6rem/1.15 Orbitron, sans-serif; letter-spacing: 0; }
-.brand .app-name { display: block; font-weight: 500; color: var(--accent); }
+.brand { font: 800 1.6rem/1.15 Orbitron, sans-serif; letter-spacing: 0; min-width: 0; }
+.brand > span { display: block; overflow: hidden; text-overflow: ellipsis; }
+.brand .app-name { font-weight: 500; color: var(--accent); }
 /* Guides button, top right of the first screens. */
 #app:has(> .center) { position: relative; }
 .guides-link { position: absolute; top: 16px; right: 24px; padding: 6px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font-weight: 600; text-decoration: none; }
@@ -229,12 +230,12 @@ button:disabled, button[aria-disabled="true"] { opacity: 0.4; cursor: default; }
 /* Inventory: header, project picker, search and filters */
 header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
 header h1 { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* The team's name with the app's, as in the other FTC Ultimate apps: the cube, the team in the title font, "Inventory" lighter and blue.
-   Phones put "Inventory" under the team's name, leaving it room beside Scan and the menu. */
-header .lockup { display: flex; align-items: center; gap: 8px; min-width: 0; }
-header h1.team-brand { display: flex; align-items: center; gap: 12px; font: 800 1.4rem/1.2 Orbitron, sans-serif; letter-spacing: 0; }
-.team-brand .team { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.team-brand .app-name { flex: none; font-weight: 500; color: var(--accent); }
+/* The same lockup as the first screens, a little smaller. The team's name can be long, so it shortens with … */
+header .lockup { display: flex; align-items: center; gap: 12px; min-width: 0; }
+header .lockup #apps-toggle { margin: -3px; }
+header .lockup .app-icon { width: 46px; height: 46px; }
+header .brand { font-size: 1.3rem; }
+header .brand .app-name { font-size: 1.05rem; }
 /* The cube opens the app switcher: Inventory, Competition and Design, each with its own cube. */
 #apps-toggle { flex: none; min-height: 0; margin-left: -3px; padding: 3px; background: none; border: none; }
 #apps-toggle:hover, #apps-toggle[aria-expanded="true"] { background: var(--raised); }
@@ -249,9 +250,10 @@ header h1.team-brand { display: flex; align-items: center; gap: 12px; font: 800 
 :root[data-theme="light"] #apps-menu .menu-item:has(.competition) { color: #c25f08; }
 :root[data-theme="light"] #apps-menu .menu-item:has(.design) { color: #16804d; }
 @media (max-width: 700px) {
-  header h1.team-brand { display: grid; gap: 2px; font-size: 1.1rem; line-height: 1.15; }
-  header #apps-toggle .app-icon { width: 36px; height: 36px; }
-  .team-brand .app-name { font-size: 0.85rem; }
+  header .lockup { gap: 10px; }
+  header .lockup .app-icon { width: 40px; height: 40px; }
+  header .brand { font-size: 1.05rem; }
+  header .brand .app-name { font-size: 0.9rem; }
 }
 /* The inventory screen has the first screens' contour lines behind its header, fading out above the parts. */
 body:has(> #app > main:not(.center)) { position: relative; }
