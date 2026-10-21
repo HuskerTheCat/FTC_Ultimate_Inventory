@@ -132,7 +132,7 @@ Your team has one list of locations (bins, shelves, drawers). **☰ → Location
 
 For a cabinet of small drawers or a shelf of bins, tap **Grid** next to the location and set its rows and columns, like 5 rows and 20 columns. Spots are named by row and column: A1 is the top left, C12 the third row, twelfth column.
 
-In a part's dialog, pick the grid location, then tap the part's spot. In the list, the part shows its spot by its location. Tap that spot (or **Find part** after scanning its label) to see the grid with it highlighted. Tapping any spot in a grid lists what's in it.
+In a part's dialog, pick the grid location, then tap the part's spot. In the list, the part shows its spot by its location. Tap that spot, or **Find part** in the part's dialog or after scanning its label, to see the grid with it highlighted. Tapping any spot in a grid lists what's in it.
 
 <img src="how-to/find-part.png" alt="Find part: the Hardware drawers grid with spot B3 highlighted" width="800">
 

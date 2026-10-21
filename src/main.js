@@ -2445,6 +2445,7 @@ function openPartDialog(part, carry = null, note = '') {
         ${part ? '' : '<button value="next" class="secondary">Save and add another</button>'}
         <button value="cancel" formnovalidate class="secondary">Cancel</button>
         ${part ? '<button type="button" id="label" class="secondary">Print label</button>' : ''}
+        ${part && partSpot(part) ? '<button type="button" id="find" class="secondary">Find part</button>' : ''}
         ${part ? '<button value="delete" formnovalidate class="danger">Delete</button>' : ''}
       </div>
     </form>`;
@@ -2452,6 +2453,7 @@ function openPartDialog(part, carry = null, note = '') {
   const form = dialog.querySelector('form');
   if (!part) form.quantity.value = values?.quantity ?? 0;
   if (part) dialog.querySelector('#label').onclick = () => printAndMark([partLabel(part)]);
+  dialog.querySelector('#find')?.addEventListener('click', () => findPart(part));
   // Opening More details scrolls its fields into view, since on a phone they open below the bottom of the screen.
   const more = dialog.querySelector('.more-details');
   more.querySelector('summary').onclick = () => more.open || requestAnimationFrame(() => more.scrollIntoView({ block: 'start', behavior: 'smooth' }));
