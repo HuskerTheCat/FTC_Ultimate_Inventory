@@ -675,9 +675,15 @@ button.spot[aria-pressed="true"]::after { background: currentColor; opacity: 0.8
 .grid-dialog .spot-parts:empty { display: none; }
 .spot-parts li { flex-direction: column; align-items: flex-start; gap: 0; }
 .spot-parts button.link { min-height: 0; padding: 2px 0; align-self: flex-start; white-space: normal; text-align: left; font-size: 1rem; }
-.grid-size { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin: 0; padding: 14px 0 0; border: none; border-top: 1px solid var(--border); }
-.grid-size legend { float: left; width: 100%; padding: 0; margin-bottom: 2px; font-size: 0.875rem; font-weight: 600; color: var(--text); }
-.grid-size label { width: 96px; }
+.grid-size { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; padding-top: 14px; border-top: 1px solid var(--border); }
+.grid-size label { width: 170px; }
+/* Locations: one box adds a plain location, the other a grid. Side by side on computers, stacked on phones. */
+dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
+.adders { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.adder { display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--field); }
+.adder > label { font-weight: 600; color: var(--text); }
+.adder input { background: var(--surface); }
+@media (max-width: 600px) { .adders { grid-template-columns: 1fr; } }
 .spot-field[hidden] { display: none; }
 .spot-field > span { color: var(--muted); }
 .spot-field > span .muted { margin-left: 6px; font-weight: 600; color: var(--accent); }

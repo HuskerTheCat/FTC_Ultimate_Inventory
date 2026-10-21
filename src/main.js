@@ -1894,11 +1894,24 @@ function openProjectDialog() {
 function openLocationsDialog() {
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `
-    <form method="dialog" class="card">
+    <form method="dialog" class="card locations">
       <h2>Locations</h2>
-      <div class="password">
-        <input id="new-location" maxlength="200" placeholder="e.g. Bin 3" />
-        <button type="button" id="add-location">Add</button>
+      <div class="adders">
+        <div class="adder">
+          <label for="new-location">Add a location</label>
+          <div class="password">
+            <input id="new-location" maxlength="200" placeholder="Bin or shelf, e.g. Bin 3" />
+            <button type="button" id="add-location">Add</button>
+          </div>
+        </div>
+        <div class="adder">
+          <label for="new-grid-name">Add grid storage</label>
+          <input id="new-grid-name" maxlength="200" placeholder="Name, e.g. Drawer cabinet" />
+          <div class="password">
+            <input id="new-grid-size" autocomplete="off" placeholder="Rows x columns, e.g. 4x7" aria-label="Grid size" />
+            <button type="button" id="add-grid">Create</button>
+          </div>
+        </div>
       </div>
       <ul id="location-list" class="members"></ul>
       <div class="row"><button value="close" class="secondary">Close</button></div>
@@ -1912,26 +1925,42 @@ function openLocationsDialog() {
         <span><strong>${esc(l.name)}</strong> <span class="muted small">${count} part${count === 1 ? '' : 's'}${l.rows ? `, ${l.rows} × ${l.cols} grid` : ''}</span></span>
         <span class="row">
           <button type="button" class="secondary" data-rename="${esc(l.id)}">Rename</button>
-          <button type="button" class="secondary" data-grid="${esc(l.id)}">Grid</button>
+          ${l.rows ? `<button type="button" class="secondary" data-grid="${esc(l.id)}">Edit grid</button>` : ''}
           <button type="button" class="secondary" data-label="${esc(l.name)}">Label</button>
           <button type="button" class="danger" data-id="${esc(l.id)}" ${count ? `aria-disabled="true" data-count="${count}"` : ''}>Delete</button>
         </span>
       </li>`;
     }).join('') || '<li class="muted">No locations yet.</li>';
   };
+  const gridName = dialog.querySelector('#new-grid-name');
+  const gridSizeInput = dialog.querySelector('#new-grid-size');
+  const taken = (name) => state.locations.some((l) => sameName(l.name, name));
   const add = () => {
     const name = input.value.trim();
     if (!name) return;
-    if (state.locations.some((l) => sameName(l.name, name))) return showError(new Error(`${name} is already a location.`));
+    if (taken(name)) return showError(new Error(`${name} is already a location.`));
     input.value = '';
     fb.addLocation(name).catch(showError);
   };
+  const addGrid = () => {
+    const name = gridName.value.trim();
+    if (!name) return gridName.focus();
+    if (taken(name)) return showError(new Error(`${name} is already a location.`));
+    const grid = parseGridSize(gridSizeInput.value);
+    if (!grid) return showError(new Error(GRID_SIZE_HELP));
+    gridName.value = gridSizeInput.value = '';
+    fb.addLocation(name, grid).catch(showError);
+  };
   dialog.querySelector('#add-location').onclick = add;
-  input.onkeydown = (e) => {
+  dialog.querySelector('#add-grid').onclick = addGrid;
+  const onEnter = (action) => (e) => {
     if (e.key !== 'Enter') return;
     e.preventDefault();
-    add();
+    action();
   };
+  input.onkeydown = onEnter(add);
+  gridName.onkeydown = onEnter(() => gridSizeInput.focus());
+  gridSizeInput.onkeydown = onEnter(addGrid);
   list.onclick = (e) => {
     const { id, count } = e.target.dataset;
     if (id && count) return showMessage(`${state.locations.find((l) => l.id === id).name} still has parts`, `Move its ${count === '1' ? 'part' : `${count} parts`} to another location first.`);
@@ -1954,6 +1983,15 @@ const GRID_MAX = { rows: 26, cols: 50 }; // as in the rules
 const spotName = (row, col) => `${String.fromCharCode(65 + row)}${col + 1}`;
 const gridSize = (location) => (location.rows ? { rows: location.rows, cols: location.cols } : null);
 const gridLocation = (name) => state.locations.find((l) => l.name === name && l.rows);
+const GRID_SIZE_HELP = `Type the size as rows x columns, like 4x7, up to ${GRID_MAX.rows}x${GRID_MAX.cols}.`;
+const sizeText = (grid) => `${grid.rows}x${grid.cols}`;
+
+// { rows, cols } from a size typed like "4x7", "4 x 7" or "4×7", or null when it isn't one the grid can have.
+function parseGridSize(text) {
+  const match = /^\s*(\d+)\s*[x×*]\s*(\d+)\s*$/i.exec(text);
+  const [rows, cols] = match ? [Number(match[1]), Number(match[2])] : [0, 0];
+  return rows >= 1 && rows <= GRID_MAX.rows && cols >= 1 && cols <= GRID_MAX.cols ? { rows, cols } : null;
+}
 
 // Whether a spot like "C12" is on the location's grid.
 function onGrid(location, spot) {
@@ -1993,7 +2031,7 @@ function showMarked(box) {
 const findPart = (part) => openGridDialog(gridLocation(part.location), part);
 
 // A location's grid. Tapping a spot lists the parts in it. To find a part, its spot starts marked; from the Locations
-// list, the grid's size can be set or changed, and Back returns to the list.
+// list, the grid's size can be changed or the grid removed, and Back returns to the list.
 function openGridDialog(start, part = null) {
   const dialog = app.querySelector('#dialog');
   let marked = part?.spot ?? '';
@@ -2005,13 +2043,11 @@ function openGridDialog(start, part = null) {
       </div>
       <div class="grid-box"></div>
       <ul class="members spot-parts"></ul>
-      ${part ? '' : `<fieldset class="grid-size">
-        <legend>Grid of spots</legend>
-        <label>Rows<input name="rows" type="number" min="1" max="${GRID_MAX.rows}" step="1" required /></label>
-        <label>Columns<input name="cols" type="number" min="1" max="${GRID_MAX.cols}" step="1" required /></label>
+      ${part ? '' : `<div class="grid-size">
+        <label>Size, rows x columns<input name="size" autocomplete="off" value="${sizeText(start)}" /></label>
         <button value="size" class="secondary">Save size</button>
-        <button value="remove" formnovalidate class="secondary" id="remove-grid">Remove grid</button>
-      </fieldset>`}
+        <button value="remove" class="secondary">Remove grid</button>
+      </div>`}
       <div class="row">
         ${part ? '<button value="close">Close</button>' : '<button type="button" id="back" class="secondary">Back</button>'}
       </div>
@@ -2023,20 +2059,14 @@ function openGridDialog(start, part = null) {
     const location = state.locations.find((l) => l.id === start.id);
     if (!location) return dialog.close();
     const grid = gridSize(location);
-    dialog.querySelector('#grid-about').textContent = part
-      ? `${location.name}, spot ${part.spot}`
-      : grid ? `${grid.rows} rows, ${grid.cols} columns` : 'No grid yet. Set its rows and columns.';
-    box.hidden = !grid;
-    box.innerHTML = grid ? gridHtml(location, marked) : '';
-    const here = grid && marked ? state.parts.filter((p) => p.location === location.name && p.spot === marked) : [];
-    dialog.querySelector('.spot-parts').innerHTML = !marked || !grid ? '' : here.map((p) => `<li>
+    if (!grid) return openLocationsDialog(); // its grid was removed
+    dialog.querySelector('#grid-about').textContent = part ? `${location.name}, spot ${part.spot}` : `${grid.rows} rows, ${grid.cols} columns`;
+    box.innerHTML = gridHtml(location, marked);
+    const here = marked ? state.parts.filter((p) => p.location === location.name && p.spot === marked) : [];
+    dialog.querySelector('.spot-parts').innerHTML = !marked ? '' : here.map((p) => `<li>
         <button type="button" class="link" data-part="${esc(p.id)}">${esc(p.name)}</button>
         <span class="muted small">qty ${esc(p.quantity)}${inventoryNote(p) ? `, ${esc(inventoryNote(p))}` : ''}</span>
       </li>`).join('') || `<li class="muted">${marked} is empty.</li>`;
-    if (part) return;
-    form.rows.value ||= grid?.rows ?? '';
-    form.cols.value ||= grid?.cols ?? '';
-    dialog.querySelector('#remove-grid').hidden = !grid;
   };
   box.onclick = (e) => {
     const spot = e.target.closest('[data-spot]')?.dataset.spot;
@@ -2055,12 +2085,15 @@ function openGridDialog(start, part = null) {
     const action = e.submitter.value;
     if (action !== 'size' && action !== 'remove') return;
     e.preventDefault();
-    const grid = action === 'size' ? { rows: Number(form.rows.value), cols: Number(form.cols.value) } : null;
+    const grid = action === 'size' ? parseGridSize(form.size.value) : null;
+    if (action === 'size' && !grid) return showError(new Error(GRID_SIZE_HELP));
     const location = state.locations.find((l) => l.id === start.id);
     // Parts keep their spot, so a grid can only lose spots that have no parts.
     const lost = [...new Set(state.parts.filter((p) => partSpot(p) && p.location === location.name && !onGrid(grid ?? { rows: 0, cols: 0 }, p.spot)).map((p) => p.spot))];
-    if (lost.length) return showMessage(`${listNames(lost.sort(naturalCompare))} still ${lost.length === 1 ? 'has' : 'have'} parts`, 'Move them to other spots first.');
-    if (!grid) form.rows.value = form.cols.value = '';
+    if (lost.length) {
+      const what = grid ? `make ${location.name} ${sizeText(grid)}` : `remove the grid of ${location.name}`;
+      return showMessage(`${listNames(lost.sort(naturalCompare))} still ${lost.length === 1 ? 'has' : 'have'} parts`, `Move ${lost.length === 1 ? 'its parts' : 'their parts'} to other spots before you ${esc(what)}.`);
+    }
     fb.setGrid(location.id, grid).catch(showError);
   };
   render();

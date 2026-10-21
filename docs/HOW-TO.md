@@ -126,11 +126,11 @@ The Filters button shows how many are on. **Reset filters** clears them.
 
 Your team has one list of locations (bins, shelves, drawers). **☰ → Locations** adds, renames and deletes them (only empty ones) and prints a bin's label.
 
-<img src="how-to/locations.png" alt="The Locations list" width="440">
+<img src="how-to/locations.png" alt="The Locations list, with Add a location and Add grid storage" width="640">
 
 ### Storage grids
 
-For a cabinet of small drawers or a shelf of bins, tap **Grid** next to the location and set its rows and columns, like 5 rows and 20 columns. Spots are named by row and column: A1 is the top left, C12 the third row, twelfth column.
+For a cabinet of small drawers or a shelf of bins, use **Add grid storage**: type a name and its size as rows x columns, like 4x7, then tap **Create**. Spots are named by row and column: A1 is the top left, C12 the third row, twelfth column. **Edit grid** changes the size later; the app won't make it smaller while a spot it would cut off still has parts.
 
 In a part's dialog, pick the grid location, then tap the part's spot. In the list, the part shows its spot by its location. Tap that spot, or **Find part** in the part's dialog or after scanning its label, to see the grid with it highlighted. Tapping any spot in a grid lists what's in it.
 
