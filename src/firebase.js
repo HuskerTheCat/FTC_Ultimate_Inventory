@@ -119,7 +119,10 @@ export const watchLocations = (callback, onError) => watchCollection('locations'
 export const watchOrders = (callback, onError) => watchCollection('orders', callback, onError);
 
 // The team's fixed list of places parts can be. Parts store the location's name, not its id.
-export const addLocation = (name) => addDoc(collection(db, 'locations'), { name });
+// A location with a grid ({ rows, cols }) has spots, and a part there can name its spot.
+export const addLocation = (name, grid) => addDoc(collection(db, 'locations'), { name, ...grid });
+// Sets a location's grid, or with null takes it off.
+export const setGrid = (id, grid) => updateDoc(doc(db, 'locations', id), grid ?? { rows: deleteField(), cols: deleteField() });
 export const deleteLocation = (id) => deleteDoc(doc(db, 'locations', id));
 
 // One doc per printed QR label, named by the label's key, so the app can show which labels still need printing.

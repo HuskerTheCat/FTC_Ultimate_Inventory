@@ -63,7 +63,7 @@ const DETAIL_FIELDS = [
 const UNITS = ['pcs', 'pack', 'box', 'm', 'ft'];
 const CONDITIONS = { '': 'Condition not set', new: 'New', used: 'Used', broken: 'Broken' };
 
-const SEARCH_KEYS = ['name', 'partNumber', 'barcode', 'supplier', 'location', 'category', 'condition', 'notes'];
+const SEARCH_KEYS = ['name', 'partNumber', 'barcode', 'supplier', 'location', 'spot', 'category', 'condition', 'notes'];
 // Small line icons that take the button's text color.
 const icon = (paths) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 const ICON_EDIT = icon('<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>');
@@ -73,6 +73,7 @@ const ICON_MENU = icon('<path d="M4 6h16M4 12h16M4 18h16"/>');
 const ICON_MORE = icon('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>');
 const ICON_FILTER = icon('<path d="M4 6h16M7 12h10M10 18h4"/>');
 const ICON_PLUS = icon('<path d="M12 5v14M5 12h14"/>');
+const ICON_PIN = icon('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>');
 
 // Every project is an inventory (holds its own parts), a project or a packing list (both use parts from inventories).
 const TYPES = {
@@ -722,6 +723,7 @@ function renderInventory() {
     if (!row) return;
     if (state.selected) return toggleSelected(row.dataset.id);
     if (e.target.closest('[data-add-to]')) return openAddToDialog(state.parts.find((p) => p.id === row.dataset.id));
+    if (e.target.closest('[data-find]')) return findPart(state.parts.find((p) => p.id === row.dataset.id));
     if (e.target.dataset.packed) return setPacked(useOf(state.projectId, row.dataset.id), e.target.checked);
     if (e.target.dataset.tag) {
       state.tag = e.target.dataset.tag;
@@ -1019,7 +1021,7 @@ function rowHtml(p, columns, photos) {
         <button class="step" data-delta="1" aria-label="Add one: ${esc(p.name)}">+</button>
       </td>
       ${label('inUse') ? `<td data-label="In use">${usedIn(p)}<button class="add-to" data-add-to="1" aria-label="Add to: ${esc(p.name)}">${ICON_PLUS}<span>Add to</span></button></td>` : ''}
-      <td data-label="Location">${esc(p.location)}${!label('inUse') && inventoryNote(p) ? `<div class="muted small">${esc(inventoryNote(p))}</div>` : ''}</td>
+      <td data-label="Location">${esc(p.location)}${findButton(p)}${!label('inUse') && inventoryNote(p) ? `<div class="muted small">${esc(inventoryNote(p))}</div>` : ''}</td>
       <td data-label="Supplier">${esc(p.supplier)}</td>
       <td data-label="Category">${esc(categoryLabel(p.category))}</td>
     </tr>`;
@@ -1033,7 +1035,7 @@ function printList() {
   const headers = ['Item', 'Part #', columnsFor(current).find(([key]) => key === 'quantity')[1], 'Location', 'Category'];
   const groups = groupRows(visibleRows()).map(([name, rows]) => [
     name && `${name} (${countParts(rows.length)})`,
-    rows.map((p) => [p.name, p.partNumber, `${p.quantity} ${p.unit ?? ''}`.trim(), p.location, categoryLabel(p.category)]),
+    rows.map((p) => [p.name, p.partNumber, `${p.quantity} ${p.unit ?? ''}`.trim(), placeText(p), categoryLabel(p.category)]),
   ]);
   printSheet(current.name, `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, groups);
 }
@@ -1049,6 +1051,7 @@ const CSV_COLUMNS = [
   ['minQuantity', 'Low stock at', ['minimum', 'min', 'min quantity', 'min qty', 'reorder at']],
   ['unit', 'Unit', []],
   ['location', 'Location', ['bin', 'box', 'drawer', 'shelf', 'storage', 'where']],
+  ['spot', 'Spot', ['cell']],
   ['supplier', 'Supplier', ['vendor', 'manufacturer', 'brand', 'store', 'source']],
   ['category', 'Category', ['type', 'group']],
   ['tags', 'Tags', ['tag']],
@@ -1072,7 +1075,7 @@ function saveFile(name, text, type) {
 function exportCsv() {
   const current = currentProject();
   const rows = inventoryParts(current.id).sort((a, b) => naturalCompare(a.name, b.name))
-    .map((p) => CSV_COLUMNS.map(([key]) => (key === 'tags' ? p.tags.join(', ') : p[key])));
+    .map((p) => CSV_COLUMNS.map(([key]) => (key === 'tags' ? p.tags.join(', ') : key === 'spot' ? partSpot(p) : p[key])));
   saveFile(`${current.name} ${new Date().toISOString().slice(0, 10)}.csv`, toCsv([CSV_COLUMNS.map(([, label]) => label), ...rows]), 'text/csv');
 }
 
@@ -1168,6 +1171,7 @@ function csvPart(values, projectId) {
       notes: text('notes', 1000),
       tags: parseTags(text('tags')),
       ...(text('barcode') && { barcode: text('barcode') }),
+      ...(text('spot') && { spot: text('spot').toUpperCase() }),
       ...(link && { link }),
       ...(minQuantity !== null && { minQuantity }),
     },
@@ -1201,6 +1205,8 @@ function importPlan(rows, columnOf) {
     }
     part.location = spellings.get(key);
   }
+  // A spot only stays when the part's location is a grid with that spot.
+  for (const part of parts.filter((p) => p.spot && !partSpot(p))) delete part.spot;
   return { parts, skipped, newLocations };
 }
 
@@ -1315,6 +1321,7 @@ function chooseBackup() {
 // How describeEdit names what restoring changes besides parts (see RESTORE_PART_FIELDS).
 const NAME_FIELDS = [['name', 'Name']];
 const USE_FIELDS = [['quantity', 'Using'], ['packed', 'Packed']];
+const GRID_FIELDS = [['rows', 'Rows'], ['cols', 'Columns']];
 const ORDER_FIELDS = [['name', 'Item'], ['partNumber', 'Part #'], ['quantity', 'Qty'], ['supplier', 'Supplier'], ['link', 'Link'], ['notes', 'Notes']];
 const useDetails = (use) => ({ quantity: use.quantity, packed: use.packed === undefined ? '' : use.packed ? 'Yes' : 'No' });
 
@@ -1334,11 +1341,18 @@ function restorePlan(backup, team, { replace, duplicates }) {
   const named = (part) => ({ ...part, projectId: names.get(part.projectId) });
   const printed = new Set(team.printed.map((p) => p.id));
   const add = {
-    locations: backup.locations.filter((name) => !team.locations.some((l) => sameName(l.name, name))),
+    locations: backup.locations.filter((saved) => !team.locations.some((l) => sameName(l.name, saved.name))),
     projects: [], parts: [], uses: [], orders: [],
     printed: backup.printed.filter((key) => !printed.has(key)),
   };
-  const change = { projects: [], parts: [], uses: [], orders: [] };
+  const change = { projects: [], parts: [], uses: [], orders: [], locations: [] };
+  if (replace) {
+    for (const saved of backup.locations) {
+      const now = team.locations.find((l) => sameName(l.name, saved.name));
+      const how = now && describeEdit(now, saved, GRID_FIELDS);
+      if (how) change.locations.push({ id: now.id, grid: gridSize(saved), text: `${now.name}: ${how}` });
+    }
+  }
   for (const { id, ...project } of backup.projects) {
     const now = projects.get(id);
     if (!now) add.projects.push({ id, ...project, source: project.source && inventoryOf(project.source) });
@@ -1383,7 +1397,7 @@ function restorePlan(backup, team, { replace, duplicates }) {
     // Uses of the parts and projects that go to the trash go with them.
     uses: team.uses.filter((u) => projectIds.has(u.projectId) && partIds.has(u.partId) && !backupUses.has(u.id)),
     orders: team.orders.filter((o) => !backupOrders.has(o.id)),
-    locations: team.locations.filter((l) => !backup.locations.some((name) => sameName(l.name, name))),
+    locations: team.locations.filter((l) => !backup.locations.some((saved) => sameName(l.name, saved.name))),
   };
   return { add, change, remove };
 }
@@ -1398,7 +1412,7 @@ function planLines({ projects = [], parts = [], uses = [], orders = [], location
     parts.length && `${countParts(parts.length)}: ${listNames(parts.map((p) => p.name))}`,
     uses.length && `${count(uses.length, 'item')} in projects and packing lists`,
     orders.length && `${count(orders.length, 'order')}: ${listNames(orders.map((o) => o.name))}`,
-    locations.length && `${count(locations.length, 'location')}: ${listNames(locations)}`,
+    locations.length && `${count(locations.length, 'location')}: ${listNames(locations.map((l) => l.name))}`,
     printed.length && `${count(printed.length, 'QR label')} marked as printed`,
   ].filter(Boolean);
 }
@@ -1445,7 +1459,7 @@ async function openRestoreDialog(file) {
     const { add, change, remove } = plan;
     const changes = Object.values(change).flat().map((c) => c.text);
     const adds = planLines(add);
-    const removes = planLines({ ...remove, locations: remove.locations.map((l) => l.name) });
+    const removes = planLines(remove);
     form.querySelector('.restore-plan').innerHTML = `
       ${empty ? `<p class="muted small">Adds everything in the backup to ${esc(teamName)}.</p>` : replace
         ? `<p class="muted small">Makes ${esc(teamName)} match the backup. Parts, projects and orders that aren’t in it go to the Trash for ${TRASH_DAYS} days.</p>`
@@ -1492,7 +1506,11 @@ async function restoreBackup({ add, change, remove }, team, source) {
   const log = (action, n, details) => n && fb.logChange(me(), action, countParts(n), details.slice(0, 2000));
   const usesOf = (key, id) => team.uses.filter((u) => u[key] === id).map(useData);
   const trash = (kind, { id, ...data }, uses) => fb.moveToTrash({ kind, docId: id, name: data.name, data, uses }, state.user);
-  await Promise.all([...add.locations.map((name) => fb.addLocation(name)), ...add.projects.filter((p) => !p.source).map(create)]);
+  await Promise.all([
+    ...add.locations.map((l) => fb.addLocation(l.name, gridSize(l))),
+    ...change.locations.map(({ id, grid }) => fb.setGrid(id, grid)),
+    ...add.projects.filter((p) => !p.source).map(create),
+  ]);
   await Promise.all([
     ...add.projects.filter((p) => p.source).map(create),
     ...change.projects.map(({ id, name }) => fb.renameProject(id, name)),
@@ -1526,8 +1544,8 @@ const conditionBadge = (condition) => ['used', 'broken'].includes(condition)
 // Phones show a part as a short card, with its location (and inventory, outside inventories) and part number on one
 // line under the name. Supplier and category are left to the part dialog there.
 // Each piece is its own span, so a line breaks between pieces instead of inside a part number.
-const cardMeta = (p, withInventory) => [p.location, withInventory && inventoryNote(p), p.partNumber].filter(Boolean)
-  .map((text) => `<span>${esc(text)}</span>`).join(' · ');
+const cardMeta = (p, withInventory) => [[p.location, findButton(p)], [withInventory && inventoryNote(p)], [p.partNumber]]
+  .filter(([text]) => text).map(([text, html = '']) => `<span>${esc(text)}${html}</span>`).join(' · ');
 // The part's link, in the Part # column, which phones' short cards leave out.
 const partLink = (p) => p.link ? `<a class="part-link small" href="${esc(p.link)}" target="_blank" rel="noopener" aria-label="Link: ${esc(p.name)}">Link ↗</a>` : '';
 const notesLine = (notes) => notes ?`<div class="notes muted small">${esc(notes.split('\n')[0])}</div>` : '';
@@ -1550,7 +1568,7 @@ const partLabel = (part) => ({
   key: `part-${part.id}`,
   url: `${WEB_URL}#${new URLSearchParams({ part: part.id })}`,
   title: part.name,
-  subtitle: [part.partNumber, part.location].filter(Boolean).join(' · '),
+  subtitle: [part.partNumber, placeText(part)].filter(Boolean).join(' · '),
 });
 
 // The inventory a bin label opens: the one on screen, or while a project or packing list is on screen (they hold no
@@ -1744,7 +1762,7 @@ function openTakeDialog(part) {
   dialog.innerHTML = `
     <form method="dialog" class="card take">
       <h2>${esc(part.name)}</h2>
-      <p class="muted small">${esc([part.location, inventoryNote(part), part.partNumber].filter(Boolean).join(' · '))}</p>
+      <p class="muted small">${esc([placeText(part), inventoryNote(part), part.partNumber].filter(Boolean).join(' · '))}</p>
       <div class="take-qty">
         <button type="button" class="step" data-delta="-1" aria-label="Remove one">−</button>
         <span></span>
@@ -1754,6 +1772,7 @@ function openTakeDialog(part) {
       <div class="row">
         <button value="done">Done</button>
         <button value="edit" class="secondary">Edit part</button>
+        ${partSpot(part) ? '<button value="find" class="secondary">Find part</button>' : ''}
       </div>
     </form>`;
   const render = () => {
@@ -1771,9 +1790,11 @@ function openTakeDialog(part) {
     render();
   };
   dialog.querySelector('form').onsubmit = (e) => {
-    if (e.submitter.value !== 'edit') return;
+    if (!['edit', 'find'].includes(e.submitter.value)) return;
     e.preventDefault();
-    openPartDialog(state.parts.find((p) => p.id === part.id));
+    const now = state.parts.find((p) => p.id === part.id);
+    if (e.submitter.value === 'find') findPart(now);
+    else openPartDialog(now);
   };
   render();
   if (!dialog.open) dialog.showModal();
@@ -1888,9 +1909,10 @@ function openLocationsDialog() {
     list.innerHTML = state.locations.map((l) => {
       const count = state.parts.filter((p) => p.location === l.name).length;
       return `<li>
-        <span><strong>${esc(l.name)}</strong> <span class="muted small">${count} part${count === 1 ? '' : 's'}</span></span>
+        <span><strong>${esc(l.name)}</strong> <span class="muted small">${count} part${count === 1 ? '' : 's'}${l.rows ? `, ${l.rows} × ${l.cols} grid` : ''}</span></span>
         <span class="row">
           <button type="button" class="secondary" data-rename="${esc(l.id)}">Rename</button>
+          <button type="button" class="secondary" data-grid="${esc(l.id)}">Grid</button>
           <button type="button" class="secondary" data-label="${esc(l.name)}">Label</button>
           <button type="button" class="danger" data-id="${esc(l.id)}" ${count ? `aria-disabled="true" data-count="${count}"` : ''}>Delete</button>
         </span>
@@ -1915,12 +1937,137 @@ function openLocationsDialog() {
     if (id && count) return showMessage(`${state.locations.find((l) => l.id === id).name} still has parts`, `Move its ${count === '1' ? 'part' : `${count} parts`} to another location first.`);
     if (id) fb.deleteLocation(id).catch(showError);
     if (e.target.dataset.label) printAndMark([locationLabel(e.target.dataset.label)]);
+    if (e.target.dataset.grid) openGridDialog(state.locations.find((l) => l.id === e.target.dataset.grid));
     if (e.target.dataset.rename) renameLocation(state.locations.find((l) => l.id === e.target.dataset.rename)).catch(showError);
   };
   renderLocations();
   state.onLocationsChange = renderLocations;
   dialog.addEventListener('close', () => { state.onLocationsChange = null; }, { once: true });
   dialog.showModal();
+}
+
+// ---------- storage grids ----------
+// A location can be a grid of spots, like a cabinet of small drawers: rows A, B, C… from the top and columns 1, 2, 3…
+// from the left, so the top left spot is A1. A part in a grid location can name its spot.
+
+const GRID_MAX = { rows: 26, cols: 50 }; // as in the rules
+const spotName = (row, col) => `${String.fromCharCode(65 + row)}${col + 1}`;
+const gridSize = (location) => (location.rows ? { rows: location.rows, cols: location.cols } : null);
+const gridLocation = (name) => state.locations.find((l) => l.name === name && l.rows);
+
+// Whether a spot like "C12" is on the location's grid.
+function onGrid(location, spot) {
+  const match = /^([A-Z])([1-9][0-9]?)$/.exec(spot ?? '');
+  return Boolean(match && match[1].charCodeAt(0) - 65 < location.rows && Number(match[2]) <= location.cols);
+}
+
+// The part's spot, when its location is a grid with that spot.
+const partSpot = (part) => (onGrid(gridLocation(part.location) ?? {}, part.spot) ? part.spot : '');
+// "Hardware drawers C12", or just the location.
+const placeText = (part) => [part.location, partSpot(part)].filter(Boolean).join(' ');
+const findButton = (part) => (partSpot(part)
+  ? `<button class="find" data-find="1" title="Find part" aria-label="Find part: ${esc(part.name)}, ${esc(placeText(part))}">${ICON_PIN}<span>${esc(part.spot)}</span></button>` : '');
+
+// The grid's spots as buttons, each showing how many parts are in it, with `marked` and its row and column highlighted.
+function gridHtml(location, marked) {
+  const counts = new Map();
+  for (const p of state.parts) if (p.location === location.name && partSpot(p)) counts.set(p.spot, (counts.get(p.spot) ?? 0) + 1);
+  const [markedRow, markedCol] = marked ? [marked.charCodeAt(0) - 65, Number(marked.slice(1)) - 1] : [-1, -1];
+  const heading = (text, on) => `<span${on ? ' class="on"' : ''}>${text}</span>`;
+  const numbers = Array.from({ length: location.cols }, (_, col) => heading(col + 1, col === markedCol)).join('');
+  const rows = Array.from({ length: location.rows }, (_, row) => `${heading(String.fromCharCode(65 + row), row === markedRow)}${
+    Array.from({ length: location.cols }, (_, col) => {
+      const spot = spotName(row, col);
+      const n = counts.get(spot);
+      return `<button type="button" class="spot${n ? ' full' : ''}" data-spot="${spot}" aria-pressed="${spot === marked}" aria-label="${spot}${n ? `, ${countParts(n)}` : ''}">${n ?? ''}</button>`;
+    }).join('')}`).join('');
+  return `<div class="grid" style="--cols: ${location.cols}"><span></span>${numbers}${rows}</div>`;
+}
+
+// Scrolls a grid sideways so its marked spot is in view, for grids wider than the screen.
+function showMarked(box) {
+  const spot = box.querySelector('[aria-pressed="true"]');
+  if (spot) box.scrollLeft = spot.offsetLeft - (box.clientWidth - spot.offsetWidth) / 2;
+}
+
+const findPart = (part) => openGridDialog(gridLocation(part.location), part);
+
+// A location's grid. Tapping a spot lists the parts in it. To find a part, its spot starts marked; from the Locations
+// list, the grid's size can be set or changed, and Back returns to the list.
+function openGridDialog(start, part = null) {
+  const dialog = app.querySelector('#dialog');
+  let marked = part?.spot ?? '';
+  dialog.innerHTML = `
+    <form method="dialog" class="card grid-dialog${part ? ' finding' : ''}">
+      <div>
+        <h2>${esc(part?.name ?? start.name)}</h2>
+        <p class="muted small" id="grid-about"></p>
+      </div>
+      <div class="grid-box"></div>
+      <ul class="members spot-parts"></ul>
+      ${part ? '' : `<fieldset class="grid-size">
+        <legend>Grid of spots</legend>
+        <label>Rows<input name="rows" type="number" min="1" max="${GRID_MAX.rows}" step="1" required /></label>
+        <label>Columns<input name="cols" type="number" min="1" max="${GRID_MAX.cols}" step="1" required /></label>
+        <button value="size" class="secondary">Save size</button>
+        <button value="remove" formnovalidate class="secondary" id="remove-grid">Remove grid</button>
+      </fieldset>`}
+      <div class="row">
+        ${part ? '<button value="close">Close</button>' : '<button type="button" id="back" class="secondary">Back</button>'}
+      </div>
+    </form>`;
+  const form = dialog.querySelector('form');
+  const box = dialog.querySelector('.grid-box');
+  const render = () => {
+    if (!form.isConnected) return; // another dialog took its place
+    const location = state.locations.find((l) => l.id === start.id);
+    if (!location) return dialog.close();
+    const grid = gridSize(location);
+    dialog.querySelector('#grid-about').textContent = part
+      ? `${location.name}, spot ${part.spot}`
+      : grid ? `${grid.rows} rows, ${grid.cols} columns` : 'No grid yet. Set its rows and columns.';
+    box.hidden = !grid;
+    box.innerHTML = grid ? gridHtml(location, marked) : '';
+    const here = grid && marked ? state.parts.filter((p) => p.location === location.name && p.spot === marked) : [];
+    dialog.querySelector('.spot-parts').innerHTML = !marked || !grid ? '' : here.map((p) => `<li>
+        <button type="button" class="link" data-part="${esc(p.id)}">${esc(p.name)}</button>
+        <span class="muted small">qty ${esc(p.quantity)}${inventoryNote(p) ? `, ${esc(inventoryNote(p))}` : ''}</span>
+      </li>`).join('') || `<li class="muted">${marked} is empty.</li>`;
+    if (part) return;
+    form.rows.value ||= grid?.rows ?? '';
+    form.cols.value ||= grid?.cols ?? '';
+    dialog.querySelector('#remove-grid').hidden = !grid;
+  };
+  box.onclick = (e) => {
+    const spot = e.target.closest('[data-spot]')?.dataset.spot;
+    if (!spot) return;
+    marked = marked === spot ? '' : spot;
+    const scroll = box.scrollLeft;
+    render();
+    box.scrollLeft = scroll;
+  };
+  dialog.querySelector('.spot-parts').onclick = (e) => {
+    const id = e.target.closest('[data-part]')?.dataset.part;
+    if (id) openPartDialog(state.parts.find((p) => p.id === id));
+  };
+  dialog.querySelector('#back')?.addEventListener('click', openLocationsDialog);
+  form.onsubmit = (e) => {
+    const action = e.submitter.value;
+    if (action !== 'size' && action !== 'remove') return;
+    e.preventDefault();
+    const grid = action === 'size' ? { rows: Number(form.rows.value), cols: Number(form.cols.value) } : null;
+    const location = state.locations.find((l) => l.id === start.id);
+    // Parts keep their spot, so a grid can only lose spots that have no parts.
+    const lost = [...new Set(state.parts.filter((p) => partSpot(p) && p.location === location.name && !onGrid(grid ?? { rows: 0, cols: 0 }, p.spot)).map((p) => p.spot))];
+    if (lost.length) return showMessage(`${listNames(lost.sort(naturalCompare))} still ${lost.length === 1 ? 'has' : 'have'} parts`, 'Move them to other spots first.');
+    if (!grid) form.rows.value = form.cols.value = '';
+    fb.setGrid(location.id, grid).catch(showError);
+  };
+  render();
+  state.onLocationsChange = render;
+  dialog.addEventListener('close', () => { state.onLocationsChange = null; }, { once: true });
+  if (!dialog.open) dialog.showModal();
+  showMarked(box);
 }
 
 // Renames a location and moves every part there (in any inventory) to the new name.
@@ -2260,6 +2407,10 @@ function openPartDialog(part, carry = null, note = '') {
           <option value="${NEW_OPTION}">+ New location…</option>
         </select>
       </label>
+      <div class="field spot-field" hidden>
+        <span>Spot <span class="muted small"></span></span>
+        <div class="grid-box"></div>
+      </div>
       ${input('supplier', 'Supplier', 'list="supplier-list"')}
       ${input('link', 'Link', 'maxlength="1000" inputmode="url" placeholder="Product page (optional)"')}
       <label>Category
@@ -2307,6 +2458,30 @@ function openPartDialog(part, carry = null, note = '') {
 
   watchNewCategory(form.category);
   watchNewLocation(form.location);
+  // In a grid location, the part's spot is picked on the grid. Another location starts with no spot.
+  let spot = part ? partSpot(part) : '';
+  const spotField = dialog.querySelector('.spot-field');
+  const spotBox = spotField.querySelector('.grid-box');
+  const renderSpot = () => {
+    const location = gridLocation(form.location.value);
+    spotField.hidden = !location;
+    if (!location) return;
+    spotField.querySelector('.muted').textContent = spot || 'Tap where it goes';
+    const scroll = spotBox.scrollLeft;
+    spotBox.innerHTML = gridHtml(location, spot);
+    spotBox.scrollLeft = scroll;
+  };
+  form.location.addEventListener('change', () => {
+    spot = '';
+    renderSpot();
+  });
+  spotBox.onclick = (e) => {
+    const picked = e.target.closest('[data-spot]')?.dataset.spot;
+    if (!picked) return;
+    spot = spot === picked ? '' : picked;
+    renderSpot();
+  };
+  renderSpot();
   autofillFromCatalog(form);
   const photo = dialog.querySelector('.part-photo');
   photo.onerror = () => (photo.hidden = true);
@@ -2345,6 +2520,7 @@ function openPartDialog(part, carry = null, note = '') {
     data.projectId = part?.projectId ?? state.projectId;
     data.tags = tags;
     if (form.barcode.value.trim()) data.barcode = form.barcode.value.trim();
+    if (spot) data.spot = spot;
     const link = webLink(form.link.value);
     if (link === null) {
       e.preventDefault();
@@ -2361,6 +2537,7 @@ function openPartDialog(part, carry = null, note = '') {
     openPartDialog(null, { ...kept, added: (carry?.added ?? 0) + 1 });
   };
   if (!dialog.open) dialog.showModal();
+  showMarked(spotBox);
   // A new part starts at the catalog search, unless it's already filled in from the catalog.
   if (carry) (carry.name ? form.name : dialog.querySelector('#catalog-search')).focus();
   // Opening a part to look at it doesn't bring up the phone keyboard; tapping a field does.
@@ -2442,7 +2619,7 @@ function hideUndo() {
 }
 
 // Everything a part stores apart from who changed it last and when.
-// A barcode, link or low-stock quantity is only stored when the part has one, so parts without them still save under
+// A barcode, link, low-stock quantity or spot is only stored when the part has one, so parts without them still save under
 // rules from before them.
 const partData = (part) => ({
   ...Object.fromEntries([...FIELDS, ...DETAIL_FIELDS].map(([key]) => [key, part[key] ?? ''])),
@@ -2451,6 +2628,7 @@ const partData = (part) => ({
   ...(part.barcode && { barcode: part.barcode }),
   ...(part.link && { link: part.link }),
   ...(part.minQuantity != null && { minQuantity: part.minQuantity }),
+  ...(part.spot && { spot: part.spot }),
 });
 
 // Logs a change alongside its write rather than after the server confirms it, so an offline change
@@ -2459,7 +2637,7 @@ const logged = (write, action, partName, details) =>
   Promise.all([write, fb.logChange(me(), action, partName, details)]).catch(showError);
 
 // Every field an edit can change, with its name for the change log.
-const EDIT_FIELDS = [...FIELDS, ...DETAIL_FIELDS, ['barcode', 'Barcode'], ['link', 'Link'], ['minQuantity', 'Low stock at'], ['tags', 'Tags']];
+const EDIT_FIELDS = [...FIELDS, ...DETAIL_FIELDS, ['spot', 'Spot'], ['barcode', 'Barcode'], ['link', 'Link'], ['minQuantity', 'Low stock at'], ['tags', 'Tags']];
 // A restored part's inventory counts too, so Replace can move a part back.
 const RESTORE_PART_FIELDS = [...EDIT_FIELDS, ['projectId', 'Inventory']];
 
@@ -2729,11 +2907,16 @@ function openBulkEditDialog() {
   form.onsubmit = (e) => {
     if (e.submitter.value !== 'save') return;
     const set = (key) => (form[key].value === KEEP ? {} : { [key]: form[key].value });
-    const edits = parts.map((p) => [p.id, partData(p), {
-      ...partData(p), ...set('location'), ...set('category'),
-      ...(form.minQuantity.value !== '' && { minQuantity: Number(form.minQuantity.value) }),
-      tags: parseTags([...p.tags.filter((t) => !remove.includes(t)), ...add].join(',')),
-    }]).filter(([, before, after]) => describeEdit(before, after));
+    const edits = parts.map((p) => {
+      const after = {
+        ...partData(p), ...set('location'), ...set('category'),
+        ...(form.minQuantity.value !== '' && { minQuantity: Number(form.minQuantity.value) }),
+        tags: parseTags([...p.tags.filter((t) => !remove.includes(t)), ...add].join(',')),
+      };
+      // A spot belongs to its location, so a part moved somewhere else leaves its spot.
+      if (after.location !== p.location) delete after.spot;
+      return [p.id, partData(p), after];
+    }).filter(([, before, after]) => describeEdit(before, after));
     if (!edits.length) return;
     const details = [
       form.location.value !== KEEP && `Location → ${form.location.value || '(blank)'}`,

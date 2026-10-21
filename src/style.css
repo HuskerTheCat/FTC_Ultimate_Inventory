@@ -651,6 +651,36 @@ button.link.inline { padding: 2px 0; align-self: auto; text-decoration: underlin
 button.add-to { display: inline-flex; align-items: center; min-height: 26px; margin-top: 2px; padding: 2px 4px; gap: 4px; align-self: flex-start; background: none; border: none; border-radius: 8px; color: var(--accent); font-size: 0.85rem; font-weight: 500; }
 button.add-to:hover { background: var(--raised); }
 button.add-to svg { width: 16px; height: 16px; }
+/* Find part: the part's spot after its location, opening the grid with that spot marked. */
+button.find { display: inline-flex; align-items: center; gap: 2px; min-height: 24px; margin-left: 6px; padding: 1px 7px 1px 4px; vertical-align: middle; border: none; border-radius: 6px; background: var(--raised); color: var(--accent); font-size: 0.8rem; font-weight: 600; }
+button.find:hover { background: var(--raised-hover); }
+button.find svg { width: 14px; height: 14px; }
+
+/* Storage grids: every spot is drawn as the front of a small drawer, with its pull. Wide grids scroll sideways. */
+dialog:has(.grid-dialog) { width: min(960px, calc(100% - 32px)); }
+.grid-box { position: relative; overflow-x: auto; padding: 2px 2px 6px; }
+.grid { display: grid; grid-template-columns: 18px repeat(var(--cols), minmax(32px, 52px)); gap: 4px; }
+.grid > span { align-self: center; text-align: center; font-size: 0.75rem; font-weight: 500; color: var(--muted); }
+.grid > span.on { color: var(--accent); font-weight: 700; }
+button.spot { position: relative; height: 34px; min-height: 0; padding: 0 0 7px; border: 1px solid var(--border); border-radius: 4px; background: var(--field); color: var(--text); font-size: 0.8rem; line-height: 1; }
+button.spot::after { content: ''; position: absolute; left: 32%; right: 32%; bottom: 6px; height: 3px; border-radius: 2px; background: var(--field-border); opacity: 0.55; }
+button.spot.full { background: var(--raised); border-color: var(--field-border); }
+button.spot:hover { border-color: var(--accent); }
+button.spot[aria-pressed="true"] { background: var(--accent-gradient); border-color: transparent; color: var(--accent-text); }
+button.spot[aria-pressed="true"]::after { background: currentColor; opacity: 0.85; }
+.grid-dialog.finding button.spot[aria-pressed="true"] { animation: found 0.9s ease-out 3; }
+@keyframes found { from { box-shadow: 0 0 0 0 rgb(91 155 255 / 0.8); } to { box-shadow: 0 0 0 12px rgb(91 155 255 / 0); } }
+@media (prefers-reduced-motion: reduce) { .grid-dialog.finding button.spot[aria-pressed="true"] { animation: none; } }
+.grid-dialog { display: flex; flex-direction: column; gap: 14px; }
+.grid-dialog .spot-parts:empty { display: none; }
+.spot-parts li { flex-direction: column; align-items: flex-start; gap: 0; }
+.spot-parts button.link { min-height: 0; padding: 2px 0; align-self: flex-start; white-space: normal; text-align: left; font-size: 1rem; }
+.grid-size { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin: 0; padding: 14px 0 0; border: none; border-top: 1px solid var(--border); }
+.grid-size legend { float: left; width: 100%; padding: 0; margin-bottom: 2px; font-size: 0.875rem; font-weight: 600; color: var(--text); }
+.grid-size label { width: 96px; }
+.spot-field[hidden] { display: none; }
+.spot-field > span { color: var(--muted); }
+.spot-field > span .muted { margin-left: 6px; font-weight: 600; color: var(--accent); }
 .picker .target { display: flex; align-items: center; gap: 8px; }
 .picker .target svg { flex: none; color: var(--muted); }
 .picker { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 50dvh; overflow: auto; }

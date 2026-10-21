@@ -60,7 +60,13 @@ function add(name, data) {
 
 // ---------- sample data ----------
 
-const SAMPLE_LOCATIONS = ['Bin 1', 'Bin 2', 'Bin 3', 'Bin 4', 'Electronics drawer', 'Shelf A', 'Shelf B', 'Tool wall', 'Pit cabinet'];
+const SAMPLE_LOCATIONS = ['Bin 1', 'Bin 2', 'Electronics drawer', 'Hardware drawers', 'Shelf A', 'Shelf B', 'Tool wall', 'Pit cabinet'];
+// The sample cabinet of small drawers, and which drawer each part in it is in.
+const SAMPLE_GRIDS = { 'Hardware drawers': { rows: 5, cols: 20 } };
+const SAMPLE_SPOTS = {
+  'M4 x 8mm socket head screw (25 pack)': 'A3', 'M4 x 12mm socket head screw (25 pack)': 'A4', 'M4 nylock nut (25 pack)': 'B3',
+  '8mm REX shaft 96mm': 'D12', 'Flanged ball bearing 8mm': 'C12',
+};
 
 // [name, part number, quantity, location, supplier, category, tags]
 const SAMPLE_PARTS = [
@@ -82,11 +88,11 @@ const SAMPLE_PARTS = [
   ['U-Channel 5 hole', '1120-0005-0160', 8, 'Shelf B', 'goBILDA', 'Hardware/Structure', []],
   ['Low-Side U-Channel 13 hole', '1121-0013-0336', 4, 'Shelf B', 'goBILDA', 'Hardware/Structure', ['drivetrain']],
   ['Viper-Slide kit 336mm', '3100-0001-0001', 1, 'Shelf B', 'goBILDA', 'Hardware/Linear motion', ['lift']],
-  ['M4 x 8mm socket head screw (25 pack)', '2802-0004-0008', 12, 'Bin 3', 'goBILDA', 'Hardware/Screws', []],
-  ['M4 x 12mm socket head screw (25 pack)', '2802-0004-0012', 9, 'Bin 3', 'goBILDA', 'Hardware/Screws', []],
-  ['M4 nylock nut (25 pack)', '2812-0004-0007', 10, 'Bin 3', 'goBILDA', 'Hardware/Nuts', []],
-  ['8mm REX shaft 96mm', '2106-4008-0960', 6, 'Bin 4', 'goBILDA', 'Hardware/Shafts', []],
-  ['Flanged ball bearing 8mm', '1611-0814-0008', 16, 'Bin 4', 'goBILDA', 'Hardware/Bearings', []],
+  ['M4 x 8mm socket head screw (25 pack)', '2802-0004-0008', 12, 'Hardware drawers', 'goBILDA', 'Hardware/Screws', []],
+  ['M4 x 12mm socket head screw (25 pack)', '2802-0004-0012', 9, 'Hardware drawers', 'goBILDA', 'Hardware/Screws', []],
+  ['M4 nylock nut (25 pack)', '2812-0004-0007', 10, 'Hardware drawers', 'goBILDA', 'Hardware/Nuts', []],
+  ['8mm REX shaft 96mm', '2106-4008-0960', 6, 'Hardware drawers', 'goBILDA', 'Hardware/Shafts', []],
+  ['Flanged ball bearing 8mm', '1611-0814-0008', 16, 'Hardware drawers', 'goBILDA', 'Hardware/Bearings', []],
   ['Surgical tubing (1 m)', '', 3, 'Bin 2', 'McMaster-Carr', 'Hardware/Intake', ['intake']],
   ['Zip ties (100 pack)', '', 2, 'Tool wall', 'Amazon', 'Supplies', []],
   ['7mm combination wrench', '4202-0070-1070', 3, 'Tool wall', 'goBILDA', 'Tools', []],
@@ -145,10 +151,10 @@ const SAMPLE_ORDERS = [
 
 function loadSamples() {
   const hoursAgo = (hours) => Timestamp.fromMillis(Date.now() - hours * 3600 * 1000);
-  for (const name of SAMPLE_LOCATIONS) add('locations', { name });
+  for (const name of SAMPLE_LOCATIONS) add('locations', { name, ...SAMPLE_GRIDS[name] });
   const ids = new Map();
   const addParts = (rows, projectId) => rows.forEach(([name, partNumber, quantity, location, supplier, category, tags], i) => {
-    const part = { name, partNumber, quantity, location, supplier, category, tags, unit: 'pcs', condition: 'new', notes: '', ...(SAMPLE_LINKS[partNumber] && { link: SAMPLE_LINKS[partNumber] }), ...(name in SAMPLE_MINIMUMS && { minQuantity: SAMPLE_MINIMUMS[name] }) };
+    const part = { name, partNumber, quantity, location, supplier, category, tags, unit: 'pcs', condition: 'new', notes: '', ...(SAMPLE_LINKS[partNumber] && { link: SAMPLE_LINKS[partNumber] }), ...(name in SAMPLE_MINIMUMS && { minQuantity: SAMPLE_MINIMUMS[name] }), ...(SAMPLE_SPOTS[name] && { spot: SAMPLE_SPOTS[name] }) };
     ids.set(name, add('parts', { ...part, projectId, updatedBy: USER.email, updatedAt: hoursAgo(i + 1) }).id);
   });
   addParts(SAMPLE_PARTS, MAIN_PROJECT);
@@ -210,8 +216,13 @@ export const watchLog = (callback) =>
   watch('log', () => callback(docs('log').sort((a, b) => b.at.toMillis() - a.at.toMillis())));
 
 
-export async function addLocation(name) {
-  return add('locations', { name });
+export async function addLocation(name, grid) {
+  return add('locations', { name, ...grid });
+}
+
+export async function setGrid(id, grid) {
+  const { rows, cols, ...location } = collections.locations.get(id);
+  write('locations', id, { ...location, ...grid });
 }
 
 export async function deleteLocation(id) {
@@ -219,7 +230,7 @@ export async function deleteLocation(id) {
 }
 
 export async function renameLocation(id, name) {
-  write('locations', id, { name });
+  write('locations', id, { ...collections.locations.get(id), name });
 }
 
 export async function markPrinted(keys) {

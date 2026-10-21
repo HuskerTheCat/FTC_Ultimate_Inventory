@@ -4,7 +4,7 @@ service cloud.firestore {
     // Add 1 whenever these rules change. The app is built with this number (vite.config.js) and, after sign-in,
     // reads rulesVersion/<number>; if the team's published rules are older, that's denied and the app shows a
     // banner linking to "Updating the rules" in SETUP.md.
-    function rulesVersion() { return 5; }
+    function rulesVersion() { return 6; }
 
     function signedIn() {
       return request.auth != null;
@@ -51,7 +51,7 @@ service cloud.firestore {
     }
     function validPart() {
       let part = request.resource.data;
-      return part.keys().hasOnly(['projectId', 'name', 'partNumber', 'barcode', 'link', 'quantity', 'minQuantity', 'location', 'supplier', 'category', 'tags', 'unit', 'condition', 'notes', 'updatedBy', 'updatedAt'])
+      return part.keys().hasOnly(['projectId', 'name', 'partNumber', 'barcode', 'link', 'quantity', 'minQuantity', 'location', 'supplier', 'category', 'tags', 'unit', 'condition', 'notes', 'spot', 'updatedBy', 'updatedAt'])
         && projectExists(part.projectId)
         && shortText(part.name) && part.name.size() > 0
         && shortText(part.partNumber)
@@ -64,6 +64,7 @@ service cloud.firestore {
         && (!('unit' in part) || shortText(part.unit))
         && (!('condition' in part) || part.condition in ['', 'new', 'used', 'broken'])
         && (!('notes' in part) || (part.notes is string && part.notes.size() <= 1000))
+        && (!('spot' in part) || (part.spot is string && part.spot.matches('[A-Z][1-9][0-9]?')))
         && part.quantity is int && part.quantity >= 0 && part.quantity <= 1000000
         && (!('minQuantity' in part) || (part.minQuantity is int && part.minQuantity >= 0 && part.minQuantity <= 1000000))
         && part.updatedBy == request.auth.token.email
@@ -171,11 +172,18 @@ service cloud.firestore {
       allow delete: if isMember() && projectId != 'main' && trashedNow('project', projectId);
     }
 
+    // A location can be a grid of spots, like a cabinet of small drawers: rows A to Z, columns 1 to 50.
+    function validGrid(location) {
+      return (!('rows' in location) && !('cols' in location))
+        || (location.rows is int && location.rows >= 1 && location.rows <= 26
+          && location.cols is int && location.cols >= 1 && location.cols <= 50);
+    }
     match /locations/{locationId} {
       allow read, delete: if isMember();
       allow create, update: if isMember()
-        && request.resource.data.keys().hasOnly(['name'])
-        && shortText(request.resource.data.name) && request.resource.data.name.size() > 0;
+        && request.resource.data.keys().hasOnly(['name', 'rows', 'cols'])
+        && shortText(request.resource.data.name) && request.resource.data.name.size() > 0
+        && validGrid(request.resource.data);
     }
 
     match /printed/{labelKey} {

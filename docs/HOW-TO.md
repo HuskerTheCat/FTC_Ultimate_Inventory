@@ -128,6 +128,14 @@ Your team has one list of locations (bins, shelves, drawers). **☰ → Location
 
 <img src="how-to/locations.png" alt="The Locations list" width="440">
 
+### Storage grids
+
+For a cabinet of small drawers or a shelf of bins, tap **Grid** next to the location and set its rows and columns, like 5 rows and 20 columns. Spots are named by row and column: A1 is the top left, C12 the third row, twelfth column.
+
+In a part's dialog, pick the grid location, then tap the part's spot. In the list, the part shows its spot by its location. Tap that spot (or **Find part** after scanning its label) to see the grid with it highlighted. Tapping any spot in a grid lists what's in it.
+
+<img src="how-to/find-part.png" alt="Find part: the Hardware drawers grid with spot B3 highlighted" width="800">
+
 **⋯ → Print QR labels** prints labels for bins and parts. Scanning one with **Scan** or any phone camera opens that bin or part, ready to take one with **−**.
 
 The app remembers which labels are printed, so only new ones are checked. The list follows your filters, so filter to one location to print just its labels. A part's dialog has **Print label** for one.
