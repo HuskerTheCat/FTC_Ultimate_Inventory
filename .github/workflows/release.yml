@@ -22,7 +22,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm pkg set version=${{ inputs.version }}
+      - run: npm pkg set "version=$VERSION"
+        env:
+          VERSION: ${{ inputs.version }}
       - run: npm run build:windows
       - uses: actions/upload-artifact@v4
         with:
@@ -42,9 +44,24 @@ jobs:
           distribution: temurin
           java-version: 21
       - run: npm ci
-      - run: npm pkg set version=${{ inputs.version }}
+      - run: npm pkg set "version=$VERSION"
+        env:
+          VERSION: ${{ inputs.version }}
       - run: npm run build:android
-      - run: mv android/app/build/outputs/apk/debug/app-debug.apk FTC-Ultimate-Inventory.apk
+      # Every release is signed with the same key (repo secrets), so each APK installs as an update over the last.
+      - name: Build signed release APK
+        env:
+          ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          test -n "$ANDROID_KEYSTORE" && test -n "$ANDROID_KEYSTORE_PASSWORD" || { echo "Missing ANDROID_KEYSTORE or ANDROID_KEYSTORE_PASSWORD secret"; exit 1; }
+          echo "$ANDROID_KEYSTORE" | base64 -d > "$RUNNER_TEMP/release.jks"
+          cd android && ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file="$RUNNER_TEMP/release.jks" \
+            -Pandroid.injected.signing.store.password="$ANDROID_KEYSTORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias=release \
+            -Pandroid.injected.signing.key.password="$ANDROID_KEYSTORE_PASSWORD"
+      - run: mv android/app/build/outputs/apk/release/app-release.apk FTC-Ultimate-Inventory.apk
       - uses: actions/upload-artifact@v4
         with:
           name: android
