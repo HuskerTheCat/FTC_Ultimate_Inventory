@@ -19,6 +19,11 @@
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="icon-192.png" />
     <link rel="stylesheet" href="/src/style.css" />
+    <!-- The loading screen's font and contour lines (#switching), fetched with the stylesheet so it shows complete from its first paint. -->
+    <link rel="preload" href="/node_modules/@fontsource/orbitron/files/orbitron-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/node_modules/@fontsource/orbitron/files/orbitron-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/src/topo.svg" as="image" crossorigin />
+    <script src="switching.js"></script>
   </head>
   <body>
     <p id="offline-banner" class="status-banner offline" role="status" hidden>Offline, changes will sync when you reconnect</p>
@@ -28,6 +33,7 @@
     <a id="open-rules-banner" class="status-banner danger" href="https://huskerthecat.github.io/FTC_Ultimate_Inventory/setup.html#updating-the-rules" target="_blank" rel="noopener" hidden>Your Firebase is configured incorrectly and your account is not secure. Click here to fix</a>
     <a id="demo-banner" class="status-banner demo" href="index.html" hidden>Demo only. <u>Set up your team →</u></a>
     <div id="app"></div>
+    <div id="switching" data-app="inventory" aria-hidden="true"><img src="loading.svg" alt="" /><p><span class="name">FTC Ultimate</span><span class="app-name">Inventory</span></p></div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

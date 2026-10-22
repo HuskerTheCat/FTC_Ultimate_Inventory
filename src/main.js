@@ -9,6 +9,7 @@ import { BACKUP_COLLECTIONS, makeBackup, readBackup } from './backup.js';
 import { startStatusBanners, checkRules } from './status.js';
 import { RULES, consolePage, AUTH_PAGE, RULES_PAGE, AUTH_OFF_CODES, setupProblems } from './setup.js';
 import { CUBE, morphCube } from './cube.js';
+import { openApp, prefetchApps } from './switching.js';
 import { PROGRAMS, recordTeam, recordDeletedTeam, findTeamProject, teamProject, sendBugReport, sendFeatureRequest } from './hub.js';
 
 const WEB_URL = 'https://huskerthecat.github.io/FTC_Ultimate_Inventory/';
@@ -791,7 +792,9 @@ function showMenu(button, open) {
   app.querySelector(`#${button.getAttribute('aria-controls')}`).hidden = !open;
   button.setAttribute('aria-expanded', String(open));
   // The app switcher's cube turns into the suite cube while its menu is open.
-  if (button.id === 'apps-toggle') morphCube(button.querySelector('.cube'), open ? 'suite' : 'inventory');
+  if (button.id !== 'apps-toggle') return;
+  morphCube(button.querySelector('.cube'), open ? 'suite' : 'inventory');
+  if (open && import.meta.env.MODE !== 'app') prefetchApps(app.querySelector('#apps-menu'));
 }
 
 // Closes every open menu except the one inside `keep`.
@@ -810,8 +813,9 @@ document.addEventListener('keydown', (e) => {
   wrap?.querySelector('[aria-haspopup]').focus();
 });
 
-// Competition and Design in the app switcher: the cube turns into the chosen app's cube, then its link goes to its web page,
-// which the Windows app swaps for the installed app (electron/main.cjs). The Android app opens the installed app by its
+// Competition and Design in the app switcher: the cube turns into the chosen app's cube, then the website fades into that app's
+// loading screen and opens it (src/switching.js). The Windows app follows the link to the web page, which it swaps for the
+// installed app (electron/main.cjs). The Android app opens the installed app by its
 // package id instead, and the web page in the browser when it isn't installed.
 // Ctrl, Shift or Cmd and a click opens the link as the browser normally would, without the cube.
 async function openSuiteApp(e) {
@@ -822,6 +826,7 @@ async function openSuiteApp(e) {
   await morphCube(cube, link.dataset.app);
   // Coming back to this page (the other app opened beside it, or the browser's Back button), the cube is Inventory's again.
   setTimeout(() => morphCube(cube, 'inventory'), 2000);
+  if (import.meta.env.MODE !== 'app') return openApp(link);
   if (!window.Capacitor?.isNativePlatform()) {
     location.href = link.href;
     return;
