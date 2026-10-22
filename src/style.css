@@ -248,18 +248,8 @@ header .brand .app-name { font-size: 1.05rem; }
 .app-icon.inventory { background-image: url(../public/icon.svg); }
 .app-icon.competition { background-image: url(./competition.svg); }
 .app-icon.design { background-image: url(./design.svg); }
-/* The app switcher's cube (src/cube.js): each cube's face colors and glyphs, fading from one to the next. */
-.cube[data-show="inventory"] { --top: #eef1f8; --left: #5aa9ff; --right: #2f5bd6; }
-.cube[data-show="competition"] { --top: #eef1f8; --left: #ffa53d; --right: #e07415; }
-.cube[data-show="design"] { --top: #eef1f8; --left: #45d08f; --right: #1c9a60; }
-.cube[data-show="suite"] { --top: #5aa9ff; --left: #ffa53d; --right: #1c9a60; }
-.cube .face { transition: fill 0.3s 0.05s, stroke 0.3s 0.05s; }
-.cube .top .face { fill: var(--top); stroke: var(--top); }
-.cube .left .face { fill: var(--left); stroke: var(--left); }
-.cube .right .face { fill: var(--right); stroke: var(--right); }
-/* The old glyphs fade out quickly and the new ones fade in once the faces have changed color. */
-.cube .glyph { opacity: 0; transition: opacity 0.12s; }
-.cube[data-show="inventory"] .inventory, .cube[data-show="competition"] .competition, .cube[data-show="design"] .design, .cube[data-show="suite"] .suite { opacity: 1; transition: opacity 0.2s 0.2s; }
+/* The app switcher's cube (src/cube.js) turns about its middle. */
+.cube .layer { transform-origin: 256px 256px; }
 #apps-menu .app-icon { flex: none; width: 28px; height: 28px; }
 #apps-menu .menu-item, #apps-menu h3 { font-family: Orbitron, sans-serif; }
 #apps-menu .menu-item:has(.competition) { color: #ffa53d; }
