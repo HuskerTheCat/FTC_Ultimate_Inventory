@@ -13,7 +13,24 @@ permissions:
   contents: read
 
 jobs:
+  # The release notes are the version's section of WHATS-NEW.md. Checked first, so a missing section stops the run
+  # before the long builds.
+  notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          awk -v v="## v$VERSION" 'index($0, v " ") == 1 || $0 == v { on = 1; next } /^## / { on = 0 } on' WHATS-NEW.md > notes.md
+          grep -q '[^[:space:]]' notes.md || { echo "WHATS-NEW.md has no '## v$VERSION' section. Rename 'Next update' to 'v$VERSION · <date>' first."; exit 1; }
+        env:
+          VERSION: ${{ inputs.version }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: notes
+          path: notes.md
+
   windows:
+    needs: notes
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,6 +50,7 @@ jobs:
           path: release/FTC-Ultimate-Inventory-Setup.exe
 
   android:
+    needs: notes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -69,7 +87,7 @@ jobs:
           path: FTC-Ultimate-Inventory.apk
 
   release:
-    needs: [windows, android]
+    needs: [notes, windows, android]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -81,6 +99,7 @@ jobs:
         with:
           tag_name: v${{ inputs.version }}
           target_commitish: ${{ github.sha }}
+          body_path: notes.md
           files: |
             FTC-Ultimate-Inventory-Setup.exe
             FTC-Ultimate-Inventory.apk

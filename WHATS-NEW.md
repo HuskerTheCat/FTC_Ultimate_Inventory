@@ -2,6 +2,8 @@
 
 The app's ☰ → What's new shows this file, newest first. Each version is a `## ` heading. A blue dot shows on ☰ until a user opens What's new after the top section changes.
 
+Before running **Build apps**, rename `Next update` to the version, e.g. `## v0.6.4 · Oct 25, 2026`. Build apps uses that section as the release notes, and stops if it's missing.
+
 ## Next update
 
 **Team owners:** re-publish the Firebase rules from [SETUP.md](https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/blob/main/SETUP.md#updating-the-rules) (rules version 9).
