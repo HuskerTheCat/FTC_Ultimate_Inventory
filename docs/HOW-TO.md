@@ -94,7 +94,7 @@ The name, part number, supplier, category and link fill in, plus the supplier's 
 - **Location** comes from your team's list ([section 5](#5-locations-and-qr-labels)). **+ New location…** adds one on the spot.
 - **Category** can have subcategories: `Electronics/Sensors` shows as Electronics › Sensors.
 - **Tags** are short labels like `spare` or `competition`. Tap one to show only parts with it.
-- **Made by:** for a part the team makes, pick 3D printed, CNC machined, Laser cut or Made another way. Then Material shows, and Link becomes File link for its CAD, STL or slicer file. **Filters → Made by team** lists only those parts.
+- **Made by:** for a part the team makes, pick 3D printed, CNC machined, Laser cut or Other. Then Material shows, and Link becomes File link for its CAD, STL or slicer file. **Filters → Custom** lists only those parts.
 - **More details** holds unit, condition and notes.
 - **Save and add another** keeps the location, category and tags, handy for a whole bin.
 - Filtered to one location, or just scanned a bin? **+ Add part** starts there.
@@ -192,14 +192,14 @@ Open **☰ → Orders** to track parts you need, have ordered, and got. The list
 
 ### Print list
 
-**☰ → Print list** tracks parts the team makes: 3D prints, CNC and laser cut parts. Tabs: **To make**, **In progress** and **Made**.
+**☰ → Print list** tracks parts the team makes: 3D prints, CNC and laser cut parts. Tabs: **Not started**, **In progress** and **Complete**.
 
 <img src="how-to/print-list.png" alt="The print list" width="440">
 
 - **+ Add part to make**: pick a part the team makes, or type a new one with how it's made, material and file link. A new one appears in Main Inventory with 0 in stock.
 - **Make more** in a made part's dialog puts it on the list too.
-- Tap **Start** when you begin, so nobody prints it twice. Tap **Made** when it's done to add it to the inventory; if only some came out, enter how many and the rest stays under In progress.
-- **Clear made** empties the Made tab. Tap an item to change its quantity or notes. **Print** prints the tab you're on.
+- Tap **Start** when you begin, so nobody prints it twice; starting only some? Enter how many and the rest stays under Not started. Tap **Made** when it's done to add it to the inventory; if only some came out, enter how many and the rest stays under In progress.
+- **Clear complete** empties the Complete tab. Tap an item to change its quantity or notes. **Print** prints the tab you're on.
 
 ---
 

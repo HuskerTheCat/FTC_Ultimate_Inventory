@@ -230,16 +230,27 @@ export const newBuildId = () => doc(collection(db, 'builds')).id;
 // Writes a print list item: a new one, a changed one, or one brought back.
 export const saveBuild = (id, build) => setDoc(doc(db, 'builds', id), build);
 
-// Adds `count` made parts to stock. The item is marked made once all of it is; otherwise it keeps what's still to make
-// and a new made item holds `count`.
-export async function makeBuild(build, user, count) {
-  const batch = writeBatch(db);
-  batch.update(doc(db, 'parts', build.partId), { quantity: increment(count), updatedBy: user.email, updatedAt: serverTimestamp() });
+// Moves `count` of a print list item to `status`: the whole item, or a new item `newId` with `count` while the rest stays.
+function moveBuild(batch, build, status, count, newId) {
   const { id, ...data } = build;
   if (count < build.quantity) {
     batch.update(doc(db, 'builds', id), { quantity: build.quantity - count });
-    batch.set(doc(collection(db, 'builds')), { ...data, quantity: count, status: 'made' });
-  } else batch.update(doc(db, 'builds', id), { status: 'made' });
+    batch.set(doc(db, 'builds', newId), { ...data, quantity: count, status });
+  } else batch.update(doc(db, 'builds', id), { status });
+}
+
+// Starts making `count` of an item. `newId` (from newBuildId) holds them when it's only some, so it can be undone.
+export async function startBuild(build, count, newId) {
+  const batch = writeBatch(db);
+  moveBuild(batch, build, 'making', count, newId);
+  await batch.commit();
+}
+
+// Adds `count` made parts to stock and moves them to made.
+export async function makeBuild(build, user, count) {
+  const batch = writeBatch(db);
+  batch.update(doc(db, 'parts', build.partId), { quantity: increment(count), updatedBy: user.email, updatedAt: serverTimestamp() });
+  moveBuild(batch, build, 'made', count, newBuildId());
   await batch.commit();
 }
 

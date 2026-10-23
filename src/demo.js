@@ -118,10 +118,10 @@ const SAMPLE_PARTS = [
   ['Zip ties (100 pack)', '2909-0101-0100', 2, 'Tool wall', 'goBILDA', 'Supplies', [], { unit: 'pack', minQuantity: 2 }],
   ['7mm combination wrench', '4202-0070-1070', 3, 'Tool wall', 'goBILDA', 'Tools', []],
   ['Allen wrench pack', 'REV-45-1882', 2, 'Tool wall', 'REV Robotics', 'Tools', [], { notes: 'One lives in the pit box. It keeps going missing.' }],
-  ['Intake roller bracket', 'TL-INT-03', 2, 'Bin 2', '', 'Custom/Intake', ['intake'], { made: '3d-print', material: 'PETG', link: 'https://cad.onshape.com/', notes: '40% infill, 4 walls.' }],
-  ['Claw finger, left', 'TL-CLW-11', 0, 'Bin 2', '', 'Custom/Claw', ['claw'], { made: '3d-print', material: 'TPU 95A', link: 'https://cad.onshape.com/' }],
-  ['Claw finger, right', 'TL-CLW-12', 1, 'Bin 2', '', 'Custom/Claw', ['claw'], { made: '3d-print', material: 'TPU 95A', link: 'https://cad.onshape.com/' }],
-  ['Odometry pod mount', 'TL-ODO-02', 2, 'Bin 2', '', 'Custom/Drivetrain', ['odometry'], { made: '3d-print', material: 'PLA' }],
+  ['Intake roller bracket', 'TL-INT-03', 2, 'Bin 2', '', 'Custom/Intake', ['intake'], { made: '3d-print', material: 'PETG', link: 'https://www.printables.com/model/122820-ftc-robotics-flexy-intake-customizable', notes: '40% infill, 4 walls.' }],
+  ['Claw finger, left', 'TL-CLW-11', 0, 'Bin 2', '', 'Custom/Claw', ['claw'], { made: '3d-print', material: 'TPU 95A', link: 'https://www.printables.com/model/791717-borikengineers-gripper-for-ftc-centerstage' }],
+  ['Claw finger, right', 'TL-CLW-12', 1, 'Bin 2', '', 'Custom/Claw', ['claw'], { made: '3d-print', material: 'TPU 95A', link: 'https://www.printables.com/model/791717-borikengineers-gripper-for-ftc-centerstage' }],
+  ['Odometry pod mount', 'TL-ODO-02', 2, 'Bin 2', '', 'Custom/Drivetrain', ['odometry'], { made: '3d-print', material: 'PLA', link: 'https://www.printables.com/model/357452-ftc-trackwheels-odometry-wheels' }],
   ['Drivetrain side plate', 'TL-DT-01', 2, 'Shelf B', '', 'Custom/Drivetrain', ['drivetrain'], { made: 'cnc', material: '6061 aluminum, 1/4 in' }],
   ['Intake guard', 'TL-INT-07', 1, 'Shelf B', '', 'Custom/Intake', ['intake'], { made: 'laser', material: 'Polycarbonate 1/16 in' }],
 ];
@@ -398,13 +398,21 @@ export async function saveBuild(id, build) {
   write('builds', id, build);
 }
 
-export async function makeBuild(build, user, count) {
-  await changeQuantity(build.partId, count, user);
+function moveBuild(build, status, count, newId) {
   const { id, ...data } = build;
   if (count < build.quantity) {
     write('builds', id, { ...data, quantity: build.quantity - count });
-    add('builds', { ...data, quantity: count, status: 'made' });
-  } else write('builds', id, { ...data, status: 'made' });
+    write('builds', newId, { ...data, quantity: count, status });
+  } else write('builds', id, { ...data, status });
+}
+
+export async function startBuild(build, count, newId) {
+  moveBuild(build, 'making', count, newId);
+}
+
+export async function makeBuild(build, user, count) {
+  await changeQuantity(build.partId, count, user);
+  moveBuild(build, 'made', count, newBuildId());
 }
 
 export async function deleteBuilds(ids) {

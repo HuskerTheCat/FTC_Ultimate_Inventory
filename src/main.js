@@ -65,7 +65,7 @@ const DETAIL_FIELDS = [
 const UNITS = ['pcs', 'pack', 'box', 'm', 'ft'];
 const CONDITIONS = { '': 'Condition not set', new: 'New', used: 'Used', damaged: 'Damaged', broken: 'Broken' };
 // How a part the team makes itself is made. Parts without `made` are bought.
-const MADE = { '3d-print': '3D printed', cnc: 'CNC machined', laser: 'Laser cut', other: 'Made another way' };
+const MADE = { '3d-print': '3D printed', cnc: 'CNC machined', laser: 'Laser cut', other: 'Other' };
 
 const SEARCH_KEYS = ['name', 'partNumber', 'barcode', 'supplier', 'location', 'spot', 'category', 'condition', 'material', 'notes'];
 // Small line icons that take the button's text color.
@@ -194,7 +194,7 @@ const onOrder = (partId) => ordering(partId, 'need') + ordering(partId, 'ordered
 const waiting = (partId) => onOrder(partId) > 0 && !state.parts.find((p) => p.id === partId).quantity;
 // A print list item is to make (no status), being made, or made.
 const buildStatus = (build) => build.status ?? 'need';
-const BUILD_TABS = [['need', 'To make'], ['making', 'In progress'], ['made', 'Made']];
+const BUILD_TABS = [['need', 'Not started'], ['making', 'In progress'], ['made', 'Complete']];
 // How many of a part are on the print list with this status.
 const making = (partId, status) => state.builds.filter((b) => b.partId === partId && buildStatus(b) === status).reduce((sum, b) => sum + b.quantity, 0);
 // The Made by filter: bought parts, every made part, or one way of making them.
@@ -986,7 +986,7 @@ function renderRows() {
   // Only teams that make parts get the Made by filter.
   const madeFilter = app.querySelector('#made');
   madeFilter.hidden = !state.made && !all.some((p) => p.made);
-  madeFilter.innerHTML = Object.entries({ '': 'Bought and made', bought: 'Bought', made: 'Made by team', ...MADE })
+  madeFilter.innerHTML = Object.entries({ '': 'All', bought: 'Vendor', made: 'Custom', '3d-print': '3D printed', laser: 'Laser cut', cnc: 'CNC machined', other: 'Other' })
     .map(([value, label]) => `<option value="${value}" ${value === state.made ? 'selected' : ''}>${label}</option>`).join('');
   app.querySelector('#low').classList.toggle('active', state.low);
   app.querySelector('#low').setAttribute('aria-pressed', String(state.low));
@@ -2552,7 +2552,7 @@ async function receiveOrder(order) {
 
 // ---------- print list ----------
 
-// The print list: parts the team makes itself, To make, In progress and Made, like the order list.
+// The print list: parts the team makes itself, Not started, In progress and Complete, like the order list.
 // Every item is for a part; how it's made, its material and its file are the part's.
 function openBuildsDialog() {
   const dialog = app.querySelector('#dialog');
@@ -2563,7 +2563,7 @@ function openBuildsDialog() {
         ${BUILD_TABS.map(([key, label]) => `<button type="button" class="secondary" data-tab="${key}">${label} <span class="tab-count"></span></button>`).join('')}
       </div>
       <ul id="build-list" class="members"></ul>
-      <button type="button" id="clear-made" class="link" hidden>Clear made</button>
+      <button type="button" id="clear-made" class="link" hidden>Clear complete</button>
       <details id="build-form" class="collapsible">
         <summary id="build-form-title">+ Add part to make</summary>
         <input name="name" maxlength="200" list="build-parts" placeholder="Part, or pick one the team makes" />
@@ -2595,7 +2595,7 @@ function openBuildsDialog() {
   let editing = null;
   const shown = () => state.builds.filter((b) => buildStatus(b) === tab).sort((a, b) => a.name.localeCompare(b.name));
   const partNamed = (name) => state.parts.find((p) => sameName(p.name, name));
-  // New items go under To make, so the form shows there, or on any tab while changing an item. Add only shows while it's open.
+  // New items go under Not started, so the form shows there, or on any tab while changing an item. Add only shows while it's open.
   // How a part is made and its file are asked only for a part the team doesn't have yet.
   const showForm = () => {
     buildForm.hidden = tab !== 'need' && !editing;
@@ -2652,7 +2652,7 @@ function openBuildsDialog() {
           <button type="button" class="danger" data-remove="${esc(b.id)}">Remove</button>
         </span>
       </li>`;
-    }).join('') || `<li class="muted">${{ need: 'Nothing to make.', making: 'Nothing in progress.', made: 'Nothing made yet.' }[tab]}</li>`;
+    }).join('') || `<li class="muted">${{ need: 'Nothing to make.', making: 'Nothing in progress.', made: 'Nothing complete yet.' }[tab]}</li>`;
   };
   // Adding keeps the dialog open; Enter in a field adds too.
   form.onsubmit = (e) => {
@@ -2688,7 +2688,7 @@ function openBuildsDialog() {
   list.onclick = (e) => {
     const { start, made, remove } = e.target.dataset;
     const build = state.builds.find((b) => b.id === (start || made || remove));
-    if (start) return startBuild(build);
+    if (start) return startBuild(build).catch(showError);
     if (made) return makeBuild(build).catch(showError);
     if (remove) return removeBuild(build);
     const edit = e.target.closest('[data-edit]')?.dataset.edit;
@@ -2725,19 +2725,33 @@ async function makeMore(part) {
   offerUndo(`${quantity} ${part.name} on the print list`, () => fb.deleteBuilds([id]).catch(showError));
 }
 
-function startBuild(build) {
+// How many of an item to move on: all of it, or fewer when typed. 0 when cancelled.
+async function howMany(build, question) {
+  if (build.quantity === 1) return 1;
+  const count = Number(await ask(question, build.quantity));
+  if (count && (!Number.isInteger(count) || count < 1 || count > build.quantity)) throw new Error(`Enter a whole number from 1 to ${build.quantity}.`);
+  return count;
+}
+
+// Some can be started first: the rest stays not started.
+async function startBuild(build) {
+  const count = await howMany(build, `How many ${build.name} are you starting?`);
+  if (!count) return;
+  const newId = fb.newBuildId();
+  fb.startBuild(build, count, newId).catch(showError);
   const { id, ...before } = build;
-  fb.saveBuild(id, { ...before, status: 'making' }).catch(showError);
-  offerUndo(`Started ${build.name}`, () => fb.saveBuild(id, before).catch(showError));
+  offerUndo(`Started ${count} ${build.name}`, () => Promise.all([
+    fb.saveBuild(id, before),
+    ...(count < build.quantity ? [fb.deleteBuilds([newId])] : []),
+  ]).catch(showError));
 }
 
 // Adds what came out to the part's stock. Some can be made first: the rest stays in progress.
 async function makeBuild(build) {
   const part = state.parts.find((p) => p.id === build.partId);
   if (!part) throw new Error(`${build.name} was deleted. Bring it back from the Trash first.`);
-  const count = build.quantity > 1 ? Number(await ask(`How many ${build.name} were made?`, build.quantity)) : build.quantity;
+  const count = await howMany(build, `How many ${build.name} were made?`);
   if (!count) return;
-  if (!Number.isInteger(count) || count < 1 || count > build.quantity) throw new Error(`Enter a whole number from 1 to ${build.quantity}.`);
   logged(fb.makeBuild(build, state.user, count), 'made', build.name, `+${count} from the print list`);
 }
 
@@ -2750,7 +2764,7 @@ function removeBuild(build) {
 // Made items are already in the inventory, so clearing them just deletes them.
 function clearMade(builds) {
   fb.deleteBuilds(builds.map((b) => b.id)).catch(showError);
-  offerUndo(`Cleared ${count(builds.length, 'made item')}`, () => Promise.all(builds.map(({ id, ...build }) => fb.saveBuild(id, build))).catch(showError));
+  offerUndo(`Cleared ${count(builds.length, 'complete item')}`, () => Promise.all(builds.map(({ id, ...build }) => fb.saveBuild(id, build))).catch(showError));
 }
 
 // Prints one tab of the print list as a table.
