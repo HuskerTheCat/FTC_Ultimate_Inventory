@@ -1,11 +1,19 @@
 import QRCode from 'qrcode';
 import { CUBE_MARK } from './cube.js';
+import TOPO from './topo.svg?raw';
 
 // Normal and stylized labels fit OnlineLabels OL911 sheets: letter paper, 3 across and 7 down, 2.5" x 1.25" each.
 // Mini labels are tiny codes to cut out, each captioned outside its cut line.
 export const LABEL_SHEET_URL = 'https://www.onlinelabels.com/products/ol911';
 export const LABEL_STYLES = { normal: 'Normal', stylized: 'Stylized', mini: 'Mini' };
 const PER_PAGE = { normal: 21, stylized: 21, mini: 110 };
+// Each contour line of the topographic map with its bounds, so a stylized label draws only the lines on its patch.
+const CONTOURS = TOPO.match(/ d="([^"]+)"/)[1].split(/(?=M)/).map((d) => {
+  const numbers = d.match(/[\d.]+/g).map(Number);
+  const xs = numbers.filter((_, i) => i % 2 === 0);
+  const ys = numbers.filter((_, i) => i % 2 === 1);
+  return { d, left: Math.min(...xs), right: Math.max(...xs), top: Math.min(...ys), bottom: Math.max(...ys) };
+});
 
 // Prints QR labels in one of LABEL_STYLES. Each label is { url, title, subtitle }.
 export async function printLabels(labels, style) {
@@ -28,11 +36,19 @@ export async function printLabels(labels, style) {
 const LABEL = {
   normal: (label) => `<figure${short(label)}>${qr(label.url)}${caption(label)}</figure>`,
   // The whole label is a patch of the topographic map, a different patch on each, with the code on a white tile.
-  stylized: (label, i) => `<figure${short(label)} style="--topo-x: ${(i * 37) % 100}%; --topo-y: ${(i * 53) % 100}%">
-    ${brandedQr(label.url)}${caption(label)}${CUBE_MARK}
+  stylized: (label, i) => `<figure${short(label)}>
+    ${topo(i)}${brandedQr(label.url)}${caption(label)}<span class="cube-tile">${CUBE_MARK}</span>
   </figure>`,
   mini: (label) => `<figure><div class="cut">${qr(label.url)}</div>${caption(label)}</figure>`,
 };
+
+// A 750 x 375 patch of the 1200 x 2400 map (the label's 2:1 shape), drawn as vector lines so they print sharp.
+function topo(i) {
+  const x = (i * 137) % 450;
+  const y = (i * 311) % 2025;
+  const lines = CONTOURS.filter((c) => c.right > x && c.left < x + 750 && c.bottom > y && c.top < y + 375);
+  return `<svg class="topo" viewBox="${x} ${y} 750 375" aria-hidden="true"><path d="${lines.map((c) => c.d).join('')}"/></svg>`;
+}
 
 // A short title, like a grid spot's C12, prints big.
 const short = ({ title }) => (title.length <= 4 ? ' class="short"' : '');

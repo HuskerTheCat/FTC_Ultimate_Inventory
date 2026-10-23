@@ -785,16 +785,16 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
 
   /* Stylized: the whole label is the site's dark topographic map, the QR code on a white tile, the name in Orbitron and
      the cube. The map stops at the sticker's edge and rounds its corners like the die cut, so no ink goes on the gaps. */
-  #labels.stylized figure { gap: 0.1in; padding: 0.07in 0.1in 0.07in 0.07in; }
-  #labels.stylized figure::before, #labels.stylized figure::after { content: ''; position: absolute; inset: 0; border-radius: 0.0625in; }
-  #labels.stylized figure::before { background: linear-gradient(110deg, #0e1221 40%, #3460d6 100%); }
-  #labels.stylized figure::after { background: #5b9bff; opacity: 0.35; -webkit-mask: url(./topo.svg) var(--topo-x) var(--topo-y) / 4in auto; mask: url(./topo.svg) var(--topo-x) var(--topo-y) / 4in auto; }
+  #labels.stylized figure { gap: 0.1in; padding: 0.07in 0.1in 0.07in 0.07in; border-radius: 0.0625in; background: linear-gradient(110deg, #0e1221 40%, #3460d6 100%); }
+  #labels.stylized .topo { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: #5b9bff; stroke-width: 1.5; stroke-linejoin: round; opacity: 0.4; }
   #labels.stylized .qr { position: relative; z-index: 1; width: 1.11in; height: 1.11in; }
-  #labels.stylized figcaption { position: relative; z-index: 1; align-self: stretch; justify-content: center; overflow: hidden; padding-bottom: 0.2in; }
+  #labels.stylized figcaption { position: relative; z-index: 1; align-self: stretch; justify-content: center; overflow: hidden; padding-bottom: 0.24in; }
   #labels.stylized strong { font-family: Orbitron, sans-serif; font-size: 8.5pt; font-weight: 800; line-height: 1.25; letter-spacing: 0.02em; color: #fff; -webkit-line-clamp: 3; }
   #labels.stylized .short strong { font-size: 18pt; line-height: 1.15; }
   #labels.stylized span { margin-top: 3pt; font-size: 7.5pt; font-weight: 500; line-height: 1.2; color: #9cc1ff; -webkit-line-clamp: 2; }
-  #labels.stylized .cube-mark { position: absolute; z-index: 1; right: 0.06in; bottom: 0.05in; width: 0.3in; height: 0.3in; }
+  /* The cube on the app icon's navy tile, edged in blue so it stands out from the map. */
+  #labels.stylized .cube-tile { position: absolute; z-index: 1; right: 0.06in; bottom: 0.06in; display: grid; place-items: center; box-sizing: border-box; width: 0.32in; height: 0.32in; border: 0.75pt solid rgb(91 155 255 / 0.6); border-radius: 0.07in; background: linear-gradient(135deg, #1f2640, #0e1221); }
+  #labels.stylized .cube-mark { width: 0.24in; height: 0.24in; }
 
   /* Mini: 1/2" squares to cut out, the code filling all but a thin white edge. The caption below stays on the paper. */
   #labels.mini .page { padding: 0.5in; grid-template-columns: repeat(10, 0.65in); grid-template-rows: repeat(11, 0.8in); gap: 0.05in 0.1in; justify-content: center; }
