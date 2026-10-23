@@ -1,20 +1,72 @@
 import QRCode from 'qrcode';
+import { CUBE_MARK } from './cube.js';
 
-// Prints a sheet of QR labels. Each label is { url, title, subtitle }.
-export async function printLabels(labels) {
+// Normal and stylized labels fit OnlineLabels OL911 sheets: letter paper, 3 across and 7 down, 2.5" x 1.25" each.
+// Mini labels are tiny codes to cut out, each captioned outside its cut line.
+export const LABEL_SHEET_URL = 'https://www.onlinelabels.com/products/ol911';
+export const LABEL_STYLES = { normal: 'Normal', stylized: 'Stylized', mini: 'Mini' };
+const PER_PAGE = { normal: 21, stylized: 21, mini: 80 };
+
+// Prints QR labels in one of LABEL_STYLES. Each label is { url, title, subtitle }.
+export async function printLabels(labels, style) {
+  if (!PER_PAGE[style]) throw new Error(`Unknown label style: ${style}`);
+  await document.fonts.ready; // a font still loading prints in the fallback font
   const sheet = document.createElement('div');
   sheet.id = 'labels';
-  for (const label of labels) {
-    const figure = document.createElement('figure');
-    const image = document.createElement('img');
-    image.src = await QRCode.toDataURL(label.url, { width: 240, margin: 1 });
-    await image.decode(); // printing before an image is decoded leaves a blank label
-    const caption = document.createElement('figcaption');
-    caption.append(element('strong', label.title), element('span', label.subtitle));
-    figure.append(image, caption);
-    sheet.append(figure);
+  sheet.className = style;
+  // The pages are laid out to the inch, so the printer's own margins have to go.
+  sheet.append(Object.assign(document.createElement('style'), { textContent: '@page { size: letter; margin: 0; }' }));
+  for (let i = 0; i < labels.length; i += PER_PAGE[style]) {
+    const page = document.createElement('div');
+    page.className = 'page';
+    page.innerHTML = labels.slice(i, i + PER_PAGE[style]).map((label, j) => LABEL[style](label, i + j)).join('');
+    sheet.append(page);
   }
   print(sheet);
+}
+
+const LABEL = {
+  normal: (label) => `<figure${short(label)}>${qr(label.url)}${caption(label)}</figure>`,
+  // Each label's name sits on a different patch of the topographic map.
+  stylized: (label, i) => `<figure${short(label)}>${brandedQr(label.url)}
+    <div class="panel" style="--topo-x: ${(i * 37) % 100}%; --topo-y: ${(i * 53) % 100}%">${caption(label)}${CUBE_MARK}</div>
+  </figure>`,
+  mini: (label) => `<figure><div class="cut">${qr(label.url)}</div>${caption(label)}</figure>`,
+};
+
+// A short title, like a grid spot's C12, prints big.
+const short = ({ title }) => (title.length <= 4 ? ' class="short"' : '');
+
+const caption = ({ title, subtitle }) => `<figcaption><strong>${escape(title)}</strong><span>${escape(subtitle)}</span></figcaption>`;
+
+// A plain black QR code.
+function qr(url) {
+  const { modules } = QRCode.create(url);
+  let path = '';
+  for (let r = 0; r < modules.size; r++) {
+    for (let c = 0; c < modules.size; c++) if (modules.get(r, c)) path += `M${c} ${r}h1v1h-1z`;
+  }
+  return `<svg class="qr" viewBox="0 0 ${modules.size} ${modules.size}" shape-rendering="crispEdges" aria-hidden="true"><path d="${path}"/></svg>`;
+}
+
+// A QR code in the app's look: navy modules with softened corners, blue corner eyes. Modules stay full size, since a gap
+// between them fades a blurry photo of the code and makes it harder to scan.
+function brandedQr(url) {
+  const { modules } = QRCode.create(url);
+  const n = modules.size;
+  const eyes = [[0, 0], [0, n - 7], [n - 7, 0]];
+  const inEye = (r, c) => eyes.some(([er, ec]) => r >= er && r < er + 7 && c >= ec && c < ec + 7);
+  let dots = '';
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      if (modules.get(r, c) && !inEye(r, c)) dots += `<rect x="${c}" y="${r}" width="1" height="1" rx="0.25"/>`;
+    }
+  }
+  const eye = ([r, c]) => `<rect x="${c + 0.5}" y="${r + 0.5}" width="6" height="6" rx="1.8" fill="none" stroke="#2563d9"/>
+    <rect x="${c + 2}" y="${r + 2}" width="3" height="3" rx="0.9" fill="#13204a"/>`;
+  return `<svg class="qr" viewBox="-1 -1 ${n + 2} ${n + 2}" aria-hidden="true">
+    <g fill="#13204a">${dots}</g>${eyes.map(eye).join('')}
+  </svg>`;
 }
 
 // Prints a table. groups is [[heading, rows]], each row a list of cell texts; a blank heading prints no heading row.
@@ -57,3 +109,5 @@ function print(sheet) {
   window.addEventListener('afterprint', () => sheet.remove(), { once: true });
   window.print();
 }
+
+const escape = (text) => text.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);

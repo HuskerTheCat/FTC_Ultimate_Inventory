@@ -3,7 +3,7 @@ import * as firebase from './firebase.js';
 import { parseFirebaseConfig, encodeJoinCode, decodeJoinCode, findTeam, newSecret } from './joincode.js';
 import { scanCode, BARCODES } from './scanner.js';
 import { codeKey, findProduct, searchCatalog, catalogSuppliers, catalogSize, catalogLoaded, catalogImage } from './catalog.js';
-import { printLabels, printSheet } from './labels.js';
+import { printLabels, printSheet, LABEL_SHEET_URL, LABEL_STYLES } from './labels.js';
 import { toCsv, parseCsv } from './csv.js';
 import { BACKUP_COLLECTIONS, makeBackup, readBackup } from './backup.js';
 import { startStatusBanners, checkRules } from './status.js';
@@ -42,6 +42,8 @@ const STORAGE_KEY = 'ftc-inventory-connection';
 const DEMO = new URLSearchParams(location.search).has('demo');
 // Pain and suffering mode is the light theme. The choice is saved on this device only.
 const THEME_KEY = 'ftc-inventory-theme';
+// The QR label style last picked, remembered on this device only.
+const LABEL_STYLE_KEY = 'ftc-inventory-label-style';
 const THEME_COLORS = { light: '#eef1f7', dark: '#0e1221' };
 function setTheme(theme) {
   document.documentElement.dataset.theme = theme;
@@ -1707,8 +1709,9 @@ const spotLabels = (name) => {
 };
 
 // Prints labels and remembers them as printed, so the labels dialog can pick out the ones still to print.
+// They print in the style last picked in the labels dialog.
 function printAndMark(labels) {
-  printLabels(labels).catch(showError);
+  printLabels(labels, localStorage.getItem(LABEL_STYLE_KEY) ?? 'normal').catch(showError);
   fb.markPrinted(labels.filter((l) => l.key).map((l) => l.key)).catch(showError);
 }
 
@@ -1938,6 +1941,7 @@ function openLabelsDialog() {
     ...rows.map(partLabel),
   ];
   const bins = labels.length - rows.length;
+  const style = localStorage.getItem(LABEL_STYLE_KEY) ?? 'normal';
   const item = (label, i) => `<li><label>
     <input type="checkbox" data-index="${i}" ${state.printed.has(label.key) ? '' : 'checked'} />
     <span>${esc(label.title)} ${state.printed.has(label.key) ? '' : '<span class="badge">Not printed</span>'}</span>
@@ -1960,6 +1964,12 @@ function openLabelsDialog() {
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>QR labels</h2>
+      <fieldset class="types label-styles">
+        <legend>Style</legend>
+        ${Object.entries(LABEL_STYLES).map(([value, name]) =>
+          `<label><input type="radio" name="style" value="${value}" ${value === style ? 'checked' : ''} />${name}</label>`).join('')}
+      </fieldset>
+      <p class="muted small label-style-note"></p>
       <div class="row">
         <button type="button" class="secondary" data-select="new">Not yet printed</button>
         <button type="button" class="secondary" data-select="all">All</button>
@@ -1990,6 +2000,18 @@ function openLabelsDialog() {
     printButton.textContent = `Print ${count} label${count === 1 ? '' : 's'}`;
     printButton.disabled = !count;
   };
+  // Normal and stylized labels fit a pre-cut sticker sheet; mini ones are cut out by hand.
+  const renderStyle = () => {
+    const sheet = `<a href="${LABEL_SHEET_URL}" target="_blank" rel="noopener">OnlineLabels OL911</a>`;
+    dialog.querySelector('.label-style-note').innerHTML = dialog.querySelector('[name="style"]:checked').value === 'mini'
+      ? 'Tiny codes to cut out and stick on parts. Each one’s name prints below its cut line. Print at 100% scale.'
+      : `Fits ${sheet} sticker sheets (2.5" × 1.25", 21 a page). Print at 100% scale.`;
+  };
+  dialog.querySelector('.label-styles').onchange = (e) => {
+    localStorage.setItem(LABEL_STYLE_KEY, e.target.value);
+    renderStyle();
+  };
+  renderStyle();
   dialog.querySelector('.label-list').onchange = update;
   dialog.querySelector('.label-list').onclick = (e) => {
     const item = e.target.closest('[data-spots-of]');

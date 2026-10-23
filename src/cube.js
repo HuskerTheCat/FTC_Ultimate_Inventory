@@ -34,6 +34,9 @@ export const CUBE = `<svg class="app-icon cube" viewBox="0 0 512 512" aria-hidde
   ${layer('inventory')}
 </svg>`;
 
+// Inventory's cube alone, without the tile behind it, for printing on white.
+export const CUBE_MARK = `<svg class="cube-mark" viewBox="80 60 352 376" aria-hidden="true">${layer('inventory')}</svg>`;
+
 // Turns the cube into another app's cube, or 'suite'. Resolves when it has finished turning.
 // Calls in the same moment (the menu closing as an app is picked) make one turn, to the last cube asked for.
 export function morphCube(cube, show) {
