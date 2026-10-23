@@ -637,11 +637,9 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
 .members.stacked li { flex-direction: column; align-items: stretch; }
 /* Location rows: the buttons stay together, moving under the name when they don't fit beside it. */
 #location-list li { flex-wrap: wrap; }
-#location-list li > .row { flex-wrap: wrap; margin-left: auto; }
-@media (max-width: 600px) {
-  #location-list li > .row { margin-left: 0; width: 100%; gap: 6px; }
-  #location-list button { padding: 4px 10px; }
-}
+#location-list li > .row { flex-wrap: nowrap; gap: 6px; margin-left: auto; }
+#location-list button.icon { width: 38px; min-height: 38px; padding: 0; }
+#location-list button.icon.danger { color: var(--danger); }
 /* Order rows: details on their own line without splitting a part number, Arrived and Remove stacked the same on every row. */
 #order-list li > .row { flex-direction: column; align-items: stretch; flex-shrink: 0; }
 /* Remove is quiet until hovered, so Ordered and Arrived stand out. */

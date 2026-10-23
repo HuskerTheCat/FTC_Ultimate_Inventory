@@ -75,6 +75,9 @@ const ICON_MENU = icon('<path d="M4 6h16M4 12h16M4 18h16"/>');
 const ICON_MORE = icon('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>');
 const ICON_FILTER = icon('<path d="M4 6h16M7 12h10M10 18h4"/>');
 const ICON_PLUS = icon('<path d="M12 5v14M5 12h14"/>');
+const ICON_GRID = icon('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>');
+const ICON_QR = icon('<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M17 20h4M20 17v3M14 20v.01"/>');
+const ICON_TRASH = icon('<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>');
 const ICON_PIN = icon('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>');
 
 // Every project is an inventory (holds its own parts), a project or a packing list (both use parts from inventories).
@@ -2107,24 +2110,24 @@ function openLocationsDialog() {
     list.innerHTML = state.locations.map((l) => {
       const count = state.parts.filter((p) => p.location === l.name).length;
       return `<li>
-        <span><strong>${esc(l.name)}</strong> <span class="muted small">${count} part${count === 1 ? '' : 's'}${l.rows ? `, ${l.rows} × ${l.cols} grid` : ''}</span></span>
+        <span><strong>${esc(l.name)}</strong> <span class="muted small">${count} part${count === 1 ? '' : 's'}${l.rows ? `, ${l.rows}&nbsp;×&nbsp;${l.cols} grid` : ''}</span></span>
         <span class="row">
-          <button type="button" class="secondary" data-rename="${esc(l.id)}">Rename</button>
-          ${l.rows ? `<button type="button" class="secondary" data-grid="${esc(l.id)}">Edit grid</button>` : ''}
-          <button type="button" class="secondary" data-label="${esc(l.name)}">Label</button>
-          <button type="button" class="danger" data-id="${esc(l.id)}" ${count ? `aria-disabled="true" data-count="${count}"` : ''}>Delete</button>
+          <button type="button" class="icon" data-rename="${esc(l.id)}" aria-label="Rename ${esc(l.name)}" title="Rename">${ICON_EDIT}</button>
+          ${l.rows ? `<button type="button" class="icon" data-grid="${esc(l.id)}" aria-label="Edit grid of ${esc(l.name)}" title="Edit grid">${ICON_GRID}</button>` : ''}
+          <button type="button" class="icon" data-label="${esc(l.name)}" aria-label="Print QR label for ${esc(l.name)}" title="Print QR label">${ICON_QR}</button>
+          <button type="button" class="icon danger" data-id="${esc(l.id)}" ${count ? `aria-disabled="true" data-count="${count}"` : ''} aria-label="Delete ${esc(l.name)}" title="${count ? 'Move its parts out first' : 'Delete'}">${ICON_TRASH}</button>
         </span>
       </li>`;
     }).join('') || '<li class="muted">No locations yet.</li>';
   };
   watchLocationAdders(dialog, () => {});
   list.onclick = (e) => {
-    const { id, count } = e.target.dataset;
+    const { id, count, label, grid, rename } = e.target.closest('button')?.dataset ?? {};
     if (id && count) return showMessage(`${state.locations.find((l) => l.id === id).name} still has parts`, `Move its ${count === '1' ? 'part' : `${count} parts`} to another location first.`);
     if (id) fb.deleteLocation(id).catch(showError);
-    if (e.target.dataset.label) printAndMark([locationLabel(e.target.dataset.label)]);
-    if (e.target.dataset.grid) openGridDialog(state.locations.find((l) => l.id === e.target.dataset.grid));
-    if (e.target.dataset.rename) renameLocation(state.locations.find((l) => l.id === e.target.dataset.rename)).catch(showError);
+    if (label) printAndMark([locationLabel(label)]);
+    if (grid) openGridDialog(state.locations.find((l) => l.id === grid));
+    if (rename) renameLocation(state.locations.find((l) => l.id === rename)).catch(showError);
   };
   renderLocations();
   state.onLocationsChange = renderLocations;
