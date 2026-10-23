@@ -19,5 +19,5 @@ Add one line when a change needs the other apps to act; delete it once every app
 
 | Change | Who | Copy from |
 |---|---|---|
-| Rules v8 (custom parts, `builds`, order `status`; includes v7) | Competition, Design | `validPart()`, `validBuild()`, `validOrder()`, `builds` match, log action `'made'`, `rulesVersion()` in Inventory's `firestore.rules` |
+| Rules v9 (v8: custom parts, `builds`, order `status`; v9: condition `'damaged'`; includes v7) | Competition, Design | `validPart()`, `validBuild()`, `validOrder()`, `builds` match, log action `'made'`, `rulesVersion()` in Inventory's `firestore.rules` |
 | Update banner re-checks on resume and every 15 min (Windows/Android) | Competition, Design, only if they have the banner | `startStatusBanners` in `src/status.js` |
