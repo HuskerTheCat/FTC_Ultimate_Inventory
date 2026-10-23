@@ -2005,7 +2005,7 @@ function openLabelsDialog() {
     const sheet = `<a href="${LABEL_SHEET_URL}" target="_blank" rel="noopener">OnlineLabels OL911</a>`;
     dialog.querySelector('.label-style-note').innerHTML = dialog.querySelector('[name="style"]:checked').value === 'mini'
       ? 'Half-inch codes to cut out and stick on parts. Each one’s name prints below its cut line. Print at 100% scale.'
-      : `Fits ${sheet} sticker sheets (2.5" × 1.25", 21 a page). Print at 100% scale.`;
+      : `Fits ${sheet} sticker sheets (2.5" × 1.25", 21 a page), or print on plain paper and cut them out. Print at 100% scale.`;
   };
   dialog.querySelector('.label-styles').onchange = (e) => {
     localStorage.setItem(LABEL_STYLE_KEY, e.target.value);
