@@ -766,6 +766,8 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
 @media print {
   body { background: #fff; padding: 0; }
   body > :not(#labels, #sheet) { display: none; }
+  /* The screen's topographic background would print over the top of the first page. */
+  body::before, body::after { display: none !important; }
   /* QR labels: each .page is one letter sheet. Normal and stylized fill an OnlineLabels OL911 sheet to the inch. */
   #labels { display: block; color: #000; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   #labels .page { box-sizing: border-box; width: 8.5in; height: 11in; overflow: hidden; break-after: page; display: grid; }
