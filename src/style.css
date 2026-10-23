@@ -714,18 +714,28 @@ input[name="name"]:read-only { color: var(--muted); }
 .order-fields input[name="quantity"] { width: 80px; }
 .order-fields :is(input:not([name="quantity"]), select) { flex: 1 1 120px; width: auto; }
 #build-form .new-part[hidden] { display: none; }
-.label-list { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 40vh; overflow: auto; }
+/* The whole dialog scrolls, so the list isn't a small scroll box of its own. */
+.label-list { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .label-list label { flex-direction: row; align-items: center; gap: 10px; color: var(--text); font-weight: 400; font-size: 1rem; overflow-wrap: anywhere; }
 label.check { flex-direction: row; align-items: center; gap: 10px; font-weight: 400; }
 label.check input { width: 18px; min-height: 18px; margin: 0; accent-color: var(--accent); }
 .label-list input { width: 18px; min-height: 18px; margin: 0; accent-color: var(--accent); }
-.label-list .label-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.label-list .copies { display: flex; flex: none; align-items: center; gap: 4px; color: var(--muted); }
-.label-list .copies input { width: 3.5em; min-height: 32px; padding: 4px 8px; }
+.label-list .label-row { display: flex; align-items: center; gap: 8px; }
+.label-list .label-row label { flex: 1; }
+.label-list .printed { margin-left: 4px; color: var(--muted); font-size: 0.8rem; }
+.label-list .copies { display: flex; flex: none; align-items: center; gap: 2px; color: var(--muted); }
+.label-list .copies input { width: 3em; min-height: 30px; padding: 2px 6px; }
 .label-list h3 { margin: 8px 0 0; font-size: 0.9rem; color: var(--muted); }
-.label-list .spot-labels { display: flex; flex-direction: column; gap: 8px; padding-left: 28px; }
-.spot-picker { display: flex; flex-direction: column; gap: 8px; }
+.label-select { gap: 4px; }
+.label-select button.link { padding: 4px 6px; }
+/* Spots: like Find part's chip, opening the location's grid under its row. */
+button.spots { display: inline-flex; align-items: center; gap: 2px; flex: none; min-height: 26px; padding: 1px 4px 1px 8px; border: none; border-radius: 6px; background: var(--raised); color: var(--accent); font-size: 0.8rem; font-weight: 600; }
+button.spots:hover { background: var(--raised-hover); }
+button.spots svg { width: 14px; height: 14px; transition: transform 0.15s; }
+button.spots[aria-expanded="true"] svg { transform: rotate(180deg); }
+.spot-picker { display: flex; flex-direction: column; gap: 4px; padding: 0 0 8px 28px; }
 .spot-picker[hidden] { display: none; }
+.spot-picker button.link { padding: 4px 6px; }
 /* Import: each column of the spreadsheet, with its first value under its name, beside the part detail it holds. */
 .import-columns { display: flex; flex-direction: column; gap: 8px; }
 .import-columns label { flex-direction: row; align-items: center; gap: 12px; color: var(--text); }

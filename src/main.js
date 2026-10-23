@@ -2017,25 +2017,22 @@ function openLabelsDialog() {
   const bins = labels.length - rows.length;
   const style = localStorage.getItem(LABEL_STYLE_KEY) ?? 'normal';
   // Each label prints once unless its copies are changed.
-  const item = (label, i) => `<li class="label-row"><label>
-    <input type="checkbox" data-index="${i}" ${state.printed.has(label.key) ? '' : 'checked'} />
-    <span>${esc(label.title)} ${state.printed.has(label.key) ? '' : '<span class="badge">Not printed</span>'}</span>
-  </label><span class="copies">×<input type="number" data-copies="${i}" min="1" max="${MAX_COPIES}" step="1" required value="1" aria-label="Copies of ${esc(label.title)}" /></span></li>`;
-  // Under a grid location's label, its spots can be picked on the grid to print a label for each of them too.
+  // A grid location's row has a Spots button that opens its grid, to print a label for each picked spot too.
   const chosen = new Map(locations.filter(gridLocation).map((name) => [name, new Set()]));
-  const spotsItem = (name) => (chosen.has(name) ? `<li class="spot-labels" data-spots-of="${esc(name)}">
+  const spotsButton = (name) => (chosen.has(name)
+    ? `<button type="button" class="spots" data-choose="${esc(name)}" aria-expanded="false" aria-label="Spot labels of ${esc(name)}"><span class="spot-count">Spots</span>${ICON_CHEVRON}</button>` : '');
+  const spotsItem = (name) => (chosen.has(name) ? `<li class="spot-picker" data-spots-of="${esc(name)}" hidden>
       <div class="row">
-        <span class="muted">Spot labels: <span class="spot-count">none</span></span>
-        <button type="button" class="secondary" data-choose aria-expanded="false">Choose spots</button>
+        <button type="button" class="link" data-pick="all">All spots</button>
+        <button type="button" class="link" data-pick="none">None</button>
       </div>
-      <div class="spot-picker" hidden>
-        <div class="row">
-          <button type="button" class="secondary" data-pick="all">All spots</button>
-          <button type="button" class="secondary" data-pick="none">No spots</button>
-        </div>
-        <div class="grid-box">${gridHtml(gridLocation(name), '')}</div>
-      </div>
+      <div class="grid-box">${gridHtml(gridLocation(name), '')}</div>
     </li>` : '');
+  // Each label prints once unless its copies are changed. Printed ones are marked quietly; the rest start picked.
+  const item = (label, i, name) => `<li class="label-row"><label>
+    <input type="checkbox" data-index="${i}" ${state.printed.has(label.key) ? '' : 'checked'} />
+    <span>${esc(label.title)}${state.printed.has(label.key) ? ' <span class="printed">printed</span>' : ''}</span>
+  </label>${name ? spotsButton(name) : ''}<span class="copies">×<input type="number" data-copies="${i}" min="1" max="${MAX_COPIES}" step="1" required value="1" aria-label="Copies of ${esc(label.title)}" /></span></li>`;
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>QR labels</h2>
@@ -2045,13 +2042,14 @@ function openLabelsDialog() {
           `<label><input type="radio" name="style" value="${value}" ${value === style ? 'checked' : ''} />${name}</label>`).join('')}
       </fieldset>
       <p class="muted small label-style-note"></p>
-      <div class="row">
-        <button type="button" class="secondary" data-select="new">Not yet printed</button>
-        <button type="button" class="secondary" data-select="all">All</button>
-        <button type="button" class="secondary" data-select="none">None</button>
+      <div class="row label-select">
+        <span class="muted small">Select</span>
+        <button type="button" class="link" data-select="new">Not printed</button>
+        <button type="button" class="link" data-select="all">All</button>
+        <button type="button" class="link" data-select="none">None</button>
       </div>
       <ul class="label-list">
-        ${bins ? '<li><h3>Storage</h3></li>' : ''}${labels.slice(0, bins).map((l, i) => item(l, i) + spotsItem(locations[i])).join('')}
+        ${bins ? '<li><h3>Storage</h3></li>' : ''}${labels.slice(0, bins).map((l, i) => item(l, i, locations[i]) + spotsItem(locations[i])).join('')}
         ${rows.length ? '<li><h3>Parts</h3></li>' : ''}${labels.slice(bins).map((l, i) => item(l, bins + i)).join('')}
       </ul>
       <div class="row">
@@ -2067,9 +2065,10 @@ function openLabelsDialog() {
     ...[...chosen].flatMap(([name, spots]) => spotLabels(name).filter((l) => spots.has(l.title))),
   ];
   const renderSpots = (item) => {
-    const spots = chosen.get(item.dataset.spotsOf);
+    const name = item.dataset.spotsOf;
+    const spots = chosen.get(name);
     item.querySelectorAll('[data-spot]').forEach((b) => b.setAttribute('aria-pressed', spots.has(b.dataset.spot)));
-    item.querySelector('.spot-count').textContent = spots.size ? `${spots.size} chosen` : 'none';
+    dialog.querySelector(`[data-choose="${CSS.escape(name)}"] .spot-count`).textContent = spots.size ? count(spots.size, 'spot') : 'Spots';
   };
   const printButton = dialog.querySelector('#print');
   const update = () => {
@@ -2081,8 +2080,8 @@ function openLabelsDialog() {
   const renderStyle = () => {
     const sheet = `<a href="${LABEL_SHEET_URL}" target="_blank" rel="noopener">OnlineLabels OL911</a>`;
     dialog.querySelector('.label-style-note').innerHTML = dialog.querySelector('[name="style"]:checked').value === 'mini'
-      ? '0.6" codes to cut out and stick on parts. Print at 100% scale.'
-      : `Fits ${sheet} sticker sheets (2.5" × 1.25", 21 a page), or print on plain paper and cut them out. Print at 100% scale.`;
+      ? '0.6" codes to cut out. Print at 100% scale.'
+      : `Fits ${sheet} sticker sheets, or plain paper. Print at 100% scale.`;
   };
   dialog.querySelector('.label-styles').onchange = (e) => {
     localStorage.setItem(LABEL_STYLE_KEY, e.target.value);
@@ -2097,18 +2096,18 @@ function openLabelsDialog() {
     update();
   };
   dialog.querySelector('.label-list').onclick = (e) => {
+    const choose = e.target.closest('[data-choose]');
+    if (choose) {
+      const picker = dialog.querySelector(`[data-spots-of="${CSS.escape(choose.dataset.choose)}"]`);
+      picker.hidden = !picker.hidden;
+      choose.setAttribute('aria-expanded', !picker.hidden);
+      return;
+    }
     const item = e.target.closest('[data-spots-of]');
     if (!item) return;
     const spots = chosen.get(item.dataset.spotsOf);
-    const choose = e.target.closest('[data-choose]');
     const spot = e.target.closest('[data-spot]')?.dataset.spot;
     const pick = e.target.closest('[data-pick]')?.dataset.pick;
-    if (choose) {
-      const picker = item.querySelector('.spot-picker');
-      picker.hidden = !picker.hidden;
-      choose.setAttribute('aria-expanded', !picker.hidden);
-      choose.textContent = picker.hidden ? 'Choose spots' : 'Hide grid';
-    }
     if (spot && !spots.delete(spot)) spots.add(spot);
     if (pick === 'none') spots.clear();
     if (pick === 'all') item.querySelectorAll('[data-spot]').forEach((b) => spots.add(b.dataset.spot));
