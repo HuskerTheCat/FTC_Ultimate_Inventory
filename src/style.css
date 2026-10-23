@@ -506,6 +506,7 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   dialog .part-form > :is(.part-head, p, .field, .row, label:has(textarea), label:has([name="name"])) { grid-column: 1 / -1; }
 }
 /* Catalog search sits apart at the top of Add part, since picking a result fills in the fields below it. */
+.catalog-search[hidden] { display: none; }
 .catalog-search { padding: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
 .catalog-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .catalog-row > * { color: var(--text); font-weight: 400; font-size: 1rem; }

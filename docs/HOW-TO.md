@@ -182,7 +182,7 @@ Open **☰ → Orders** to track parts you need, have ordered, and got. The list
 
 <img src="how-to/orders.png" alt="The order list" width="440">
 
-- On **Need to order**, tap **+ Add item** and type the item or pick a part you have. A supported part number fills in the rest. Link and notes are optional. New orders go under **Need to order**.
+- On **Need to order**, tap **+ Add item**, then search the parts catalog, pick a part you have, or type any item with your own link. A supported part number fills in the rest. Link and notes are optional. New orders go under **Need to order**.
 - New items appear in Main Inventory right away as **to order**, so projects and packing lists can use them early.
 - Once you've bought it, tap **Ordered** to move it to the Ordered tab.
 - When it arrives, tap **Arrived** to add it to the inventory and move it to the Arrived tab. If only some came, enter how many; the rest stays under Ordered.

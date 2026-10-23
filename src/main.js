@@ -1755,9 +1755,20 @@ async function showCatalogPhoto(form) {
 // of the page it's on.
 const catalogPhoto = (image, className) => `<img class="${className}" src="${esc(image)}" alt="" loading="lazy" referrerpolicy="no-referrer" />`;
 
-// Lists catalog parts matching what's typed in the part form's catalog search, from every supplier or the one picked.
-// Picking a part fills in its name, part number, supplier, link and category, leaving quantity and location to the user.
-function searchCatalogInto(form, field) {
+// The catalog search box of the part form and the order form, wired by searchCatalogInto.
+const CATALOG_SEARCH = `<div class="field catalog-search">
+        <label for="catalog-search">Search the parts catalog</label>
+        <div class="catalog-row">
+          <input id="catalog-search" type="search" autocomplete="off" placeholder="Name or part #, e.g. u-beam 8mm" />
+          <select aria-label="Supplier"><option value="">All suppliers</option></select>
+        </div>
+        <ul class="picker" hidden></ul>
+        <p class="catalog-count muted small" hidden></p>
+      </div>`;
+
+// Lists catalog parts matching what's typed in a form's catalog search, from every supplier or the one picked.
+// Picking a part fills in its name, part number, supplier and link, then onPick(product) fills the rest the form has.
+function searchCatalogInto(form, field, onPick) {
   const search = field.querySelector('input');
   const supplier = field.querySelector('select');
   const list = field.querySelector('ul');
@@ -1777,8 +1788,7 @@ function searchCatalogInto(form, field) {
   };
   const pick = (product) => {
     for (const key of ['name', 'partNumber', 'supplier', 'link']) form[key].value = product[key] ?? '';
-    if (product.category) setCategory(form.category, canonicalCategory(product.category));
-    showCatalogPhoto(form);
+    onPick(product);
     search.value = '';
     list.hidden = true;
     form.quantity.focus();
@@ -2290,6 +2300,7 @@ function openOrdersDialog() {
       <button type="button" id="clear-arrived" class="link" hidden>Clear arrived</button>
       <details id="order-form" class="collapsible">
         <summary id="order-form-title">+ Add item</summary>
+        ${CATALOG_SEARCH}
         <input name="name" maxlength="200" list="order-parts" placeholder="Item, or pick one you have" />
         <datalist id="order-parts">${sorted(state.parts.map((p) => p.name)).map((n) => `<option value="${esc(n)}">`).join('')}</datalist>
         <div class="row order-fields">
@@ -2309,6 +2320,8 @@ function openOrdersDialog() {
     </form>`;
   const form = dialog.querySelector('form');
   autofillFromCatalog(form);
+  const catalogField = dialog.querySelector('.catalog-search');
+  searchCatalogInto(form, catalogField, () => {});
   const list = dialog.querySelector('#order-list');
   const orderForm = dialog.querySelector('#order-form');
   const saveButton = dialog.querySelector('#save-order');
@@ -2339,6 +2352,7 @@ function openOrdersDialog() {
     form.reset();
     if (order) for (const key of ['name', 'quantity', 'partNumber', 'supplier', 'link', 'notes']) form[key].value = order[key] ?? '';
     form.name.readOnly = Boolean(order);
+    catalogField.hidden = Boolean(order); // a changed order keeps its item
     dialog.querySelector('#order-form-title').textContent = order ? `Change ${order.name}` : '+ Add item';
     saveButton.textContent = order ? 'Save' : 'Add';
     if (order) orderForm.open = true;
@@ -2635,15 +2649,7 @@ function openPartDialog(part, carry = null, note = '') {
         <img class="part-photo" alt="" referrerpolicy="no-referrer" hidden />
       </div>
       ${note ? `<p class="muted small">${esc(note)}</p>` : ''}
-      ${part ? '' : `<div class="field catalog-search">
-        <label for="catalog-search">Search the parts catalog</label>
-        <div class="catalog-row">
-          <input id="catalog-search" type="search" autocomplete="off" placeholder="Name or part #, e.g. u-beam 8mm" />
-          <select aria-label="Supplier"><option value="">All suppliers</option></select>
-        </div>
-        <ul class="picker" hidden></ul>
-        <p class="catalog-count muted small" hidden></p>
-      </div>`}
+      ${part ? '' : CATALOG_SEARCH}
       ${input('name', 'Item', 'required')}
       ${input('partNumber', 'Part number')}
       <label>Barcode
@@ -2746,7 +2752,12 @@ function openPartDialog(part, carry = null, note = '') {
   photo.onerror = () => (photo.hidden = true);
   form.partNumber.addEventListener('input', () => showCatalogPhoto(form));
   showCatalogPhoto(form);
-  if (!part) searchCatalogInto(form, dialog.querySelector('.catalog-search'));
+  if (!part) {
+    searchCatalogInto(form, dialog.querySelector('.catalog-search'), (product) => {
+      if (product.category) setCategory(form.category, canonicalCategory(product.category));
+      showCatalogPhoto(form);
+    });
+  }
   dialog.querySelector('#scan-barcode').onclick = () => scanBarcodeInto(form).catch(showError);
 
   const tagBox = dialog.querySelector('#part-tags');
