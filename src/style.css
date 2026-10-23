@@ -784,9 +784,9 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
   #labels.normal span { margin-top: 2pt; font-size: 8pt; line-height: 1.2; color: #333; -webkit-line-clamp: 2; }
 
   /* Stylized: the whole label is the site's dark topographic map, the QR code on a white tile, the name in Orbitron and
-     the cube. The map runs 1/16" past the label's edges, so a sheet fed a little crooked still has no white edge. */
-  #labels.stylized figure { overflow: visible; gap: 0.1in; padding: 0.07in 0.1in 0.07in 0.07in; }
-  #labels.stylized figure::before, #labels.stylized figure::after { content: ''; position: absolute; inset: -0.0625in; }
+     the cube. The map stops at the sticker's edge and rounds its corners like the die cut, so no ink goes on the gaps. */
+  #labels.stylized figure { gap: 0.1in; padding: 0.07in 0.1in 0.07in 0.07in; }
+  #labels.stylized figure::before, #labels.stylized figure::after { content: ''; position: absolute; inset: 0; border-radius: 0.0625in; }
   #labels.stylized figure::before { background: linear-gradient(110deg, #0e1221 40%, #3460d6 100%); }
   #labels.stylized figure::after { background: #5b9bff; opacity: 0.35; -webkit-mask: url(./topo.svg) var(--topo-x) var(--topo-y) / 4in auto; mask: url(./topo.svg) var(--topo-x) var(--topo-y) / 4in auto; }
   #labels.stylized .qr { position: relative; z-index: 1; width: 1.11in; height: 1.11in; }
