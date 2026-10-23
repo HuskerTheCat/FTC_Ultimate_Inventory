@@ -13,8 +13,8 @@ const PRACTICE = 'practice';
 const collections = {
   members: new Map([
     ['demo', { email: USER.email, name: 'Husker' }],
-    ['demo-dana', { email: 'dana@example.com', name: 'Dana' }],
-    ['demo-sam', { email: 'sam@example.com', name: 'Sam' }],
+    ['demo-gabby', { email: 'gabby@example.com', name: 'Gabby' }],
+    ['demo-grace', { email: 'grace@example.com', name: 'Grace' }],
   ]),
   projects: new Map([
     [MAIN_PROJECT, { name: 'Main Inventory', source: '' }],
@@ -206,14 +206,14 @@ const SAMPLE_ORDERS = [
 const SAMPLE_LOG = [
   [1, 'demo', 'Husker', 'added', 'Pinpoint odometry computer', ''],
   [2, 'demo', 'Husker', 'quantity', '12V Slim battery', 'Quantity -1'],
-  [5, 'demo-dana', 'Dana', 'edited', 'Gamepad', 'Condition used'],
-  [7, 'demo-dana', 'Dana', 'used', 'Touch sensor', 'Competition Robot: 1'],
-  [26, 'demo-sam', 'Sam', 'arrived', 'USB camera', 'Received 1'],
-  [30, 'demo-sam', 'Sam', 'quantity', 'M4 x 12mm button head screw (25 pack)', 'Quantity -4'],
+  [5, 'demo-gabby', 'Gabby', 'edited', 'Gamepad', 'Condition used'],
+  [7, 'demo-gabby', 'Gabby', 'used', 'Touch sensor', 'Competition Robot: 1'],
+  [26, 'demo-grace', 'Grace', 'arrived', 'USB camera', 'Received 1'],
+  [30, 'demo-grace', 'Grace', 'quantity', 'M4 x 12mm button head screw (25 pack)', 'Quantity -4'],
   [48, 'demo', 'Husker', 'edited', 'Laser distance sensor', 'Condition broken'],
-  [50, 'demo-dana', 'Dana', 'arrived', 'Compliant wheel 2in (4 pack)', 'Received 2'],
+  [50, 'demo-gabby', 'Gabby', 'arrived', 'Compliant wheel 2in (4 pack)', 'Received 2'],
   [72, 'demo', 'Husker', 'deleted', 'Servo horn (old style)', ''],
-  [96, 'demo-sam', 'Sam', 'added', 'Hyper hub 5mm hex bore', ''],
+  [96, 'demo-grace', 'Grace', 'added', 'Hyper hub 5mm hex bore', ''],
 ];
 
 function loadSamples() {
@@ -249,9 +249,9 @@ function loadSamples() {
   const oldServo = { projectId: MAIN_PROJECT, name: 'Servo horn (old style)', partNumber: '', quantity: 3, location: 'Bin 1', supplier: 'goBILDA', category: 'Hardware', tags: [], unit: 'pcs', condition: 'used', notes: '' };
   write('trash', 'part_demo-old-servo', { kind: 'part', docId: 'demo-old-servo', name: oldServo.name, data: oldServo, uses: [], deletedBy: USER.email, deletedAt: hoursAgo(72) });
   const oldMotor = { projectId: MAIN_PROJECT, name: 'NeveRest 40 motor', partNumber: '', quantity: 2, location: 'Shelf A', supplier: 'AndyMark', category: 'Electronics/Motors', tags: ['drivetrain'], unit: 'pcs', condition: 'used', notes: 'Retired, replaced by Yellow Jackets.' };
-  write('trash', 'part_demo-old-motor', { kind: 'part', docId: 'demo-old-motor', name: oldMotor.name, data: oldMotor, uses: [], deletedBy: 'dana@example.com', deletedAt: hoursAgo(10) });
+  write('trash', 'part_demo-old-motor', { kind: 'part', docId: 'demo-old-motor', name: oldMotor.name, data: oldMotor, uses: [], deletedBy: 'gabby@example.com', deletedAt: hoursAgo(10) });
   const oldOrder = { name: 'Extra battery', partNumber: 'REV-31-1302', quantity: 1, supplier: 'REV Robotics', partId: ids.get('12V Slim battery') };
-  write('trash', 'order_demo-old-order', { kind: 'order', docId: 'demo-old-order', name: oldOrder.name, data: oldOrder, uses: [], deletedBy: 'sam@example.com', deletedAt: hoursAgo(30) });
+  write('trash', 'order_demo-old-order', { kind: 'order', docId: 'demo-old-order', name: oldOrder.name, data: oldOrder, uses: [], deletedBy: 'grace@example.com', deletedAt: hoursAgo(30) });
 }
 
 loadSamples();
