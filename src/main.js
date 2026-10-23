@@ -63,7 +63,7 @@ const DETAIL_FIELDS = [
   ['notes', 'Notes'],
 ];
 const UNITS = ['pcs', 'pack', 'box', 'm', 'ft'];
-const CONDITIONS = { '': 'Condition not set', new: 'New', used: 'Used', broken: 'Broken' };
+const CONDITIONS = { '': 'Condition not set', new: 'New', used: 'Used', damaged: 'Damaged', broken: 'Broken' };
 // How a part the team makes itself is made. Parts without `made` are bought.
 const MADE = { '3d-print': '3D printed', cnc: 'CNC machined', laser: 'Laser cut', other: 'Made another way' };
 
@@ -1641,7 +1641,7 @@ const buildBadge = (partId) => [['need', 'to-make', 'to make'], ['making', 'maki
   .map(([kind, text, n]) => `<small class="badge ${kind}">${n} ${text}</small>`)
   .join('');
 const madeBadge = (made) => (made ? `<small class="badge made">${MADE[made]}</small>` : '');
-const conditionBadge = (condition) => ['used', 'broken'].includes(condition)
+const conditionBadge = (condition) => ['used', 'damaged', 'broken'].includes(condition)
   ? `<small class="badge ${condition}">${CONDITIONS[condition]}</small>` : '';
 // Phones show a part as a short card, with its location (and inventory, outside inventories) and part number on one
 // line under the name. Supplier and category are left to the part dialog there.

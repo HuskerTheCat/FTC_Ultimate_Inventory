@@ -4,7 +4,7 @@ service cloud.firestore {
     // Add 1 whenever these rules change. The app is built with this number (vite.config.js) and, after sign-in,
     // reads rulesVersion/<number>; if the team's published rules are older, that's denied and the app shows a
     // banner linking to "Updating the rules" in SETUP.md.
-    function rulesVersion() { return 8; }
+    function rulesVersion() { return 9; }
 
     function signedIn() {
       return request.auth != null;
@@ -62,7 +62,7 @@ service cloud.firestore {
         && shortText(part.category)
         && validTags(part.tags)
         && (!('unit' in part) || shortText(part.unit))
-        && (!('condition' in part) || part.condition in ['', 'new', 'used', 'broken'])
+        && (!('condition' in part) || part.condition in ['', 'new', 'used', 'damaged', 'broken'])
         && (!('notes' in part) || (part.notes is string && part.notes.size() <= 1000))
         && (!('spot' in part) || (part.spot is string && part.spot.matches('[A-Z][1-9][0-9]?')))
         && (!('made' in part) || part.made in ['3d-print', 'cnc', 'laser', 'other'])

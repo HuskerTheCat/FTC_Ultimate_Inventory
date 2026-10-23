@@ -64,7 +64,7 @@ A new team's inventory starts with **Add your first parts** and buttons to add a
 8. **Add part.**
 9. **− and +** change the quantity by one.
 10. **Add to** puts the part in a project or packing list. **In use** shows how many are free, with a chip for each project using the part. Tap a chip to open that project.
-11. **Badges** (square, with an outline) flag parts that are **Low stock**, **to order** (on the order list), **on order** (ordered), **to make** and **in progress** (on the print list), how the team makes it (like **3D printed**), used or broken. The round chips next to them are the part's tags; click one to show only parts with that tag.
+11. **Badges** (square, with an outline) flag parts that are **Low stock**, **to order** (on the order list), **on order** (ordered), **to make** and **in progress** (on the print list), how the team makes it (like **3D printed**), used, damaged or broken. The round chips next to them are the part's tags; click one to show only parts with that tag.
 
 Click a part to open and edit it. On a computer, click a column heading to sort, and again to reverse.
 
