@@ -923,8 +923,8 @@ function renderFilterCount() {
 }
 
 function renderRows() {
-  // Projects, parts and uses must all arrive before rows replace the loading placeholders.
-  if (!state.user || !app.querySelector('#rows') || state.loaded.size < 3 || !currentProject()) return;
+  // Projects, parts, uses and locations (for spots) must all arrive before rows replace the loading placeholders.
+  if (!state.user || !app.querySelector('#rows') || state.loaded.size < 4 || !currentProject()) return;
   app.querySelector('table').removeAttribute('aria-busy');
   const usesParts = Boolean(currentProject().source);
   const columns = columnsFor(currentProject());
@@ -1608,10 +1608,21 @@ const locationLabel = (name) => {
   };
 };
 
+// A label for each spot of a grid location, so every drawer can have its own. Scanning one shows that spot.
+// They have no key, so they aren't remembered as printed.
+const spotLabels = (name) => {
+  const { url, title } = locationLabel(name);
+  const grid = gridLocation(name);
+  return Array.from({ length: grid.rows * grid.cols }, (_, i) => {
+    const spot = spotName(Math.floor(i / grid.cols), i % grid.cols);
+    return { url: `${url}&${new URLSearchParams({ spot })}`, title: spot, subtitle: title };
+  });
+};
+
 // Prints labels and remembers them as printed, so the labels dialog can pick out the ones still to print.
 function printAndMark(labels) {
   printLabels(labels).catch(showError);
-  fb.markPrinted(labels.map((l) => l.key)).catch(showError);
+  fb.markPrinted(labels.filter((l) => l.key).map((l) => l.key)).catch(showError);
 }
 
 // A scan is one of the app's own QR labels, or the barcode on a part's package.
@@ -1632,7 +1643,11 @@ function openLink(params) {
     if (!project(params.get('project'))) throw new Error('That label’s project isn’t in this team anymore.');
     switchProject(params.get('project'));
     state.location = params.get('location');
-    return renderRows();
+    renderRows();
+    if (!params.has('spot')) return;
+    const grid = gridLocation(state.location);
+    if (!grid || !onGrid(grid, params.get('spot'))) throw new Error(`${state.location} has no spot ${params.get('spot')} anymore.`);
+    return openGridDialog(grid, null, params.get('spot'));
   }
   throw new Error('That QR code isn’t an inventory label.');
 }
@@ -1820,8 +1835,9 @@ function openTakeDialog(part) {
 function openLabelsDialog() {
   const dialog = app.querySelector('#dialog');
   const rows = visibleRows();
+  const locations = unique(rows, 'location');
   const labels = [
-    ...unique(rows, 'location').map((name) => locationLabel(name)),
+    ...locations.map((name) => locationLabel(name)),
     ...rows.map(partLabel),
   ];
   const bins = labels.length - rows.length;
@@ -1829,6 +1845,14 @@ function openLabelsDialog() {
     <input type="checkbox" data-index="${i}" ${state.printed.has(label.key) ? '' : 'checked'} />
     <span>${esc(label.title)} ${state.printed.has(label.key) ? '' : '<span class="badge">Not printed</span>'}</span>
   </label></li>`;
+  // A grid location's label can bring a label for each of its spots along.
+  const spotsItem = (name) => {
+    const grid = gridLocation(name);
+    return grid ? `<li class="spot-labels"><label>
+      <input type="checkbox" data-spots="${esc(name)}" />
+      <span class="muted">Also a label for each spot (${grid.rows * grid.cols})</span>
+    </label></li>` : '';
+  };
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>QR labels</h2>
@@ -1838,7 +1862,7 @@ function openLabelsDialog() {
         <button type="button" class="secondary" data-select="none">None</button>
       </div>
       <ul class="label-list">
-        ${bins ? '<li><h3>Storage</h3></li>' : ''}${labels.slice(0, bins).map(item).join('')}
+        ${bins ? '<li><h3>Storage</h3></li>' : ''}${labels.slice(0, bins).map((l, i) => item(l, i) + spotsItem(locations[i])).join('')}
         ${rows.length ? '<li><h3>Parts</h3></li>' : ''}${labels.slice(bins).map((l, i) => item(l, bins + i)).join('')}
       </ul>
       <div class="row">
@@ -1847,9 +1871,14 @@ function openLabelsDialog() {
       </div>
     </form>`;
   const boxes = [...dialog.querySelectorAll('[data-index]')];
+  const spotBoxes = [...dialog.querySelectorAll('[data-spots]')];
+  const picked = () => [
+    ...boxes.filter((b) => b.checked).map((b) => labels[b.dataset.index]),
+    ...spotBoxes.filter((b) => b.checked).flatMap((b) => spotLabels(b.dataset.spots)),
+  ];
   const printButton = dialog.querySelector('#print');
   const update = () => {
-    const count = boxes.filter((b) => b.checked).length;
+    const count = picked().length;
     printButton.textContent = `Print ${count} label${count === 1 ? '' : 's'}`;
     printButton.disabled = !count;
   };
@@ -1858,11 +1887,12 @@ function openLabelsDialog() {
     button.onclick = () => {
       const pick = button.dataset.select;
       boxes.forEach((b) => { b.checked = pick === 'all' || (pick === 'new' && !state.printed.has(labels[b.dataset.index].key)); });
+      if (pick === 'none') spotBoxes.forEach((b) => { b.checked = false; });
       update();
     };
   });
   dialog.querySelector('form').onsubmit = (e) => {
-    if (e.submitter.value === 'print') printAndMark(boxes.filter((b) => b.checked).map((b) => labels[b.dataset.index]));
+    if (e.submitter.value === 'print') printAndMark(picked());
   };
   update();
   dialog.showModal();
@@ -2047,26 +2077,27 @@ function showMarked(box) {
 
 const findPart = (part) => openGridDialog(gridLocation(part.location), part);
 
-// A location's grid. Tapping a spot lists the parts in it. To find a part, its spot starts marked; from the Locations
-// list, the grid's size can be changed or the grid removed, and Back returns to the list.
-function openGridDialog(start, part = null) {
+// A location's grid. Tapping a spot lists the parts in it. To find a part, or a scanned spot label's spot, that spot
+// starts marked; from the Locations list, the grid's size can be changed or the grid removed, and Back returns to the list.
+function openGridDialog(start, part = null, spot = part?.spot ?? '') {
   const dialog = app.querySelector('#dialog');
-  let marked = part?.spot ?? '';
+  let marked = spot;
+  const finding = Boolean(marked);
   dialog.innerHTML = `
-    <form method="dialog" class="card grid-dialog${part ? ' finding' : ''}">
+    <form method="dialog" class="card grid-dialog${finding ? ' finding' : ''}">
       <div>
         <h2>${esc(part?.name ?? start.name)}</h2>
         <p class="muted small" id="grid-about"></p>
       </div>
       <div class="grid-box"></div>
       <ul class="members spot-parts"></ul>
-      ${part ? '' : `<div class="grid-size">
+      ${finding ? '' : `<div class="grid-size">
         <label>Size, rows x columns<input name="size" autocomplete="off" value="${sizeText(start)}" /></label>
         <button value="size" class="secondary">Save size</button>
         <button value="remove" class="secondary">Remove grid</button>
       </div>`}
       <div class="row">
-        ${part ? '<button value="close">Close</button>' : '<button type="button" id="back" class="secondary">Back</button>'}
+        ${finding ? '<button value="close">Close</button>' : '<button type="button" id="back" class="secondary">Back</button>'}
       </div>
     </form>`;
   const form = dialog.querySelector('form');
@@ -2077,7 +2108,7 @@ function openGridDialog(start, part = null) {
     if (!location) return dialog.close();
     const grid = gridSize(location);
     if (!grid) return openLocationsDialog(); // its grid was removed
-    dialog.querySelector('#grid-about').textContent = part ? `${location.name}, spot ${part.spot}` : `${grid.rows} rows, ${grid.cols} columns`;
+    dialog.querySelector('#grid-about').textContent = finding ? `${part ? `${location.name}, spot` : 'Spot'} ${spot}` : `${grid.rows} rows, ${grid.cols} columns`;
     box.innerHTML = gridHtml(location, marked);
     const here = marked ? state.parts.filter((p) => p.location === location.name && p.spot === marked) : [];
     dialog.querySelector('.spot-parts').innerHTML = !marked ? '' : here.map((p) => `<li>
@@ -3266,7 +3297,7 @@ function dataChanged(key, docs) {
   renderRows();
   state.picker?.();
   state.onLocationsChange?.();
-  if (!state.pendingLink || state.loaded.size < 3) return;
+  if (!state.pendingLink || state.loaded.size < 4) return;
   const link = state.pendingLink;
   state.pendingLink = null;
   try {
@@ -3338,10 +3369,7 @@ async function start() {
       fb.watchProjects((docs) => dataChanged('projects', docs), onError),
       fb.watchParts((docs) => dataChanged('parts', docs), onError),
       fb.watchUses((docs) => dataChanged('uses', docs), onError),
-      fb.watchLocations((docs) => {
-        state.locations = docs.sort((a, b) => naturalCompare(a.name, b.name));
-        state.onLocationsChange?.();
-      }, onError),
+      fb.watchLocations((docs) => dataChanged('locations', docs.sort((a, b) => naturalCompare(a.name, b.name))), onError),
       fb.watchOrders((docs) => {
         state.orders = docs;
         renderRows();

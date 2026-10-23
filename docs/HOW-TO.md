@@ -140,6 +140,8 @@ In a part's dialog, pick the grid location, then tap the part's spot. In the lis
 
 The app remembers which labels are printed, so only new ones are checked. The list follows your filters, so filter to one location to print just its labels. A part's dialog has **Print label** for one.
 
+A grid's label opens the whole grid. Tick **Also a label for each spot** under it to print one per drawer too; scanning one shows that spot and what's in it.
+
 <img src="how-to/labels.png" alt="The QR labels dialog" width="440">
 
 ---
