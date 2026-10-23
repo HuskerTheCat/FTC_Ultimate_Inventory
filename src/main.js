@@ -75,7 +75,8 @@ const ICON_MENU = icon('<path d="M4 6h16M4 12h16M4 18h16"/>');
 const ICON_MORE = icon('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>');
 const ICON_FILTER = icon('<path d="M4 6h16M7 12h10M10 18h4"/>');
 const ICON_PLUS = icon('<path d="M12 5v14M5 12h14"/>');
-const ICON_GRID = icon('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>');
+// A grid with a small pen, for editing a grid's size.
+const ICON_GRID = icon('<path d="M12 17H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8M3 7.7h14M3 12.3h9M7.7 3v14M12.3 3v9"/><path d="M19.3 13.2a1.9 1.9 0 0 1 2.7 2.7L16.5 21.4l-3.6.9.9-3.6Z"/>');
 const ICON_QR = icon('<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M17 20h4M20 17v3M14 20v.01"/>');
 const ICON_TRASH = icon('<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>');
 const ICON_PIN = icon('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>');
@@ -2122,8 +2123,8 @@ function openLocationsDialog() {
       return `<li>
         <span><strong>${esc(l.name)}</strong> <span class="muted small">${count} part${count === 1 ? '' : 's'}${l.rows ? `, ${l.rows}&nbsp;×&nbsp;${l.cols} grid` : ''}</span></span>
         <span class="row">
-          <button type="button" class="icon" data-rename="${esc(l.id)}" aria-label="Rename ${esc(l.name)}" title="Rename">${ICON_EDIT}</button>
           ${l.rows ? `<button type="button" class="icon" data-grid="${esc(l.id)}" aria-label="Edit grid of ${esc(l.name)}" title="Edit grid">${ICON_GRID}</button>` : ''}
+          <button type="button" class="icon" data-rename="${esc(l.id)}" aria-label="Rename ${esc(l.name)}" title="Rename">${ICON_EDIT}</button>
           <button type="button" class="icon" data-label="${esc(l.name)}" aria-label="Print QR label for ${esc(l.name)}" title="Print QR label">${ICON_QR}</button>
           <button type="button" class="icon danger" data-id="${esc(l.id)}" ${count ? `aria-disabled="true" data-count="${count}"` : ''} aria-label="Delete ${esc(l.name)}" title="${count ? 'Move its parts out first' : 'Delete'}">${ICON_TRASH}</button>
         </span>
