@@ -2,10 +2,10 @@
 // from any other file, and from backups made by a newer version of the app that this one can't read.
 const FORMAT = 'ftc-ultimate-inventory-backup';
 // Add 1 when what a backup holds changes in a way older versions of the app would restore wrong.
-const VERSION = 2;
+const VERSION = 3;
 
 // The team's collections a backup holds. Members, the change log and the trash aren't in it.
-export const BACKUP_COLLECTIONS = ['projects', 'parts', 'uses', 'locations', 'orders', 'printed'];
+export const BACKUP_COLLECTIONS = ['projects', 'parts', 'uses', 'locations', 'orders', 'builds', 'printed'];
 
 // The file's text, from every doc of BACKUP_COLLECTIONS ({ projects: [{ id, ...data }], ... }). Left out: who changed a
 // part last and when, a use's id (its project and part make it), a location's id (parts name their location) and when
@@ -21,6 +21,7 @@ export function makeBackup(team, docs) {
     uses: docs.uses.map(({ id, ...use }) => use),
     locations: docs.locations.map(({ id, ...location }) => location),
     orders: docs.orders,
+    builds: docs.builds,
     printed: docs.printed.map((p) => p.id),
   }, null, 2);
 }
@@ -36,6 +37,8 @@ export function readBackup(name, text) {
   }
   if (backup?.format !== FORMAT) throw notBackup;
   if (backup.version > VERSION) throw new Error(`${name} was made by a newer version of the app. Update the app, then restore it.`);
+  // Backups before version 3 have no print list.
+  if (backup.version < 3) backup.builds = [];
   if (!BACKUP_COLLECTIONS.every((key) => Array.isArray(backup[key]))) throw notBackup;
   // Version 1 backups list locations by name only.
   if (backup.version === 1) backup.locations = backup.locations.map((name) => ({ name }));

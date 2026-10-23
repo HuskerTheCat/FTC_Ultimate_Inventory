@@ -75,7 +75,7 @@ A red **Your Firebase is configured incorrectly and your account is not secure**
 
 Deleted items stay in **☰ → Trash** for 30 days. A backup file protects against bigger mistakes, like a bad bulk edit or a deleted Firebase project.
 
-**☰ → Export backup** (website or Windows app; Android can't save files) saves one `.inv` file with every inventory, project, packing list, part, order and location, and which QR labels are printed. It doesn't include members, the change log or the trash. Make one before each season and after a big count, and keep it on a shared drive.
+**☰ → Export backup** (website or Windows app; Android can't save files) saves one `.inv` file with every inventory, project, packing list, part, order, print list item and location, and which QR labels are printed. It doesn't include members, the change log or the trash. Make one before each season and after a big count, and keep it on a shared drive.
 
 **☰ → Restore backup**: pick the file, then **Add** (only what's missing) or **Replace** (make the team match the backup; type your team number). Replace sends removed items to the Trash. The app previews the result first. See [Import, export and backups](HOW-TO.md#9-import-export-and-backups).
 

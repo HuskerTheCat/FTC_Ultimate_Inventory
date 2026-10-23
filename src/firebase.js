@@ -117,6 +117,7 @@ export const watchProjects = (callback, onError) => watchCollection('projects', 
 export const watchUses = (callback, onError) => watchCollection('uses', callback, onError);
 export const watchLocations = (callback, onError) => watchCollection('locations', callback, onError);
 export const watchOrders = (callback, onError) => watchCollection('orders', callback, onError);
+export const watchBuilds = (callback, onError) => watchCollection('builds', callback, onError);
 
 // The team's fixed list of places parts can be. Parts store the location's name, not its id.
 // A location with a grid ({ rows, cols }) has spots, and a part there can name its spot.
@@ -218,6 +219,33 @@ export async function receiveOrder(order, newPart, user, count) {
 export async function deleteOrders(ids) {
   const batch = writeBatch(db);
   for (const id of ids) batch.delete(doc(db, 'orders', id));
+  await batch.commit();
+}
+
+// The print list: parts the team makes itself (3D prints, CNC and laser cut parts). partId is the part it makes.
+// status is 'making' or 'made'; items without one are still to make.
+// Made on the device, so adding an item can be undone before it reaches the server.
+export const newBuildId = () => doc(collection(db, 'builds')).id;
+
+// Writes a print list item: a new one, a changed one, or one brought back.
+export const saveBuild = (id, build) => setDoc(doc(db, 'builds', id), build);
+
+// Adds `count` made parts to stock. The item is marked made once all of it is; otherwise it keeps what's still to make
+// and a new made item holds `count`.
+export async function makeBuild(build, user, count) {
+  const batch = writeBatch(db);
+  batch.update(doc(db, 'parts', build.partId), { quantity: increment(count), updatedBy: user.email, updatedAt: serverTimestamp() });
+  const { id, ...data } = build;
+  if (count < build.quantity) {
+    batch.update(doc(db, 'builds', id), { quantity: build.quantity - count });
+    batch.set(doc(collection(db, 'builds')), { ...data, quantity: count, status: 'made' });
+  } else batch.update(doc(db, 'builds', id), { status: 'made' });
+  await batch.commit();
+}
+
+export async function deleteBuilds(ids) {
+  const batch = writeBatch(db);
+  for (const id of ids) batch.delete(doc(db, 'builds', id));
   await batch.commit();
 }
 

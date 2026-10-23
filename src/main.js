@@ -64,8 +64,10 @@ const DETAIL_FIELDS = [
 ];
 const UNITS = ['pcs', 'pack', 'box', 'm', 'ft'];
 const CONDITIONS = { '': 'Condition not set', new: 'New', used: 'Used', broken: 'Broken' };
+// How a part the team makes itself is made. Parts without `made` are bought.
+const MADE = { '3d-print': '3D printed', cnc: 'CNC machined', laser: 'Laser cut', other: 'Made another way' };
 
-const SEARCH_KEYS = ['name', 'partNumber', 'barcode', 'supplier', 'location', 'spot', 'category', 'condition', 'notes'];
+const SEARCH_KEYS = ['name', 'partNumber', 'barcode', 'supplier', 'location', 'spot', 'category', 'condition', 'material', 'notes'];
 // Small line icons that take the button's text color.
 const icon = (paths) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 const ICON_EDIT = icon('<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>');
@@ -101,7 +103,7 @@ const TYPES = {
 };
 
 // The unfiltered view that "Reset filters" returns to.
-const DEFAULT_FILTERS = { search: '', category: '', location: '', tag: '', low: false, sort: 'name', sortDir: 1, group: '' };
+const DEFAULT_FILTERS = { search: '', category: '', location: '', tag: '', made: '', low: false, sort: 'name', sortDir: 1, group: '' };
 
 let fb = firebase;
 const app = document.getElementById('app');
@@ -110,7 +112,7 @@ app.addEventListener('error', (e) => {
   if (e.target.matches?.('img.row-photo')) e.target.outerHTML = '<span class="row-photo no-photo"></span>';
 }, true);
 const state = {
-  connection: null, user: null, parts: [], projects: [], uses: [], members: [], locations: [], orders: [], printed: new Set(), loaded: new Set(), pendingLink: null, picker: null, newProjectId: null,
+  connection: null, user: null, parts: [], projects: [], uses: [], members: [], locations: [], orders: [], builds: [], printed: new Set(), loaded: new Set(), pendingLink: null, picker: null, newProjectId: null,
   projectId: fb.MAIN_PROJECT, ...DEFAULT_FILTERS, selected: null,
 };
 
@@ -190,6 +192,13 @@ const ordering = (partId, status) => state.orders.filter((o) => o.partId === par
 const onOrder = (partId) => ordering(partId, 'need') + ordering(partId, 'ordered');
 // None of the part has arrived yet: the team has none and some are on order.
 const waiting = (partId) => onOrder(partId) > 0 && !state.parts.find((p) => p.id === partId).quantity;
+// A print list item is to make (no status), being made, or made.
+const buildStatus = (build) => build.status ?? 'need';
+const BUILD_TABS = [['need', 'To make'], ['making', 'In progress'], ['made', 'Made']];
+// How many of a part are on the print list with this status.
+const making = (partId, status) => state.builds.filter((b) => b.partId === partId && buildStatus(b) === status).reduce((sum, b) => sum + b.quantity, 0);
+// The Made by filter: bought parts, every made part, or one way of making them.
+const madeMatches = (part, filter) => (filter === 'bought' ? !part.made : filter === 'made' ? Boolean(part.made) : part.made === filter);
 // The inventory part's free count (what projects and packed lists aren't using) is down to its "Low stock at" quantity
 // or below. Parts without one are never low.
 const lowStock = (partId) => {
@@ -584,6 +593,7 @@ function renderInventory() {
           <div id="main-menu" class="menu right" hidden>
             <h3>Lists</h3>
             <button id="orders" class="menu-item">Orders</button>
+            <button id="builds" class="menu-item">Print list</button>
             <button id="locations" class="menu-item">Locations</button>
             <button id="log" class="menu-item">Change log</button>
             <button id="trash" class="menu-item">Trash</button>
@@ -620,7 +630,7 @@ function renderInventory() {
         <div id="more-menu" class="menu right" hidden>
           <button id="select" class="menu-item">Select parts</button>
           <button id="print-labels" class="menu-item">Print QR labels</button>
-          <button id="print-list" class="menu-item">Print list</button>
+          <button id="print-inventory" class="menu-item">Print inventory</button>
           <button id="unpack-all" class="menu-item" hidden>Unpack all</button>
           <button id="export-csv" class="menu-item">Export CSV</button>
           <button id="import" class="menu-item">Import spreadsheet</button>
@@ -634,6 +644,7 @@ function renderInventory() {
         <select id="category" aria-label="Filter by category"></select>
         <select id="location" aria-label="Filter by location"></select>
         <select id="tag" aria-label="Filter by tag"></select>
+        <select id="made" aria-label="Filter by made by"></select>
         <button id="low" class="secondary" aria-pressed="false">Low stock</button>
       </div>
       <div class="row">
@@ -687,6 +698,7 @@ function renderInventory() {
   app.querySelector('#filters-toggle').onclick = toggleFilters;
   app.querySelector('#locations').onclick = openLocationsDialog;
   app.querySelector('#orders').onclick = openOrdersDialog;
+  app.querySelector('#builds').onclick = () => openBuildsDialog();
   app.querySelector('#trash').onclick = openTrashDialog;
   app.querySelector('#export-backup').onclick = () => exportBackup().catch(showError);
   app.querySelector('#restore-backup').onclick = chooseBackup;
@@ -699,6 +711,7 @@ function renderInventory() {
   app.querySelector('#category').onchange = (e) => { state.category = e.target.value; renderRows(); };
   app.querySelector('#location').onchange = (e) => { state.location = e.target.value; renderRows(); };
   app.querySelector('#tag').onchange = (e) => { state.tag = e.target.value; renderRows(); };
+  app.querySelector('#made').onchange = (e) => { state.made = e.target.value; renderRows(); };
   app.querySelector('#low').onclick = () => { state.low = !state.low; renderRows(); };
   app.querySelector('#reset-filters').onclick = resetFilters;
   app.querySelector('#show-all').onclick = resetFilters;
@@ -706,7 +719,7 @@ function renderInventory() {
   app.querySelector('#sort').onchange = (e) => { Object.assign(state, { sort: e.target.value, sortDir: 1 }); renderRows(); };
   app.querySelector('#sort-dir').onclick = () => { state.sortDir = -state.sortDir; renderRows(); };
   app.querySelector('#group').onchange = (e) => { state.group = e.target.value; renderRows(); };
-  app.querySelector('#print-list').onclick = printList;
+  app.querySelector('#print-inventory').onclick = printInventory;
   app.querySelector('#unpack-all').onclick = unpackAll;
   app.querySelector('#export-csv').onclick = exportCsv;
   app.querySelector('#import').onclick = openImportDialog;
@@ -782,7 +795,7 @@ function renderInventory() {
 }
 
 function switchProject(id, search = '') {
-  Object.assign(state, { projectId: id, search, category: '', location: '', tag: '', low: false, sort: 'name', sortDir: 1, selected: null });
+  Object.assign(state, { projectId: id, search, category: '', location: '', tag: '', made: '', low: false, sort: 'name', sortDir: 1, selected: null });
   app.querySelector('#search').value = search;
   renderRows();
 }
@@ -903,6 +916,7 @@ function visibleRows() {
     .filter((p) => !state.category || inCategory(p, state.category))
     .filter((p) => !state.location || p.location === state.location)
     .filter((p) => !state.tag || p.tags.includes(state.tag))
+    .filter((p) => !state.made || madeMatches(p, state.made))
     .filter((p) => !state.low || lowStock(p.id))
     .filter((p) => !query || matches(p, query))
     .sort(compareRows);
@@ -950,7 +964,7 @@ function renderViewBar(columns) {
 
 // The Filters button counts the filters that hide parts, so a hidden filter is never forgotten.
 function renderFilterCount() {
-  const count = ['category', 'location', 'tag', 'low'].filter((key) => state[key] !== DEFAULT_FILTERS[key]).length;
+  const count = ['category', 'location', 'tag', 'made', 'low'].filter((key) => state[key] !== DEFAULT_FILTERS[key]).length;
   const badge = app.querySelector('#filter-count');
   badge.hidden = !count;
   badge.textContent = count;
@@ -969,6 +983,11 @@ function renderRows() {
   renderFilter('category', 'categories', categoryPaths(all), state.category, categoryLabel);
   renderFilter('location', 'locations', unique(all, 'location'), state.location);
   renderFilter('tag', 'tags', allTags(all), state.tag);
+  // Only teams that make parts get the Made by filter.
+  const madeFilter = app.querySelector('#made');
+  madeFilter.hidden = !state.made && !all.some((p) => p.made);
+  madeFilter.innerHTML = Object.entries({ '': 'Bought and made', bought: 'Bought', made: 'Made by team', ...MADE })
+    .map(([value, label]) => `<option value="${value}" ${value === state.made ? 'selected' : ''}>${label}</option>`).join('');
   app.querySelector('#low').classList.toggle('active', state.low);
   app.querySelector('#low').setAttribute('aria-pressed', String(state.low));
   app.querySelector('#reset-filters').hidden = Object.entries(DEFAULT_FILTERS).every(([key, value]) => state[key] === value);
@@ -1059,7 +1078,7 @@ function rowHtml(p, columns, photos) {
   const selected = state.selected?.has(p.id);
   const label = (key) => columns.find(([k]) => k === key)?.[1];
   const image = catalogImage(p.partNumber);
-  const name = `<button type="button" class="part-name">${esc(p.name)}</button>${partChips(lowBadge(p.id) + orderBadge(p.id) + conditionBadge(p.condition), p.tags)}${notesLine(p.notes)}`;
+  const name = `<button type="button" class="part-name">${esc(p.name)}</button>${partChips(madeBadge(p.made) + lowBadge(p.id) + orderBadge(p.id) + buildBadge(p.id) + conditionBadge(p.condition), p.tags)}${notesLine(p.notes)}`;
   return `
     <tr data-id="${esc(p.id)}" class="${selected ? 'selected' : ''} ${p.packed ? 'packed' : ''} ${waiting(p.id) ? 'waiting' : ''}">
       ${state.selected ? `<td class="check"><input type="checkbox" aria-label="Select ${esc(p.name)}" ${selected ? 'checked' : ''} /></td>` : ''}
@@ -1074,7 +1093,7 @@ function rowHtml(p, columns, photos) {
       </td>
       ${label('inUse') ? `<td data-label="In use">${usedIn(p)}<button class="add-to" data-add-to="1" aria-label="Add to: ${esc(p.name)}">${ICON_PLUS}<span>Add to</span></button></td>` : ''}
       <td data-label="Location">${esc(p.location)}${findButton(p)}${!label('inUse') && inventoryNote(p) ? `<div class="muted small">${esc(inventoryNote(p))}</div>` : ''}</td>
-      <td data-label="Supplier">${esc(p.supplier)}</td>
+      <td data-label="Supplier">${p.made ? 'Made by team' : esc(p.supplier)}</td>
       <td data-label="Category">${esc(categoryLabel(p.category))}</td>
     </tr>`;
 }
@@ -1082,7 +1101,7 @@ function rowHtml(p, columns, photos) {
 // ---------- printing ----------
 
 // Prints the parts listed right now, grouped like the screen.
-function printList() {
+function printInventory() {
   const current = currentProject();
   const headers = ['Item', 'Part #', columnsFor(current).find(([key]) => key === 'quantity')[1], 'Location', 'Category'];
   const groups = groupRows(visibleRows()).map(([name, rows]) => [
@@ -1108,6 +1127,8 @@ const CSV_COLUMNS = [
   ['category', 'Category', ['type', 'group']],
   ['tags', 'Tags', ['tag']],
   ['condition', 'Condition', []],
+  ['made', 'Made by', ['made', 'method']],
+  ['material', 'Material', ['filament']],
   ['barcode', 'Barcode', ['upc']],
   ['link', 'Link', ['url', 'website']],
   ['notes', 'Notes', ['note', 'comments', 'comment', 'description']],
@@ -1127,7 +1148,7 @@ function saveFile(name, text, type) {
 function exportCsv() {
   const current = currentProject();
   const rows = inventoryParts(current.id).sort((a, b) => naturalCompare(a.name, b.name))
-    .map((p) => CSV_COLUMNS.map(([key]) => (key === 'tags' ? p.tags.join(', ') : key === 'spot' ? partSpot(p) : p[key])));
+    .map((p) => CSV_COLUMNS.map(([key]) => (key === 'tags' ? p.tags.join(', ') : key === 'spot' ? partSpot(p) : key === 'made' ? MADE[p.made] : p[key])));
   saveFile(`${current.name} ${new Date().toISOString().slice(0, 10)}.csv`, toCsv([CSV_COLUMNS.map(([, label]) => label), ...rows]), 'text/csv');
 }
 
@@ -1208,6 +1229,8 @@ function csvPart(values, projectId) {
     return { problem: 'low stock at not a whole number' };
   }
   const condition = text('condition').toLowerCase();
+  // "3D printed" or "3d-print"; anything else is bought.
+  const made = Object.keys(MADE).find((key) => [key, MADE[key].toLowerCase()].includes(text('made').toLowerCase()));
   const link = webLink(text('link', 1000));
   return {
     part: {
@@ -1222,6 +1245,8 @@ function csvPart(values, projectId) {
       condition: Object.hasOwn(CONDITIONS, condition) ? condition : '',
       notes: text('notes', 1000),
       tags: parseTags(text('tags')),
+      ...(made && { made }),
+      ...(made && text('material') && { material: text('material') }),
       ...(text('barcode') && { barcode: text('barcode') }),
       ...(text('spot') && { spot: text('spot').toUpperCase() }),
       ...(link && { link }),
@@ -1375,18 +1400,19 @@ const NAME_FIELDS = [['name', 'Name']];
 const USE_FIELDS = [['quantity', 'Using'], ['packed', 'Packed']];
 const GRID_FIELDS = [['rows', 'Rows'], ['cols', 'Columns']];
 const ORDER_FIELDS = [['name', 'Item'], ['partNumber', 'Part #'], ['quantity', 'Qty'], ['supplier', 'Supplier'], ['link', 'Link'], ['notes', 'Notes'], ['status', 'Status']];
+const BUILD_FIELDS = [['name', 'Part'], ['quantity', 'Qty'], ['notes', 'Notes'], ['status', 'Status']];
 const useDetails = (use) => ({ quantity: use.quantity, packed: use.packed === undefined ? '' : use.packed ? 'Yes' : 'No' });
 
 // What restoring a backup does: `add` holds what's in it and not in the team. Add mode keeps everything the team has;
 // with `duplicates`, parts the team already has are added again as copies, and without it, a part with the same name or
 // part number as one in the same inventory is left out. Replace makes the team match the backup: `change` holds what
 // differs from it, and `remove` what isn't in it. Something whose inventory or part won't be there goes in Main
-// Inventory, or for an order, becomes an order for a new part, like bringing it back from the trash. Uses of a project or
-// part that won't be there are left out.
+// Inventory, or for an order, becomes an order for a new part, like bringing it back from the trash. Uses and print list
+// items of a project or part that won't be there are left out.
 function restorePlan(backup, team, { replace, duplicates }) {
   const byId = (docs) => new Map(docs.map((d) => [d.id, d]));
-  const [projects, parts, uses, orders] = [team.projects, team.parts, team.uses, team.orders].map(byId);
-  const [backupProjects, backupParts, backupOrders] = [backup.projects, backup.parts, backup.orders].map((docs) => new Set(docs.map((d) => d.id)));
+  const [projects, parts, uses, orders, builds] = [team.projects, team.parts, team.uses, team.orders, team.builds].map(byId);
+  const [backupProjects, backupParts, backupOrders, backupBuilds] = [backup.projects, backup.parts, backup.orders, backup.builds].map((docs) => new Set(docs.map((d) => d.id)));
   const projectIds = new Set([fb.MAIN_PROJECT, ...backupProjects, ...(replace ? [] : projects.keys())]);
   const inventoryOf = (id) => (projectIds.has(id) ? id : fb.MAIN_PROJECT);
   const names = new Map([...team.projects, ...backup.projects].map((p) => [p.id, p.name]));
@@ -1394,10 +1420,10 @@ function restorePlan(backup, team, { replace, duplicates }) {
   const printed = new Set(team.printed.map((p) => p.id));
   const add = {
     locations: backup.locations.filter((saved) => !team.locations.some((l) => sameName(l.name, saved.name))),
-    projects: [], parts: [], uses: [], orders: [],
+    projects: [], parts: [], uses: [], orders: [], builds: [],
     printed: backup.printed.filter((key) => !printed.has(key)),
   };
-  const change = { projects: [], parts: [], uses: [], orders: [], locations: [] };
+  const change = { projects: [], parts: [], uses: [], orders: [], builds: [], locations: [] };
   if (replace) {
     for (const saved of backup.locations) {
       const now = team.locations.find((l) => sameName(l.name, saved.name));
@@ -1441,7 +1467,15 @@ function restorePlan(backup, team, { replace, duplicates }) {
       if (how) change.orders.push({ id, order, text: `Order for ${now.name}: ${how}` });
     }
   }
-  if (!replace) return { add, change, remove: { projects: [], parts: [], uses: [], orders: [], locations: [] } };
+  for (const { id, ...build } of backup.builds.filter((b) => partIds.has(b.partId))) {
+    const now = builds.get(id);
+    if (!now) add.builds.push({ id, ...build });
+    else if (replace) {
+      const how = describeEdit(now, build, BUILD_FIELDS);
+      if (how) change.builds.push({ id, build, text: `Print list ${now.name}: ${how}` });
+    }
+  }
+  if (!replace) return { add, change, remove: { projects: [], parts: [], uses: [], orders: [], builds: [], locations: [] } };
   const backupUses = new Set(backup.uses.map((u) => `${u.projectId}_${u.partId}`));
   const remove = {
     projects: team.projects.filter((p) => !projectIds.has(p.id)),
@@ -1449,13 +1483,14 @@ function restorePlan(backup, team, { replace, duplicates }) {
     // Uses of the parts and projects that go to the trash go with them.
     uses: team.uses.filter((u) => projectIds.has(u.projectId) && partIds.has(u.partId) && !backupUses.has(u.id)),
     orders: team.orders.filter((o) => !backupOrders.has(o.id)),
+    builds: team.builds.filter((b) => !backupBuilds.has(b.id)),
     locations: team.locations.filter((l) => !backup.locations.some((saved) => sameName(l.name, saved.name))),
   };
   return { add, change, remove };
 }
 
 // Lines naming what's in a group of docs, like "2 parts: Speed servo, Color sensor V3".
-function planLines({ projects = [], parts = [], uses = [], orders = [], locations = [], printed = [] }) {
+function planLines({ projects = [], parts = [], uses = [], orders = [], builds = [], locations = [], printed = [] }) {
   return [
     ...Object.entries(TYPES).map(([type, { label, plural }]) => {
       const names = projects.filter((p) => typeOf(p) === type).map((p) => p.name);
@@ -1464,6 +1499,7 @@ function planLines({ projects = [], parts = [], uses = [], orders = [], location
     parts.length && `${countParts(parts.length)}: ${listNames(parts.map((p) => p.name))}`,
     uses.length && `${count(uses.length, 'item')} in projects and packing lists`,
     orders.length && `${count(orders.length, 'order')}: ${listNames(orders.map((o) => o.name))}`,
+    builds.length && `${count(builds.length, 'print list item')}: ${listNames(builds.map((b) => b.name))}`,
     locations.length && `${count(locations.length, 'location')}: ${listNames(locations.map((l) => l.name))}`,
     printed.length && `${count(printed.length, 'QR label')} marked as printed`,
   ].filter(Boolean);
@@ -1576,12 +1612,14 @@ async function restoreBackup({ add, change, remove }, team, source) {
   await Promise.all([
     ...[...add.uses, ...change.uses.map((c) => c.use)].map((u) => fb.setUse(u.projectId, u.partId, u.quantity, u.packed)),
     ...[...add.orders, ...change.orders.map((c) => ({ id: c.id, ...c.order }))].map(({ id, ...order }) => fb.saveOrder(id, order)),
+    ...[...add.builds, ...change.builds.map((c) => ({ id: c.id, ...c.build }))].map(({ id, ...build }) => fb.saveBuild(id, build)),
     fb.markPrinted(add.printed),
   ]);
   await Promise.all([
     ...remove.parts.map((p) => trash('part', { ...partData(p), id: p.id }, usesOf('partId', p.id))),
     ...remove.uses.map((u) => fb.setUse(u.projectId, u.partId, 0)),
     ...remove.orders.map((o) => trash('order', o, [])),
+    fb.deleteBuilds(remove.builds.map((b) => b.id)),
     log('deleted', remove.parts.length, `Replaced by ${source}`),
   ]);
   // Projects go after their parts, so a part's trash entry is written while its project is still there.
@@ -1596,6 +1634,13 @@ const orderBadge = (partId) => [['need', 'to-order', 'to order'], ['ordered', 'o
   .filter(([, , n]) => n)
   .map(([kind, text, n]) => `<small class="badge ${kind}">${n} ${text}</small>`)
   .join('');
+// One badge for what's still to make on the print list and another for what's being made.
+const buildBadge = (partId) => [['need', 'to-make', 'to make'], ['making', 'making', 'in progress']]
+  .map(([status, kind, text]) => [kind, text, making(partId, status)])
+  .filter(([, , n]) => n)
+  .map(([kind, text, n]) => `<small class="badge ${kind}">${n} ${text}</small>`)
+  .join('');
+const madeBadge = (made) => (made ? `<small class="badge made">${MADE[made]}</small>` : '');
 const conditionBadge = (condition) => ['used', 'broken'].includes(condition)
   ? `<small class="badge ${condition}">${CONDITIONS[condition]}</small>` : '';
 // Phones show a part as a short card, with its location (and inventory, outside inventories) and part number on one
@@ -1604,7 +1649,8 @@ const conditionBadge = (condition) => ['used', 'broken'].includes(condition)
 const cardMeta = (p, withInventory) => [[p.location, findButton(p)], [withInventory && inventoryNote(p)], [p.partNumber]]
   .filter(([text]) => text).map(([text, html = '']) => `<span>${esc(text)}${html}</span>`).join('');
 // The part's link, in the Part # column, which phones' short cards leave out.
-const partLink = (p) => p.link ? `<a class="part-link small" href="${esc(p.link)}" target="_blank" rel="noopener" aria-label="Link: ${esc(p.name)}">Link ↗</a>` : '';
+// A made part's link is its file (CAD, STL or slicer file).
+const partLink = (p) => p.link ? `<a class="part-link small" href="${esc(p.link)}" target="_blank" rel="noopener" aria-label="${p.made ? 'File' : 'Link'}: ${esc(p.name)}">${p.made ? 'File' : 'Link'} ↗</a>` : '';
 const notesLine = (notes) => notes ?`<div class="notes muted small">${esc(notes.split('\n')[0])}</div>` : '';
 
 // Free count plus a chip for every project using this inventory part, opening that project.
@@ -2504,6 +2550,220 @@ async function receiveOrder(order) {
   logged(fb.receiveOrder(order, newPart, state.user, count), 'arrived', order.name, `+${count} from the order list`);
 }
 
+// ---------- print list ----------
+
+// The print list: parts the team makes itself, To make, In progress and Made, like the order list.
+// Every item is for a part; how it's made, its material and its file are the part's.
+function openBuildsDialog() {
+  const dialog = app.querySelector('#dialog');
+  dialog.innerHTML = `
+    <form method="dialog" class="card">
+      <h2>Print list</h2>
+      <div class="order-tabs" role="group" aria-label="Show print list">
+        ${BUILD_TABS.map(([key, label]) => `<button type="button" class="secondary" data-tab="${key}">${label} <span class="tab-count"></span></button>`).join('')}
+      </div>
+      <ul id="build-list" class="members"></ul>
+      <button type="button" id="clear-made" class="link" hidden>Clear made</button>
+      <details id="build-form" class="collapsible">
+        <summary id="build-form-title">+ Add part to make</summary>
+        <input name="name" maxlength="200" list="build-parts" placeholder="Part, or pick one the team makes" />
+        <datalist id="build-parts">${sorted(state.parts.filter((p) => p.made).map((p) => p.name)).map((n) => `<option value="${esc(n)}">`).join('')}</datalist>
+        <div class="row order-fields">
+          <input name="quantity" type="number" min="1" step="1" value="1" aria-label="Quantity" />
+          <select name="made" class="new-part" aria-label="Made by">${Object.entries(MADE).map(([value, label]) => `<option value="${value}">${label}</option>`).join('')}</select>
+          <input name="material" class="new-part" maxlength="200" placeholder="Material (optional)" />
+        </div>
+        <input name="link" class="new-part" maxlength="1000" inputmode="url" placeholder="File link: CAD, STL or slicer file (optional)" />
+        <input name="notes" maxlength="1000" placeholder="Notes (optional)" />
+      </details>
+      <div class="row">
+        <button value="add" id="save-build" hidden>Add</button>
+        <button type="button" id="cancel-edit" class="secondary" hidden>Cancel</button>
+        <button type="button" id="print-builds" class="secondary">Print</button>
+        <button value="close" formnovalidate class="secondary">Close</button>
+      </div>
+    </form>`;
+  const form = dialog.querySelector('form');
+  const list = dialog.querySelector('#build-list');
+  const buildForm = dialog.querySelector('#build-form');
+  const saveButton = dialog.querySelector('#save-build');
+  const printButton = dialog.querySelector('#print-builds');
+  const clearButton = dialog.querySelector('#clear-made');
+  // The tab shown: one of BUILD_TABS.
+  let tab = 'need';
+  // The item being changed, or null while the form adds new items. Its part stays the same.
+  let editing = null;
+  const shown = () => state.builds.filter((b) => buildStatus(b) === tab).sort((a, b) => a.name.localeCompare(b.name));
+  const partNamed = (name) => state.parts.find((p) => sameName(p.name, name));
+  // New items go under To make, so the form shows there, or on any tab while changing an item. Add only shows while it's open.
+  // How a part is made and its file are asked only for a part the team doesn't have yet.
+  const showForm = () => {
+    buildForm.hidden = tab !== 'need' && !editing;
+    saveButton.hidden = buildForm.hidden || !buildForm.open;
+    const newPart = !editing && !partNamed(form.name.value.trim());
+    for (const field of dialog.querySelectorAll('.new-part')) field.hidden = !newPart;
+  };
+  buildForm.ontoggle = showForm;
+  form.name.oninput = showForm;
+  printButton.onclick = () => printBuilds(tab, shown());
+  clearButton.onclick = () => clearMade(shown());
+  dialog.querySelector('.order-tabs').onclick = (e) => {
+    const button = e.target.closest('[data-tab]');
+    if (!button) return;
+    tab = button.dataset.tab;
+    renderBuilds();
+  };
+  const setEditing = (build) => {
+    editing = build;
+    form.reset();
+    if (build) for (const key of ['name', 'quantity', 'notes']) form[key].value = build[key] ?? '';
+    form.name.readOnly = Boolean(build);
+    dialog.querySelector('#build-form-title').textContent = build ? `Change ${build.name}` : '+ Add part to make';
+    saveButton.textContent = build ? 'Save' : 'Add';
+    if (build) buildForm.open = true;
+    showForm();
+    dialog.querySelector('#cancel-edit').hidden = !build;
+    printButton.hidden = Boolean(build);
+  };
+  dialog.querySelector('#cancel-edit').onclick = () => setEditing(null);
+  const renderBuilds = () => {
+    if (editing && !state.builds.some((b) => b.id === editing.id)) setEditing(null);
+    for (const button of dialog.querySelectorAll('[data-tab]')) {
+      button.setAttribute('aria-pressed', String(button.dataset.tab === tab));
+      button.querySelector('.tab-count').textContent = state.builds.filter((b) => buildStatus(b) === button.dataset.tab).length;
+    }
+    showForm();
+    const builds = shown();
+    printButton.disabled = !builds.length;
+    clearButton.hidden = tab !== 'made' || !builds.length;
+    const next = {
+      need: (b) => `<button type="button" class="secondary accent" data-start="${esc(b.id)}">Start</button>`,
+      making: (b) => `<button type="button" class="secondary accent" data-made="${esc(b.id)}">Made</button>`,
+      made: () => '',
+    }[tab];
+    list.innerHTML = builds.map((b) => {
+      const part = state.parts.find((p) => p.id === b.partId);
+      const details = (part ? [MADE[part.made] ?? 'Bought', part.material, `have ${part.quantity}`] : ['part deleted']).filter(Boolean).map((d) => `<span>${esc(d)}</span>`);
+      if (part?.link) details.push(`<a href="${esc(part.link)}" target="_blank" rel="noopener">File ↗</a>`);
+      return `<li>
+        <span class="order-text" data-edit="${esc(b.id)}"><strong>${esc(b.name)}</strong> ×${b.quantity} <span class="muted small order-details">${details.join(' · ')}</span>${b.notes ? `<span class="small order-notes">${esc(b.notes)}</span>` : ''}</span>
+        <span class="row">
+          ${next(b)}
+          <button type="button" class="danger" data-remove="${esc(b.id)}">Remove</button>
+        </span>
+      </li>`;
+    }).join('') || `<li class="muted">${{ need: 'Nothing to make.', making: 'Nothing in progress.', made: 'Nothing made yet.' }[tab]}</li>`;
+  };
+  // Adding keeps the dialog open; Enter in a field adds too.
+  form.onsubmit = (e) => {
+    if (e.submitter?.value === 'close') return;
+    e.preventDefault();
+    const name = form.name.value.trim();
+    const quantity = Number(form.quantity.value);
+    if (!name) return showError(new Error('Enter the part to make.'));
+    if (!Number.isInteger(quantity) || quantity < 1) return showError(new Error('Make at least 1.'));
+    const notes = form.notes.value.trim();
+    if (editing) {
+      const { id, ...before } = editing;
+      const build = { name: editing.name, partId: editing.partId, quantity, ...(notes && { notes }), ...(editing.status && { status: editing.status }) };
+      fb.saveBuild(id, build).catch(showError);
+      offerUndo(`Changed ${editing.name}`, () => fb.saveBuild(id, before).catch(showError));
+      return setEditing(null);
+    }
+    let part = partNamed(name);
+    if (!part) {
+      const link = webLink(form.link.value);
+      if (link === null) return showError(new Error('That file link is not a web address.'));
+      part = { id: fb.newPartId(), ...madePart(name, form.made.value, form.material.value.trim(), link) };
+      // The part is written first, because the rules only accept an item for a part that exists.
+      const { id, ...data } = part;
+      writeParts([[id, data]], 'added', name, `To make ${quantity}`);
+    }
+    addBuild(part, quantity, notes);
+    form.reset();
+    form.name.focus();
+    tab = 'need';
+    renderBuilds();
+  };
+  list.onclick = (e) => {
+    const { start, made, remove } = e.target.dataset;
+    const build = state.builds.find((b) => b.id === (start || made || remove));
+    if (start) return startBuild(build);
+    if (made) return makeBuild(build).catch(showError);
+    if (remove) return removeBuild(build);
+    const edit = e.target.closest('[data-edit]')?.dataset.edit;
+    if (!edit || e.target.closest('a')) return;
+    setEditing(state.builds.find((b) => b.id === edit));
+    form.quantity.focus();
+  };
+  renderBuilds();
+  state.onBuildsChange = renderBuilds;
+  dialog.addEventListener('close', () => { state.onBuildsChange = null; }, { once: true });
+  dialog.showModal();
+}
+
+// A Main Inventory part the team makes, new on the print list with none made yet.
+const madePart = (name, made, material, link) => ({
+  projectId: fb.MAIN_PROJECT, name, partNumber: '', quantity: 0, location: '', supplier: '', category: '', tags: [], unit: '',
+  condition: 'new', notes: '', made, ...(material && { material }), ...(link && { link }),
+});
+
+// Puts a part on the print list, still to make. Returns the new item's id.
+function addBuild(part, quantity, notes = '') {
+  const id = fb.newBuildId();
+  fb.saveBuild(id, { name: part.name, partId: part.id, quantity, ...(notes && { notes }) }).catch(showError);
+  return id;
+}
+
+// Make more, in the part dialog: puts the part on the print list.
+async function makeMore(part) {
+  const answer = await ask(`How many ${part.name} to make?`, 1);
+  if (!answer) return;
+  const quantity = Number(answer);
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1000000) throw new Error('Enter a whole number, 1 or more.');
+  const id = addBuild(part, quantity);
+  offerUndo(`${quantity} ${part.name} on the print list`, () => fb.deleteBuilds([id]).catch(showError));
+}
+
+function startBuild(build) {
+  const { id, ...before } = build;
+  fb.saveBuild(id, { ...before, status: 'making' }).catch(showError);
+  offerUndo(`Started ${build.name}`, () => fb.saveBuild(id, before).catch(showError));
+}
+
+// Adds what came out to the part's stock. Some can be made first: the rest stays in progress.
+async function makeBuild(build) {
+  const part = state.parts.find((p) => p.id === build.partId);
+  if (!part) throw new Error(`${build.name} was deleted. Bring it back from the Trash first.`);
+  const count = build.quantity > 1 ? Number(await ask(`How many ${build.name} were made?`, build.quantity)) : build.quantity;
+  if (!count) return;
+  if (!Number.isInteger(count) || count < 1 || count > build.quantity) throw new Error(`Enter a whole number from 1 to ${build.quantity}.`);
+  logged(fb.makeBuild(build, state.user, count), 'made', build.name, `+${count} from the print list`);
+}
+
+function removeBuild(build) {
+  const { id, ...data } = build;
+  fb.deleteBuilds([id]).catch(showError);
+  offerUndo(`Removed ${build.name}`, () => fb.saveBuild(id, data).catch(showError));
+}
+
+// Made items are already in the inventory, so clearing them just deletes them.
+function clearMade(builds) {
+  fb.deleteBuilds(builds.map((b) => b.id)).catch(showError);
+  offerUndo(`Cleared ${count(builds.length, 'made item')}`, () => Promise.all(builds.map(({ id, ...build }) => fb.saveBuild(id, build))).catch(showError));
+}
+
+// Prints one tab of the print list as a table.
+function printBuilds(tab, builds) {
+  const headers = ['Part', 'Part #', 'Qty', 'Made by', 'Material', 'Notes'];
+  const rows = builds.map((b) => {
+    const part = state.parts.find((p) => p.id === b.partId);
+    return [b.name, part?.partNumber ?? '', String(b.quantity), MADE[part?.made] ?? '', part?.material ?? '', b.notes ?? ''];
+  });
+  const title = BUILD_TABS.find(([key]) => key === tab)[1];
+  printSheet(`Print list: ${title}`, `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, [['', rows]]);
+}
+
 async function deleteCurrentProject() {
   const current = currentProject();
   if (!current.source && inventoryParts(current.id).length) throw new Error(`Delete the parts in ${current.name} first.`);
@@ -2628,7 +2888,7 @@ function openUseDialog(use) {
 }
 
 // Add mode: "Save and add another" reopens the form for a new part, keeping the details in `carry`.
-const CARRIED_FIELDS = ['location', 'supplier', 'category', 'unit', 'condition', 'tags'];
+const CARRIED_FIELDS = ['location', 'supplier', 'category', 'unit', 'condition', 'tags', 'made', 'material'];
 // Value of the "+ New…" option in the category and tag pickers.
 const NEW_OPTION = '+new';
 
@@ -2653,7 +2913,7 @@ function openPartDialog(part, carry = null, note = '') {
       ${part ? '' : CATALOG_SEARCH}
       ${input('name', 'Item', 'required')}
       ${input('partNumber', 'Part number')}
-      <label>Barcode
+      <label class="bought-only">Barcode
         <div class="password">
           <input name="barcode" value="${esc(values?.barcode ?? '')}" maxlength="200" placeholder="Scan a package to fill in" />
           <button type="button" id="scan-barcode" class="secondary" aria-label="Scan barcode">${ICON_SCAN}<span>Scan</span></button>
@@ -2672,8 +2932,15 @@ function openPartDialog(part, carry = null, note = '') {
         <span>Spot <span class="muted small"></span></span>
         <div class="grid-box"></div>
       </div>
+      <label>Made by
+        <select name="made">
+          ${Object.entries({ '': 'Bought', ...MADE }).map(([value, label]) =>
+            `<option value="${value}" ${value === (values?.made ?? '') ? 'selected' : ''}>${label}</option>`).join('')}
+        </select>
+      </label>
+      ${input('material', 'Material', 'maxlength="200" placeholder="e.g. PETG, 6061 aluminum (optional)"')}
       ${input('supplier', 'Supplier', 'list="supplier-list"')}
-      ${input('link', 'Link', 'maxlength="1000" inputmode="url" placeholder="Product page (optional)"')}
+      <label><span id="link-label">Link</span><input name="link" value="${esc(values?.link ?? '')}" maxlength="1000" inputmode="url" /></label>
       <label>Category
         <select name="category">
           <option value="">No category</option>
@@ -2705,6 +2972,7 @@ function openPartDialog(part, carry = null, note = '') {
         <button value="save">Save</button>
         ${part ? '' : '<button value="next" class="secondary">Save and add another</button>'}
         <button value="cancel" formnovalidate class="secondary">Cancel</button>
+        ${part?.made ? '<button type="button" id="make-more" class="secondary">Make more</button>' : ''}
         ${part ? '<button type="button" id="label" class="secondary">Print label</button>' : ''}
         ${part && partSpot(part) ? '<button type="button" id="find" class="secondary">Find part</button>' : ''}
         ${part ? '<button value="delete" formnovalidate class="danger">Delete</button>' : ''}
@@ -2715,6 +2983,18 @@ function openPartDialog(part, carry = null, note = '') {
   if (!part) form.quantity.value = values?.quantity ?? 0;
   if (part) dialog.querySelector('#label').onclick = () => printAndMark([partLabel(part)]);
   dialog.querySelector('#find')?.addEventListener('click', () => findPart(part));
+  dialog.querySelector('#make-more')?.addEventListener('click', () => makeMore(part).catch(showError));
+  // A part the team makes has a material and a file instead of a supplier, barcode and product page.
+  const renderMade = () => {
+    const made = Boolean(form.made.value);
+    form.material.closest('label').hidden = !made;
+    form.supplier.closest('label').hidden = made;
+    form.barcode.closest('label').hidden = made;
+    dialog.querySelector('#link-label').textContent = made ? 'File link' : 'Link';
+    form.link.placeholder = made ? 'CAD, STL or slicer file (optional)' : 'Product page (optional)';
+  };
+  form.made.onchange = renderMade;
+  renderMade();
   // Opening More details scrolls its fields into view, since on a phone they open below the bottom of the screen.
   const more = dialog.querySelector('.more-details');
   more.querySelector('summary').onclick = () => more.open || requestAnimationFrame(() => more.scrollIntoView({ block: 'start', behavior: 'smooth' }));
@@ -2799,6 +3079,8 @@ function openPartDialog(part, carry = null, note = '') {
     }
     if (link) data.link = link;
     if (form.minQuantity.value !== '') data.minQuantity = Number(form.minQuantity.value);
+    if (form.made.value) data.made = form.made.value;
+    if (form.made.value && form.material.value.trim()) data.material = form.material.value.trim();
     if (part) return editPart(part, data);
     if (!confirmDuplicate(data)) return e.preventDefault();
     addPart(data);
@@ -2887,7 +3169,7 @@ function hideUndo() {
 }
 
 // Everything a part stores apart from who changed it last and when.
-// A barcode, link, low-stock quantity or spot is only stored when the part has one, so parts without them still save under
+// A barcode, link, low-stock quantity, spot, way it's made or material is only stored when the part has one, so parts without them still save under
 // rules from before them.
 const partData = (part) => ({
   ...Object.fromEntries([...FIELDS, ...DETAIL_FIELDS].map(([key]) => [key, part[key] ?? ''])),
@@ -2897,6 +3179,8 @@ const partData = (part) => ({
   ...(part.link && { link: part.link }),
   ...(part.minQuantity != null && { minQuantity: part.minQuantity }),
   ...(part.spot && { spot: part.spot }),
+  ...(part.made && { made: part.made }),
+  ...(part.material && { material: part.material }),
 });
 
 // Logs a change alongside its write rather than after the server confirms it, so an offline change
@@ -2905,7 +3189,8 @@ const logged = (write, action, partName, details) =>
   Promise.all([write, fb.logChange(me(), action, partName, details)]).catch(showError);
 
 // Every field an edit can change, with its name for the change log.
-const EDIT_FIELDS = [...FIELDS, ...DETAIL_FIELDS, ['spot', 'Spot'], ['barcode', 'Barcode'], ['link', 'Link'], ['minQuantity', 'Low stock at'], ['tags', 'Tags']];
+const EDIT_FIELDS = [...FIELDS, ...DETAIL_FIELDS, ['spot', 'Spot'], ['barcode', 'Barcode'], ['link', 'Link'], ['minQuantity', 'Low stock at'], ['tags', 'Tags'],
+  ['made', 'Made by'], ['material', 'Material']];
 // A restored part's inventory counts too, so Replace can move a part back.
 const RESTORE_PART_FIELDS = [...EDIT_FIELDS, ['projectId', 'Inventory']];
 
@@ -3203,7 +3488,7 @@ function openBulkEditDialog() {
   dialog.showModal();
 }
 
-const ACTIONS = { added: 'added', edited: 'edited', quantity: 'changed', deleted: 'deleted', used: 'changed use of', arrived: 'received' };
+const ACTIONS = { added: 'added', edited: 'edited', quantity: 'changed', deleted: 'deleted', used: 'changed use of', arrived: 'received', made: 'made' };
 
 // "Today 3:04 PM", "Yesterday 3:04 PM", or "Oct 12, 3:04 PM", with the year when it isn't this year.
 function whenText(date) {
@@ -3562,6 +3847,12 @@ async function start() {
         state.picker?.();
         state.onOrdersChange?.();
       }, onError),
+      // Teams whose published rules are older than the print list can't read it yet; the rules banner asks for an update.
+      fb.watchBuilds((docs) => {
+        state.builds = docs;
+        renderRows();
+        state.onBuildsChange?.();
+      }, (error) => (error.code === 'permission-denied' ? null : showError(error))),
       fb.watchPrinted((docs) => { state.printed = new Set(docs.map((d) => d.id)); }, onError),
     ];
   };

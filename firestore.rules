@@ -4,7 +4,7 @@ service cloud.firestore {
     // Add 1 whenever these rules change. The app is built with this number (vite.config.js) and, after sign-in,
     // reads rulesVersion/<number>; if the team's published rules are older, that's denied and the app shows a
     // banner linking to "Updating the rules" in SETUP.md.
-    function rulesVersion() { return 7; }
+    function rulesVersion() { return 8; }
 
     function signedIn() {
       return request.auth != null;
@@ -51,7 +51,7 @@ service cloud.firestore {
     }
     function validPart() {
       let part = request.resource.data;
-      return part.keys().hasOnly(['projectId', 'name', 'partNumber', 'barcode', 'link', 'quantity', 'minQuantity', 'location', 'supplier', 'category', 'tags', 'unit', 'condition', 'notes', 'spot', 'updatedBy', 'updatedAt'])
+      return part.keys().hasOnly(['projectId', 'name', 'partNumber', 'barcode', 'link', 'quantity', 'minQuantity', 'location', 'supplier', 'category', 'tags', 'unit', 'condition', 'notes', 'spot', 'made', 'material', 'updatedBy', 'updatedAt'])
         && projectExists(part.projectId)
         && shortText(part.name) && part.name.size() > 0
         && shortText(part.partNumber)
@@ -65,6 +65,8 @@ service cloud.firestore {
         && (!('condition' in part) || part.condition in ['', 'new', 'used', 'broken'])
         && (!('notes' in part) || (part.notes is string && part.notes.size() <= 1000))
         && (!('spot' in part) || (part.spot is string && part.spot.matches('[A-Z][1-9][0-9]?')))
+        && (!('made' in part) || part.made in ['3d-print', 'cnc', 'laser', 'other'])
+        && (!('material' in part) || shortText(part.material))
         && part.quantity is int && part.quantity >= 0 && part.quantity <= 1000000
         && (!('minQuantity' in part) || (part.minQuantity is int && part.minQuantity >= 0 && part.minQuantity <= 1000000))
         && part.updatedBy == request.auth.token.email
@@ -90,6 +92,17 @@ service cloud.firestore {
         && shortText(order.supplier)
         && order.quantity is int && order.quantity > 0 && order.quantity <= 1000000
         && (order.partId == '' || exists(/databases/$(database)/documents/parts/$(order.partId)));
+    }
+    // A part the team makes itself, on the print list. The part has to exist; method, material and file are the part's.
+    // status is 'making' or 'made'; items without one are still to make.
+    function validBuild() {
+      let build = request.resource.data;
+      return build.keys().hasOnly(['name', 'partId', 'quantity', 'status', 'notes'])
+        && shortText(build.name) && build.name.size() > 0
+        && (!('status' in build) || build.status in ['making', 'made'])
+        && (!('notes' in build) || (build.notes is string && build.notes.size() <= 1000))
+        && build.quantity is int && build.quantity > 0 && build.quantity <= 1000000
+        && build.partId is string && existsAfter(/databases/$(database)/documents/parts/$(build.partId));
     }
 
     // Never holds a doc: reading it only checks the rules version (see rulesVersion above).
@@ -148,7 +161,7 @@ service cloud.firestore {
         && request.resource.data.at == request.time
         && request.resource.data.by == request.auth.uid
         && validName(request.resource.data.byName)
-        && request.resource.data.action in ['added', 'edited', 'quantity', 'deleted', 'used', 'arrived']
+        && request.resource.data.action in ['added', 'edited', 'quantity', 'deleted', 'used', 'arrived', 'made']
         && shortText(request.resource.data.part)
         && request.resource.data.details is string && request.resource.data.details.size() <= 2000;
     }
@@ -202,6 +215,11 @@ service cloud.firestore {
     match /orders/{orderId} {
       allow read, delete: if isMember();
       allow create, update: if isMember() && validOrder();
+    }
+
+    match /builds/{buildId} {
+      allow read, delete: if isMember();
+      allow create, update: if isMember() && validBuild();
     }
 
     // Deleted parts, projects and orders, kept so they can be brought back. Restoring writes `data` and `uses`

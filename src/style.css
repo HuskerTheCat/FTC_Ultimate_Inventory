@@ -217,6 +217,7 @@ option:checked { background: rgb(91 155 255 / 0.15); color: var(--accent); }
 input::placeholder, textarea::placeholder { color: var(--placeholder); }
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
 textarea { resize: vertical; font-family: ui-monospace, monospace; font-size: 0.85rem; }
+label[hidden] { display: none; }
 label, .field { display: flex; flex-direction: column; gap: 6px; font-size: 0.875rem; font-weight: 500; color: var(--muted); }
 label input, label textarea, label select { color: var(--text); font-weight: 400; font-size: 1rem; }
 
@@ -388,6 +389,7 @@ a.menu-item { min-height: 42px; border-radius: 10px; text-decoration: none; }
 .filters .row { width: 100%; }
 .filters .row > span { width: 44px; font-weight: 600; }
 .filters select { width: auto; flex: 0 1 190px; min-height: 38px; padding: 4px 34px 4px 10px; }
+.filters select[hidden] { display: none; }
 .filters button { min-height: 38px; padding: 4px 12px; }
 .filters button.secondary { background: var(--field); border-color: var(--border); }
 .filters button.danger { margin-left: 0; }
@@ -458,10 +460,13 @@ td.name .notes { font-weight: 400; width: 0; min-width: 100%; white-space: nowra
 .tags .badge { margin-left: 0; }
 .badge:is(.broken, .low) { color: var(--danger); background: rgb(255 107 125 / 0.12); box-shadow: inset 0 0 0 1px rgb(255 107 125 / 0.55); }
 .badge.on-order { color: var(--pending); background: rgb(242 184 75 / 0.12); box-shadow: inset 0 0 0 1px rgb(242 184 75 / 0.55); }
-.badge.to-order { color: var(--accent); background: rgb(91 155 255 / 0.12); box-shadow: inset 0 0 0 1px rgb(91 155 255 / 0.55); }
-.badge:is(.low, .to-order, .on-order)::before { content: ''; flex: none; width: 12px; height: 12px; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; }
+.badge:is(.to-order, .to-make) { color: var(--accent); background: rgb(91 155 255 / 0.12); box-shadow: inset 0 0 0 1px rgb(91 155 255 / 0.55); }
+.badge.making { color: var(--pending); background: rgb(242 184 75 / 0.12); box-shadow: inset 0 0 0 1px rgb(242 184 75 / 0.55); }
+.badge.made { color: var(--text); }
+.badge:is(.low, .to-order, .on-order, .to-make, .making)::before { content: ''; flex: none; width: 12px; height: 12px; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; }
 .badge.low { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2 1 21h22L12 2zm-1 7h2v6h-2zm0 8h2v2h-2z'/%3E%3C/svg%3E"); }
 .badge.to-order { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M1 2h4l1 3h17l-3 9H8.5l-.7 2H20v2H5l2-5L4 4H1zM8 22a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4z'/%3E%3C/svg%3E"); }
+.badge:is(.to-make, .making) { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4'%3E%3Cpath d='M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z'/%3E%3C/svg%3E"); }
 .badge.on-order { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M1 4h13v12H1zM15 8h4l4 5v3h-8zM5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm12 0a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z'/%3E%3C/svg%3E"); }
 textarea:is([name="notes"], [name="text"], [name="reason"]) { font: inherit; }
 button.step {
@@ -642,24 +647,26 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
 #location-list button.icon { width: 38px; min-height: 38px; padding: 0; }
 #location-list button.icon.danger { color: var(--danger); }
 /* Order rows: details on their own line without splitting a part number, Arrived and Remove stacked the same on every row. */
-#order-list li > .row { flex-direction: column; align-items: stretch; flex-shrink: 0; }
-/* Remove is quiet until hovered, so Ordered and Arrived stand out. */
-#order-list button.danger { color: var(--muted); font-weight: 500; }
-#order-list button.danger:hover { color: var(--danger); }
-#order-list .order-text { cursor: pointer; }
+/* The print list's rows are the same. */
+:is(#order-list, #build-list) li > .row { flex-direction: column; align-items: stretch; flex-shrink: 0; }
+/* Remove is quiet until hovered, so Ordered, Arrived, Start and Made stand out. */
+:is(#order-list, #build-list) button.danger { color: var(--muted); font-weight: 500; }
+:is(#order-list, #build-list) button.danger:hover { color: var(--danger); }
+:is(#order-list, #build-list) .order-text { cursor: pointer; }
 /* Need to order, Ordered and Arrived: one row of equal tabs, the shown one in the accent color like a picked filter. */
 .order-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .order-tabs button { min-height: 38px; padding: 4px 6px; background: var(--field); border-color: var(--border); font-size: 0.9rem; white-space: normal; line-height: 1.2; }
 .order-tabs button[aria-pressed="true"] { background: rgb(91 155 255 / 0.15); color: var(--accent); border-color: var(--accent); }
 .tab-count { font-weight: 500; opacity: 0.75; }
-#clear-arrived { align-self: flex-end; }
+#clear-arrived, #clear-made { align-self: flex-end; }
 /* An order being changed keeps its item. */
 input[name="name"]:read-only { color: var(--muted); }
 .order-details { display: block; }
 .order-details > * { white-space: nowrap; }
 .order-notes { display: block; margin-top: 2px; white-space: pre-line; }
 .order-fields input[name="quantity"] { width: 80px; }
-.order-fields input:not([name="quantity"]) { flex: 1 1 120px; width: auto; }
+.order-fields :is(input:not([name="quantity"]), select) { flex: 1 1 120px; width: auto; }
+#build-form .new-part[hidden] { display: none; }
 .label-list { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 40vh; overflow: auto; }
 .label-list label { flex-direction: row; align-items: center; gap: 10px; color: var(--text); font-weight: 400; font-size: 1rem; overflow-wrap: anywhere; }
 label.check { flex-direction: row; align-items: center; gap: 10px; font-weight: 400; }

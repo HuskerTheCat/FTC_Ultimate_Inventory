@@ -27,6 +27,7 @@ const collections = {
   uses: new Map(),
   locations: new Map(),
   orders: new Map(),
+  builds: new Map(),
   printed: new Map(),
   log: new Map(),
   trash: new Map(),
@@ -117,6 +118,12 @@ const SAMPLE_PARTS = [
   ['Zip ties (100 pack)', '2909-0101-0100', 2, 'Tool wall', 'goBILDA', 'Supplies', [], { unit: 'pack', minQuantity: 2 }],
   ['7mm combination wrench', '4202-0070-1070', 3, 'Tool wall', 'goBILDA', 'Tools', []],
   ['Allen wrench pack', 'REV-45-1882', 2, 'Tool wall', 'REV Robotics', 'Tools', [], { notes: 'One lives in the pit box. It keeps going missing.' }],
+  ['Intake roller bracket', 'TL-INT-03', 2, 'Bin 2', '', 'Custom/Intake', ['intake'], { made: '3d-print', material: 'PETG', link: 'https://cad.onshape.com/', notes: '40% infill, 4 walls.' }],
+  ['Claw finger, left', 'TL-CLW-11', 0, 'Bin 2', '', 'Custom/Claw', ['claw'], { made: '3d-print', material: 'TPU 95A', link: 'https://cad.onshape.com/' }],
+  ['Claw finger, right', 'TL-CLW-12', 1, 'Bin 2', '', 'Custom/Claw', ['claw'], { made: '3d-print', material: 'TPU 95A', link: 'https://cad.onshape.com/' }],
+  ['Odometry pod mount', 'TL-ODO-02', 2, 'Bin 2', '', 'Custom/Drivetrain', ['odometry'], { made: '3d-print', material: 'PLA' }],
+  ['Drivetrain side plate', 'TL-DT-01', 2, 'Shelf B', '', 'Custom/Drivetrain', ['drivetrain'], { made: 'cnc', material: '6061 aluminum, 1/4 in' }],
+  ['Intake guard', 'TL-INT-07', 1, 'Shelf B', '', 'Custom/Intake', ['intake'], { made: 'laser', material: 'Polycarbonate 1/16 in' }],
 ];
 
 // The product link the part catalog gives each sample part number, like autofill does in the app.
@@ -202,10 +209,19 @@ const SAMPLE_ORDERS = [
   ['USB camera', '3122-0003-0001', 1, 'goBILDA', 'USB camera', '', 'arrived'],
 ];
 
+// [part name, quantity, notes or '', status or '' (still to make)]
+const SAMPLE_BUILDS = [
+  ['Intake roller bracket', 4, 'Two per side', ''],
+  ['Claw finger, left', 2, '', ''],
+  ['Claw finger, right', 1, 'Spare for the pit box', 'making'],
+  ['Odometry pod mount', 2, '', 'made'],
+];
+
 // [hours ago, member uid, member name, action, part, details]
 const SAMPLE_LOG = [
   [1, 'demo', 'Husker', 'added', 'Pinpoint odometry computer', ''],
   [2, 'demo', 'Husker', 'quantity', '12V Slim battery', 'Quantity -1'],
+  [3, 'demo-gabby', 'Gabby', 'made', 'Odometry pod mount', '+2 from the print list'],
   [5, 'demo-gabby', 'Gabby', 'edited', 'Gamepad', 'Condition used'],
   [7, 'demo-gabby', 'Gabby', 'used', 'Touch sensor', 'Competition Robot: 1'],
   [26, 'demo-grace', 'Grace', 'arrived', 'USB camera', 'Received 1'],
@@ -241,6 +257,7 @@ function loadSamples() {
     if (!partName) addParts([[name, partNumber, 0, '', supplier, '', []]], MAIN_PROJECT);
     add('orders', { name, partNumber, quantity, supplier, partId: ids.get(partName || name), ...(SAMPLE_LINKS[partNumber] && { link: SAMPLE_LINKS[partNumber] }), ...(notes && { notes }), ...(status && { status }) });
   }
+  for (const [name, quantity, notes, status] of SAMPLE_BUILDS) add('builds', { name, partId: ids.get(name), quantity, ...(notes && { notes }), ...(status && { status }) });
   write('uses', `${ROBOT}_${ids.get('Limit switch')}`, { projectId: ROBOT, partId: ids.get('Limit switch'), quantity: 2 });
   for (const [hours, by, byName, action, part, details] of SAMPLE_LOG) add('log', { at: hoursAgo(hours), by, byName, action, part, details });
   // Labels the team has already printed: the Shelf A bin and a few parts.
@@ -281,6 +298,7 @@ export const watchProjects = watchCollection('projects');
 export const watchUses = watchCollection('uses');
 export const watchLocations = watchCollection('locations');
 export const watchOrders = watchCollection('orders');
+export const watchBuilds = watchCollection('builds');
 export const watchPrinted = watchCollection('printed');
 export const watchTrash = watchCollection('trash');
 
@@ -372,6 +390,25 @@ export async function receiveOrder(order, newPart, user, count) {
 
 export async function deleteOrders(ids) {
   for (const id of ids) remove('orders', id);
+}
+
+export const newBuildId = () => `demo-${nextId++}`;
+
+export async function saveBuild(id, build) {
+  write('builds', id, build);
+}
+
+export async function makeBuild(build, user, count) {
+  await changeQuantity(build.partId, count, user);
+  const { id, ...data } = build;
+  if (count < build.quantity) {
+    write('builds', id, { ...data, quantity: build.quantity - count });
+    add('builds', { ...data, quantity: count, status: 'made' });
+  } else write('builds', id, { ...data, status: 'made' });
+}
+
+export async function deleteBuilds(ids) {
+  for (const id of ids) remove('builds', id);
 }
 
 const TRASH_COLLECTIONS = { part: 'parts', project: 'projects', order: 'orders' };
