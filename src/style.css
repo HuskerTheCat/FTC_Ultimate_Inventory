@@ -531,6 +531,11 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
 /* Parts without a photo get a faint box, so the names still line up. */
 .no-photo { display: grid; place-items: center; border-radius: 8px; background: var(--raised); color: var(--muted); }
 .no-photo::before { content: ''; width: 55%; height: 55%; background: currentColor; opacity: 0.6; -webkit-mask: var(--box) center / contain no-repeat; mask: var(--box) center / contain no-repeat; --box: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M3 7.5 12 3l9 4.5v9L12 21l-9-4.5zM3 7.5l9 4.5 9-4.5M12 12v9'/%3E%3C/svg%3E"); }
+/* A part the team makes shows how it's made: a 3D printer, a CNC mill, a laser cutter or a wrench. */
+.no-photo[data-made="3d-print"]::before { --box: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M4 3h16v18H4zM4 7h16M10 7h4v2l-2 2-2-2zM9 15h6v3H9zM6 18h12'/%3E%3C/svg%3E"); }
+.no-photo[data-made="cnc"]::before { --box: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M8 2h8v5H8zM10 7h4l-1 2h-2zM12 9v1.5l-1 1 2 1-1 1V15M4 15h6v2h4v-2h6v5H4z'/%3E%3C/svg%3E"); }
+.no-photo[data-made="laser"]::before { --box: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M8 2h8v5H8zM10 7h4l-2 3zM12 12v1.5M12 15v1M8.5 14.5 7 13.5M15.5 14.5l1.5-1M3 17h18v3H3z'/%3E%3C/svg%3E"); }
+.no-photo[data-made="other"]::before { --box: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z'/%3E%3C/svg%3E"); }
 .thumb { width: 44px; height: 44px; }
 .part-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .part-photo { width: 64px; height: 64px; border: 1px solid var(--border); }

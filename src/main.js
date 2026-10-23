@@ -1083,7 +1083,7 @@ function rowHtml(p, columns, photos) {
     <tr data-id="${esc(p.id)}" class="${selected ? 'selected' : ''} ${p.packed ? 'packed' : ''} ${waiting(p.id) ? 'waiting' : ''}">
       ${state.selected ? `<td class="check"><input type="checkbox" aria-label="Select ${esc(p.name)}" ${selected ? 'checked' : ''} /></td>` : ''}
       ${label('packed') ? `<td data-label="Packed" class="packed"><input type="checkbox" data-packed="1" aria-label="Packed" ${p.packed ? 'checked' : ''} /></td>` : ''}
-      <td data-label="Item" class="name">${photos ? `<div class="with-photo">${image ? catalogPhoto(image, 'row-photo') : '<span class="row-photo no-photo"></span>'}<div>${name}</div></div>` : name}</td>
+      <td data-label="Item" class="name">${photos ? `<div class="with-photo">${image ? catalogPhoto(image, 'row-photo') : `<span class="row-photo no-photo"${p.made ? ` data-made="${p.made}"` : ''}></span>`}<div>${name}</div></div>` : name}</td>
       <td class="card-meta muted small">${cardMeta(p, !label('inUse'))}</td>
       <td data-label="Part #">${esc(p.partNumber)}${partLink(p)}</td>
       <td data-label="${label('quantity')}" class="qty">
