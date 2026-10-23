@@ -438,8 +438,7 @@ tbody tr.loading:hover { background: none; }
   background: linear-gradient(90deg, var(--raised) 35%, var(--raised-hover) 50%, var(--raised) 65%) 0 0 / 300% 100%;
   animation: shimmer 1.6s linear infinite;
 }
-.skeleton.title { width: 220px; max-width: 60%; height: 1.75rem; }
-td.name .skeleton.line { height: 1.05em; }
+#project .skeleton { flex: none; width: 180px; max-width: 60%; height: 1.2rem; }
 .skeleton.row-photo { width: 44px; height: 44px; border-radius: 8px; }
 .skeleton.pill { width: 56px; height: 1.3rem; border-radius: 999px; }
 tr.loading .with-photo > div:last-child { flex: 1; min-width: 0; }
@@ -609,6 +608,7 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   td[data-label="In use"] .add-to { grid-column: 3; grid-row: 2; justify-self: end; margin: 2px 0 0 8px; }
   tr:has(td[data-label="In use"]) td.card-meta { grid-column: 2; }
   tbody tr.waiting { border: 1px dashed var(--pending); box-shadow: none; }
+  tr.loading td[data-label="In use"] { display: none; }
   td.qty .skeleton { height: 40px; width: 120px; border-radius: 999px; }
   tbody tr.group { background: none; margin: 18px 0 8px; }
   tbody tr.group:hover { background: none; }

@@ -286,16 +286,40 @@ const skeletonRows = () => [70, 45, 60, 80, 50, 65].map((width) => `
     </div></td>
     <td data-label="Part #"><div class="skeleton"></div></td>
     <td data-label="Qty" class="qty"><div class="skeleton"></div></td>
+    <td data-label="In use"><div class="skeleton"></div></td>
     <td data-label="Location"><div class="skeleton"></div></td>
     <td data-label="Supplier"><div class="skeleton"></div></td>
     <td data-label="Category"><div class="skeleton"></div></td>
   </tr>`).join('');
 
-// Shown while signing in and joining the team, before the inventory screen can be built.
+// The main inventory's column headers, shown while the real ones wait for the parts.
+const skeletonHead = ['Item', 'Part #', 'Qty', 'In use', 'Location', 'Supplier', 'Category'].map((label) => `<th>${label}</th>`).join('');
+
+// Shown while signing in and joining the team: the inventory screen with its controls disabled and grey bars for the data.
 function renderLoading() {
-  app.innerHTML = `
-    <header><div class="skeleton title"></div></header>
-    <table aria-busy="true" aria-label="Loading inventory"><tbody>${skeletonRows()}</tbody></table>`;
+  app.innerHTML = `<main aria-busy="true" aria-label="Loading inventory">
+    <header>
+      ${lockup(esc(state.connection.teamName))}
+      <div class="row">
+        <button class="secondary" disabled>${ICON_SCAN}<span>Scan</span></button>
+        <button class="icon" disabled aria-label="Menu">${ICON_MENU}</button>
+      </div>
+    </header>
+    <div class="projectpick">
+      <div class="projectmenu"><button id="project" class="secondary" disabled><span class="skeleton"></span></button></div>
+      <button class="icon" disabled aria-label="Rename or delete">${ICON_EDIT}</button>
+    </div>
+    <div class="toolbar">
+      <input type="search" placeholder="Search parts…" disabled />
+      <button class="secondary" disabled>${ICON_FILTER}<span>Filters</span></button>
+      <button class="icon" disabled aria-label="More">${ICON_MORE}</button>
+      <button disabled>+ Add part</button>
+    </div>
+    <table>
+      <thead><tr>${skeletonHead}</tr></thead>
+      <tbody>${skeletonRows()}</tbody>
+    </table>
+  </main>`;
 }
 
 // The team's program and number, as on the welcome screen's forms.
@@ -576,7 +600,7 @@ function renderInventory() {
     <p id="error" class="error" role="alert" hidden></p>
     <div class="projectpick">
       <div class="projectmenu menuwrap">
-        <button id="project" class="secondary" aria-haspopup="true" aria-expanded="false" aria-controls="project-menu"></button>
+        <button id="project" class="secondary" aria-haspopup="true" aria-expanded="false" aria-controls="project-menu"><span class="skeleton"></span></button>
         <div id="project-menu" class="menu" hidden></div>
       </div>
       <button id="edit-project" class="icon" aria-label="Rename or delete" title="Rename or delete">${ICON_EDIT}</button>
@@ -627,7 +651,7 @@ function renderInventory() {
       <button id="select-done" class="secondary">Done</button>
     </div>
     <table aria-busy="true">
-      <thead><tr></tr></thead>
+      <thead><tr>${skeletonHead}</tr></thead>
       <tbody id="rows">${skeletonRows()}</tbody>
     </table>
     <div id="empty" class="muted center-text" hidden><p></p><button id="show-all" class="link" hidden>Show all parts</button></div>
