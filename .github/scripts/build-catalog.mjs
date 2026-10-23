@@ -23,6 +23,8 @@ const SUPPLIERS = {
   // Axon's own site is built on Shopify but doesn't serve the product list; its Shopify address does.
   'Axon Robotics': () => shopify('https://axon-robotics.com', { feed: 'https://axon-robotics.myshopify.com' }),
   Limelight: () => shopify('https://limelightvision.io'),
+  // The Thrifty Bot mostly sells FRC parts; only its FTC collection is read.
+  'The Thrifty Bot': () => shopify('https://www.thethriftybot.com', { feed: 'https://www.thethriftybot.com/collections/first-tech-challenge' }),
 };
 
 // First match wins, tried on the part's name and then on the supplier's own category.
@@ -150,10 +152,11 @@ async function readBigCommercePage(site, url, html, variants) {
   }));
 }
 
-// ---------- Shopify stores (AndyMark, Pitsco, Axon, Limelight) ----------
+// ---------- Shopify stores (AndyMark, Pitsco, Axon, Limelight, The Thrifty Bot) ----------
 
 // The public product list has every part number, but no barcodes (none of these stores fill them in).
-// `feed` is where the list is read when the store's own site doesn't serve it; parts still link to the site.
+// `feed` is where the list is read when the store's own site doesn't serve it, or a collection of the store's
+// parts; parts still link to the site.
 async function shopify(site, { include = () => true, feed = site } = {}) {
   const products = [];
   for (let page = 1; ; page++) {

@@ -20,7 +20,7 @@ That's all. Names, emails, passwords, accounts, parts lists, projects and anythi
 
 ## Supplier photos
 
-Catalog part photos load directly from the supplier's website (goBILDA, REV, AndyMark, ServoCity, TETRIX, Studica, SWYFT, Axon or Limelight), so the supplier can see your device's IP address, like any website. The app sends them nothing else.
+Catalog part photos load directly from the supplier's website (goBILDA, REV, AndyMark, ServoCity, TETRIX, Studica, SWYFT, Axon, Limelight or The Thrifty Bot), so the supplier can see your device's IP address, like any website. The app sends them nothing else.
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/header/divider-dark.png"><img src="docs/header/divider-light.png" alt="" width="720"></picture>
 
