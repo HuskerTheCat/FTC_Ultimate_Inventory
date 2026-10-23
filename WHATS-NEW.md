@@ -9,6 +9,7 @@ The app's ☰ → What's new shows this file, newest first. Each version is a `#
 - **Custom parts:** a part can be made by your team, with a material and a file link. ☰ → **Print list** tracks parts to make, and finished ones add to stock.
 - Parts can be marked **Damaged**, between Used and Broken.
 - **QR labels** in Normal, Stylized and Mini styles that fit OnlineLabels OL911 sheets, with several copies per label.
+- The Thrifty Bot parts are in the part catalog.
 - Orders search the parts catalog when you add an item.
 - Inventory badges tell **to order** (blue) apart from **on order** (amber).
 - Rename or delete a list from the ⋯ on its row.
