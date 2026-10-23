@@ -779,22 +779,24 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
   #labels.normal .short strong { font-size: 20pt; line-height: 1.1; }
   #labels.normal span { margin-top: 2pt; font-size: 8pt; line-height: 1.2; color: #333; -webkit-line-clamp: 2; }
 
-  /* Stylized: the QR code beside the name in Orbitron on a patch of the site's dark topographic map, with the cube. */
-  #labels.stylized figure { gap: 0.06in; padding: 0.06in; }
-  #labels.stylized .qr { width: 1.13in; height: 1.13in; }
-  #labels.stylized .panel { position: relative; flex: 1; align-self: stretch; display: flex; min-width: 0; padding: 0.08in 0.1in 0.26in; border-radius: 0.1in; overflow: hidden; background: linear-gradient(110deg, #0e1221 45%, #3460d6 100%); }
-  #labels.stylized .panel::before { content: ''; position: absolute; inset: 0; background: #5b9bff; opacity: 0.35; -webkit-mask: url(./topo.svg) var(--topo-x) var(--topo-y) / 3.5in auto; mask: url(./topo.svg) var(--topo-x) var(--topo-y) / 3.5in auto; }
-  #labels.stylized figcaption { position: relative; justify-content: center; }
+  /* Stylized: the whole label is the site's dark topographic map, the QR code on a white tile, the name in Orbitron and
+     the cube. The map runs 1/16" past the label's edges, so a sheet fed a little crooked still has no white edge. */
+  #labels.stylized figure { overflow: visible; gap: 0.1in; padding: 0.07in 0.1in 0.07in 0.07in; }
+  #labels.stylized figure::before, #labels.stylized figure::after { content: ''; position: absolute; inset: -0.0625in; }
+  #labels.stylized figure::before { background: linear-gradient(110deg, #0e1221 40%, #3460d6 100%); }
+  #labels.stylized figure::after { background: #5b9bff; opacity: 0.35; -webkit-mask: url(./topo.svg) var(--topo-x) var(--topo-y) / 4in auto; mask: url(./topo.svg) var(--topo-x) var(--topo-y) / 4in auto; }
+  #labels.stylized .qr { position: relative; z-index: 1; width: 1.11in; height: 1.11in; }
+  #labels.stylized figcaption { position: relative; z-index: 1; align-self: stretch; justify-content: center; overflow: hidden; padding-bottom: 0.14in; }
   #labels.stylized strong { font-family: Orbitron, sans-serif; font-size: 8.5pt; font-weight: 800; line-height: 1.25; letter-spacing: 0.02em; color: #fff; -webkit-line-clamp: 3; }
   #labels.stylized .short strong { font-size: 18pt; line-height: 1.15; }
   #labels.stylized span { margin-top: 3pt; font-size: 7.5pt; font-weight: 500; line-height: 1.2; color: #9cc1ff; -webkit-line-clamp: 2; }
-  #labels.stylized .cube-mark { position: absolute; right: 0.07in; bottom: 0.06in; width: 0.2in; height: 0.2in; }
+  #labels.stylized .cube-mark { position: absolute; z-index: 1; right: 0.07in; bottom: 0.06in; width: 0.2in; height: 0.2in; }
 
-  /* Mini: tiny codes to cut out along the grey square, the caption below it stays on the paper. */
-  #labels.mini .page { padding: 0.5in; grid-template-columns: repeat(8, 0.8in); grid-template-rows: repeat(10, 0.95in); gap: 0.05in 0.1in; justify-content: center; }
+  /* Mini: 1/2" squares to cut out, the code filling all but a thin white edge. The caption below stays on the paper. */
+  #labels.mini .page { padding: 0.5in; grid-template-columns: repeat(10, 0.65in); grid-template-rows: repeat(11, 0.8in); gap: 0.05in 0.1in; justify-content: center; }
   #labels.mini figure { display: flex; flex-direction: column; align-items: center; gap: 0.03in; }
-  #labels.mini .cut { display: grid; place-items: center; width: 0.6in; height: 0.6in; box-sizing: border-box; border: 0.5pt solid #999; }
-  #labels.mini .qr { width: 0.5in; height: 0.5in; }
+  #labels.mini .cut { display: grid; place-items: center; width: 0.5in; height: 0.5in; box-sizing: border-box; border: 0.5pt solid #999; }
+  #labels.mini .qr { width: 0.45in; height: 0.45in; }
   #labels.mini figcaption { width: 100%; text-align: center; font-size: 6pt; line-height: 1.15; }
   #labels.mini strong { font-weight: 600; -webkit-line-clamp: 2; }
   #labels.mini span { color: #555; -webkit-line-clamp: 1; }
