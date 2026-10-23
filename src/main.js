@@ -1609,6 +1609,7 @@ const locationLabel = (name) => {
 };
 
 // A label for each spot of a grid location, so every drawer can have its own. Scanning one shows that spot.
+// Each label's title is its spot.
 // They have no key, so they aren't remembered as printed.
 const spotLabels = (name) => {
   const { url, title } = locationLabel(name);
@@ -1845,14 +1846,21 @@ function openLabelsDialog() {
     <input type="checkbox" data-index="${i}" ${state.printed.has(label.key) ? '' : 'checked'} />
     <span>${esc(label.title)} ${state.printed.has(label.key) ? '' : '<span class="badge">Not printed</span>'}</span>
   </label></li>`;
-  // A grid location's label can bring a label for each of its spots along.
-  const spotsItem = (name) => {
-    const grid = gridLocation(name);
-    return grid ? `<li class="spot-labels"><label>
-      <input type="checkbox" data-spots="${esc(name)}" />
-      <span class="muted">Also a label for each spot (${grid.rows * grid.cols})</span>
-    </label></li>` : '';
-  };
+  // Under a grid location's label, its spots can be picked on the grid to print a label for each of them too.
+  const chosen = new Map(locations.filter(gridLocation).map((name) => [name, new Set()]));
+  const spotsItem = (name) => (chosen.has(name) ? `<li class="spot-labels" data-spots-of="${esc(name)}">
+      <div class="row">
+        <span class="muted">Spot labels: <span class="spot-count">none</span></span>
+        <button type="button" class="secondary" data-choose aria-expanded="false">Choose spots</button>
+      </div>
+      <div class="spot-picker" hidden>
+        <div class="row">
+          <button type="button" class="secondary" data-pick="all">All spots</button>
+          <button type="button" class="secondary" data-pick="none">No spots</button>
+        </div>
+        <div class="grid-box">${gridHtml(gridLocation(name), '')}</div>
+      </div>
+    </li>` : '');
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>QR labels</h2>
@@ -1871,11 +1879,15 @@ function openLabelsDialog() {
       </div>
     </form>`;
   const boxes = [...dialog.querySelectorAll('[data-index]')];
-  const spotBoxes = [...dialog.querySelectorAll('[data-spots]')];
   const picked = () => [
     ...boxes.filter((b) => b.checked).map((b) => labels[b.dataset.index]),
-    ...spotBoxes.filter((b) => b.checked).flatMap((b) => spotLabels(b.dataset.spots)),
+    ...[...chosen].flatMap(([name, spots]) => spotLabels(name).filter((l) => spots.has(l.title))),
   ];
+  const renderSpots = (item) => {
+    const spots = chosen.get(item.dataset.spotsOf);
+    item.querySelectorAll('[data-spot]').forEach((b) => b.setAttribute('aria-pressed', spots.has(b.dataset.spot)));
+    item.querySelector('.spot-count').textContent = spots.size ? `${spots.size} chosen` : 'none';
+  };
   const printButton = dialog.querySelector('#print');
   const update = () => {
     const count = picked().length;
@@ -1883,11 +1895,33 @@ function openLabelsDialog() {
     printButton.disabled = !count;
   };
   dialog.querySelector('.label-list').onchange = update;
+  dialog.querySelector('.label-list').onclick = (e) => {
+    const item = e.target.closest('[data-spots-of]');
+    if (!item) return;
+    const spots = chosen.get(item.dataset.spotsOf);
+    const choose = e.target.closest('[data-choose]');
+    const spot = e.target.closest('[data-spot]')?.dataset.spot;
+    const pick = e.target.closest('[data-pick]')?.dataset.pick;
+    if (choose) {
+      const picker = item.querySelector('.spot-picker');
+      picker.hidden = !picker.hidden;
+      choose.setAttribute('aria-expanded', !picker.hidden);
+      choose.textContent = picker.hidden ? 'Choose spots' : 'Hide grid';
+    }
+    if (spot && !spots.delete(spot)) spots.add(spot);
+    if (pick === 'none') spots.clear();
+    if (pick === 'all') item.querySelectorAll('[data-spot]').forEach((b) => spots.add(b.dataset.spot));
+    renderSpots(item);
+    update();
+  };
   dialog.querySelectorAll('[data-select]').forEach((button) => {
     button.onclick = () => {
       const pick = button.dataset.select;
       boxes.forEach((b) => { b.checked = pick === 'all' || (pick === 'new' && !state.printed.has(labels[b.dataset.index].key)); });
-      if (pick === 'none') spotBoxes.forEach((b) => { b.checked = false; });
+      if (pick === 'none') {
+        chosen.forEach((spots) => spots.clear());
+        dialog.querySelectorAll('[data-spots-of]').forEach(renderSpots);
+      }
       update();
     };
   });
