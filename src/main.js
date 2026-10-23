@@ -2312,8 +2312,13 @@ function openOrdersDialog() {
   const list = dialog.querySelector('#order-list');
   const orderForm = dialog.querySelector('#order-form');
   const saveButton = dialog.querySelector('#save-order');
-  // Add only shows while the item form is open.
-  orderForm.ontoggle = () => { saveButton.hidden = !orderForm.open; };
+  // New items go under Need to order, so the form shows there, or on any tab while changing an order.
+  // Add only shows while the form is open.
+  const showForm = () => {
+    orderForm.hidden = tab !== 'need' && !editing;
+    saveButton.hidden = orderForm.hidden || !orderForm.open;
+  };
+  orderForm.ontoggle = showForm;
   const printButton = dialog.querySelector('#print-orders');
   const clearButton = dialog.querySelector('#clear-arrived');
   // The tab shown: one of ORDER_TABS.
@@ -2337,6 +2342,7 @@ function openOrdersDialog() {
     dialog.querySelector('#order-form-title').textContent = order ? `Change ${order.name}` : '+ Add item';
     saveButton.textContent = order ? 'Save' : 'Add';
     if (order) orderForm.open = true;
+    showForm();
     dialog.querySelector('#cancel-edit').hidden = !order;
     printButton.hidden = Boolean(order);
   };
@@ -2347,6 +2353,7 @@ function openOrdersDialog() {
       button.setAttribute('aria-pressed', String(button.dataset.tab === tab));
       button.querySelector('.tab-count').textContent = state.orders.filter((o) => orderStatus(o) === button.dataset.tab).length;
     }
+    showForm();
     const orders = shown();
     printButton.disabled = !orders.length;
     clearButton.hidden = tab !== 'arrived' || !orders.length;
