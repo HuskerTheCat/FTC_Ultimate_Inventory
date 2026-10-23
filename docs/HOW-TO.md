@@ -130,7 +130,7 @@ Your team has one list of locations (bins, shelves, drawers). **☰ → Location
 
 ### Storage grids
 
-For a cabinet of small drawers or a shelf of bins, tap **+ Add grid**, type a name, the number of rows and the number of columns, then tap **Create**. Spots are named by row and column: A1 is the top left, C12 the third row, twelfth column. **Edit grid** changes the size later; the app won't make it smaller while a spot it would cut off still has parts.
+For a cabinet of small drawers or a shelf of bins, tap **+ Add grid**, type a name, the number of rows and the number of columns, then tap **Create**. Spots are named by row and column: A1 is the top left, C12 the third row, twelfth column. The grid button (**Edit grid**) changes the size later; the app won't make it smaller while a spot it would cut off still has parts.
 
 In a part's dialog, pick the grid location, then tap the part's spot. In the list, the part shows its spot by its location. Tap that spot, or **Find part** in the part's dialog or after scanning its label, to see the grid with it highlighted. Tapping any spot in a grid lists what's in it.
 
