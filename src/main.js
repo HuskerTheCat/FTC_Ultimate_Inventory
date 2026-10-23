@@ -657,8 +657,8 @@ function renderInventory() {
           <option value="location">Group by location</option>
           <option value="supplier">Group by supplier</option>
         </select>
+        <button id="reset-filters" class="link" hidden>Reset filters</button>
       </div>
-      <button id="reset-filters" class="link" hidden>Reset filters</button>
     </div>
     <div id="bulkbar" class="viewbar" hidden>
       <span id="selected-count"></span>

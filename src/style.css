@@ -394,7 +394,9 @@ a.menu-item { min-height: 42px; border-radius: 10px; text-decoration: none; }
 .filters button.secondary { background: var(--field); border-color: var(--border); }
 .filters button.danger { margin-left: 0; }
 .filters button.active { background: rgb(91 155 255 / 0.15); color: var(--accent); border-color: var(--accent); }
-.filters #reset-filters { align-self: flex-start; }
+/* Hidden keeps its space so showing it never moves the rows below. */
+.filters #reset-filters { margin-left: auto; }
+.filters #reset-filters[hidden] { display: inline-flex; visibility: hidden; }
 .viewbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 16px; }
 .viewbar button { min-height: 34px; padding: 4px 12px; font-size: 0.9rem; }
 .viewbar button.secondary { background: var(--surface); border-color: var(--border); }
