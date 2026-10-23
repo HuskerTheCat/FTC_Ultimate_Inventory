@@ -3,12 +3,13 @@ import { getNews } from './hub.js';
 // Banners above the app: one while offline, one when a newer version is out, the developer's news message,
 // and one when the team's rules are old or let anyone in.
 // The website compares its build id with the deployed version.json; the Windows and Android apps compare their
-// version with the latest GitHub release.
+// version with the latest GitHub release. Both check again every 15 minutes and whenever the app comes back on screen,
+// since a phone keeps the app running in the background for days.
 const RELEASES_API = 'https://api.github.com/repos/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest';
 const RELEASES_PAGE = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest';
 const LATEST_APK = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest/download/FTC-Ultimate-Inventory.apk';
 const ANDROID_UPDATE_TEXT = 'Your app is out of date, tap here to update';
-const WEB_CHECK_MS = 15 * 60 * 1000;
+const CHECK_MS = 15 * 60 * 1000;
 // The last news message this device closed, so it stays closed until the developer writes a new one.
 const CLOSED_NEWS_KEY = 'ftc-inventory-closed-news';
 
@@ -38,6 +39,7 @@ async function checkWebsite() {
 }
 
 async function checkApp() {
+  if (!navigator.onLine || !updateBanner.hidden) return;
   const response = await fetch(RELEASES_API);
   if (!response.ok) throw new Error(`GitHub releases: ${response.status}`);
   const { tag_name } = await response.json();
@@ -89,11 +91,12 @@ export function startStatusBanners() {
   addEventListener('online', showOffline);
   addEventListener('offline', showOffline);
   if (import.meta.env.DEV) return;
+  const check = import.meta.env.MODE === 'app' ? checkApp : checkWebsite;
+  // The website just loaded, so it's current; an app may have been installed long ago.
   if (import.meta.env.MODE === 'app') {
-    if (navigator.onLine) checkApp();
-    else addEventListener('online', checkApp, { once: true });
-    return;
+    checkApp();
+    addEventListener('online', checkApp);
   }
-  setInterval(checkWebsite, WEB_CHECK_MS);
-  document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && checkWebsite());
+  setInterval(check, CHECK_MS);
+  document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && check());
 }
