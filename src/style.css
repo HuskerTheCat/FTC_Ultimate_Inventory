@@ -348,6 +348,10 @@ button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised)
   white-space: normal;
 }
 .menu-item[hidden] { display: none; }
+.menu-row { display: flex; align-items: center; gap: 4px; }
+.menu-row .menu-item { flex: 1; min-width: 0; }
+.menu-row button.icon { flex: none; width: 42px; min-height: 42px; background: none; border-color: transparent; }
+.menu-row button.icon:hover { background: var(--row-hover); }
 a.menu-item { min-height: 42px; border-radius: 10px; text-decoration: none; }
 .menu-version { margin: 4px 10px 2px; font-size: 0.75rem; color: var(--muted); }
 .menu-item svg { flex: none; color: var(--muted); }

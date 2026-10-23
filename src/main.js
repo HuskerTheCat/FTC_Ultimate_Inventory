@@ -324,7 +324,6 @@ function renderLoading() {
     </header>
     <div class="projectpick">
       <div class="projectmenu"><button id="project" class="secondary" disabled><span class="skeleton"></span></button></div>
-      <button class="icon" disabled aria-label="Rename or delete">${ICON_EDIT}</button>
     </div>
     <div class="toolbar">
       <input type="search" placeholder="Search parts…" disabled />
@@ -621,7 +620,6 @@ function renderInventory() {
         <button id="project" class="secondary" aria-haspopup="true" aria-expanded="false" aria-controls="project-menu"><span class="skeleton"></span></button>
         <div id="project-menu" class="menu" hidden></div>
       </div>
-      <button id="edit-project" class="icon" aria-label="Rename or delete" title="Rename or delete">${ICON_EDIT}</button>
     </div>
     <p id="packed-count" class="muted small" role="status" hidden></p>
     <div class="toolbar">
@@ -694,6 +692,8 @@ function renderInventory() {
   wireMenus();
   app.querySelector('#project-menu').onclick = (e) => {
     if (e.target.closest('#new-project')) return openProjectDialog();
+    const more = e.target.closest('[data-more]')?.dataset.more;
+    if (more) return openListDialog(state.projects.find((p) => p.id === more));
     const id = e.target.closest('[data-project]')?.dataset.project;
     if (id) switchProject(id);
   };
@@ -704,7 +704,6 @@ function renderInventory() {
   app.querySelector('#trash').onclick = openTrashDialog;
   app.querySelector('#export-backup').onclick = () => exportBackup().catch(showError);
   app.querySelector('#restore-backup').onclick = chooseBackup;
-  app.querySelector('#edit-project').onclick = openListDialog;
   app.querySelector('#search').oninput = (e) => { state.search = e.target.value; renderRows(); };
   app.querySelector('#elsewhere').onclick = (e) => {
     const id = e.target.dataset.searchIn;
@@ -824,7 +823,8 @@ function renderProjectPicker() {
   app.querySelector('#project-menu').innerHTML = Object.entries(TYPES).map(([key, { plural, icon: typeIcon }]) => {
     const items = state.projects.filter((p) => typeOf(p) === key);
     return items.length ? `<h3>${plural}</h3>` + items.map((p) =>
-      `<button type="button" class="menu-item" data-project="${esc(p.id)}" ${p === current ? 'aria-current="true"' : ''}>${typeIcon}<span>${esc(p.name)}</span></button>`).join('') : '';
+      `<div class="menu-row"><button type="button" class="menu-item" data-project="${esc(p.id)}" ${p === current ? 'aria-current="true"' : ''}>${typeIcon}<span>${esc(p.name)}</span></button>` +
+      `<button type="button" class="icon" data-more="${esc(p.id)}" aria-label="Rename or delete ${esc(p.name)}">${ICON_MORE}</button></div>`).join('') : '';
   }).join('') + `<hr /><button type="button" id="new-project" class="menu-item">${ICON_PLUS}<span>New inventory, project or list</span></button>`;
 }
 
@@ -2800,22 +2800,20 @@ function printBuilds(tab, builds) {
   printSheet(`Print list: ${title}`, `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, [['', rows]]);
 }
 
-async function deleteCurrentProject() {
-  const current = currentProject();
+async function deleteProject(current) {
   if (!current.source && inventoryParts(current.id).length) throw new Error(`Delete the parts in ${current.name} first.`);
   const note = current.source ? ' Its parts stay in their inventories.' : '';
   const type = TYPES[typeOf(current)].label.toLowerCase();
   if (!confirm(`Delete the ${type} "${current.name}"?${note} You can bring it back from Trash for ${TRASH_DAYS} days.`)) return;
-  switchProject(fb.MAIN_PROJECT);
+  if (current === currentProject()) switchProject(fb.MAIN_PROJECT);
   const { id, ...data } = current;
   const uses = state.uses.filter((u) => u.projectId === id).map(useData);
   fb.moveToTrash({ kind: 'project', docId: id, name: current.name, data, uses }, state.user).catch(showError);
 }
 
-// Renames the inventory, project or packing list on screen, or deletes it. Main Inventory can be renamed but not deleted.
-function openListDialog() {
+// Renames an inventory, project or packing list from the picker's ⋯ button, or deletes it. Main Inventory can be renamed but not deleted.
+function openListDialog(current) {
   const dialog = app.querySelector('#dialog');
-  const current = currentProject();
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>${TYPES[typeOf(current)].label}</h2>
@@ -2830,7 +2828,7 @@ function openListDialog() {
   form.onsubmit = (e) => {
     const name = form.name.value.trim();
     if (e.submitter.value === 'save' && name !== current.name) fb.renameProject(current.id, name).catch(showError);
-    if (e.submitter.value === 'delete') deleteCurrentProject().catch(showError);
+    if (e.submitter.value === 'delete') deleteProject(current).catch(showError);
   };
   dialog.showModal();
 }
