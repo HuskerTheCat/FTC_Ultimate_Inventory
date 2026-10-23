@@ -83,6 +83,9 @@ const ICON_PLUS = icon('<path d="M12 5v14M5 12h14"/>');
 const ICON_GRID = icon('<path d="M12 17H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8M3 7.7h14M3 12.3h9M7.7 3v14M12.3 3v9"/><path d="M19.3 13.2a1.9 1.9 0 0 1 2.7 2.7L16.5 21.4l-3.6.9.9-3.6Z"/>');
 const ICON_QR = icon('<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M17 20h4M20 17v3M14 20v.01"/>');
 const ICON_TRASH = icon('<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>');
+// A truck for "Ordered" (it's on its way) and a box for "Arrived" (it's in stock), like the inventory badges.
+const ICON_TRUCK = icon('<path d="M2 5h12v11H2zM14 9h4l4 4v3h-8"/><circle cx="6.5" cy="18.5" r="2"/><circle cx="17.5" cy="18.5" r="2"/>');
+const ICON_BOX = icon('<path d="M21 8 12 3 3 8v8l9 5 9-5Z"/><path d="m3 8 9 5 9-5M12 13v8"/>');
 const ICON_PIN = icon('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>');
 
 // Every project is an inventory (holds its own parts), a project or a packing list (both use parts from inventories).
@@ -229,15 +232,17 @@ const ERROR_MESSAGES = {
 const ERROR_MS = 10000;
 let errorTimer;
 
-// Shows a message at the top for a few seconds, so it doesn't stay up after the problem is fixed.
+// Shows a message at the top of the screen, over any dialog, for a few seconds, so it doesn't stay up after the problem is fixed.
 function showError(error) {
   const message = ERROR_MESSAGES[error.code] ?? error.message.replace(/^Firebase: /, '').replace(/\s*\(.*\)\.?$/, '');
   const banner = document.getElementById('error');
   banner.textContent = message;
   if (error.link) banner.append(' ', Object.assign(document.createElement('a'), { href: error.link, target: '_blank', rel: 'noopener', textContent: error.linkText }));
-  banner.hidden = false;
+  // A popover sits above open dialogs; showing it again puts it above one opened since.
+  if (banner.matches(':popover-open')) banner.hidePopover();
+  banner.showPopover();
   clearTimeout(errorTimer);
-  errorTimer = setTimeout(() => { banner.hidden = true; }, ERROR_MS);
+  errorTimer = setTimeout(() => banner.hidePopover(), ERROR_MS);
 }
 
 // An error that links to where it can be fixed, like a page of the team's Firebase project.
@@ -352,7 +357,7 @@ function renderWelcome() {
   app.innerHTML = `
     <main class="center wide">
       ${lockup('FTC Ultimate')}
-      <p id="error" class="error" role="alert" hidden></p>
+      <p id="error" class="error" role="alert" popover="manual"></p>
       <div class="card split">
         <form id="signin">
           <h2>Sign in to your team</h2>
@@ -416,7 +421,7 @@ function renderSetup() {
     <main class="center wide">
       ${lockup('FTC Ultimate', 'div')}
       <h1>Set up a new team</h1>
-      <p id="error" class="error" role="alert" hidden></p>
+      <p id="error" class="error" role="alert" popover="manual"></p>
       <div class="card">
         <ol class="steps">
           <li>Create a free project at <a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a>.</li>
@@ -477,7 +482,7 @@ function renderSignIn() {
     <main class="center">
       ${lockup(esc(state.connection.teamName))}
       <p class="muted">${!canJoin ? 'Sign in with your email and password.' : owner ? 'Create the admin account for your team.' : 'Sign in, or create an account if this is your first time.'}</p>
-      <p id="error" class="error" role="alert" hidden></p>
+      <p id="error" class="error" role="alert" popover="manual"></p>
       <form id="auth" class="card">
         ${canJoin ? '<input name="username" maxlength="40" autocomplete="nickname" placeholder="Your name (for new accounts)" />' : ''}
         <input name="email" type="email" required autocomplete="email" placeholder="Email" />
@@ -549,7 +554,7 @@ function renderVerify(user, onVerified) {
       <h1>Check your email</h1>
       <p>We sent a link to <strong class="email">${esc(user.email)}</strong>. Open it to confirm it’s your email. This screen moves on by itself once you have.</p>
       <p class="muted">Not there? Check your spam or junk folder.</p>
-      <p id="error" class="error" role="alert" hidden></p>
+      <p id="error" class="error" role="alert" popover="manual"></p>
       <div class="card">
         <button id="resend" class="secondary">Send it again</button>
       </div>
@@ -614,7 +619,7 @@ function renderInventory() {
         </div>
       </div>
     </header>
-    <p id="error" class="error" role="alert" hidden></p>
+    <p id="error" class="error" role="alert" popover="manual"></p>
     <div class="projectpick">
       <div class="projectmenu menuwrap">
         <button id="project" class="secondary" aria-haspopup="true" aria-expanded="false" aria-controls="project-menu"><span class="skeleton"></span></button>
@@ -2189,7 +2194,7 @@ function openLocationsDialog() {
     list.innerHTML = state.locations.map((l) => {
       const count = state.parts.filter((p) => p.location === l.name).length;
       return `<li>
-        <span><strong>${esc(l.name)}</strong> <span class="muted small">${count} part${count === 1 ? '' : 's'}${l.rows ? `, ${l.rows}&nbsp;×&nbsp;${l.cols} grid` : ''}</span></span>
+        <span class="loc-name"><strong>${esc(l.name)}</strong><span class="muted small">${count} part${count === 1 ? '' : 's'}${l.rows ? `, ${l.rows}&nbsp;×&nbsp;${l.cols} grid` : ''}</span></span>
         <span class="row">
           ${l.rows ? `<button type="button" class="icon" data-grid="${esc(l.id)}" aria-label="Edit grid of ${esc(l.name)}" title="Edit grid">${ICON_GRID}</button>` : ''}
           <button type="button" class="icon" data-rename="${esc(l.id)}" aria-label="Rename ${esc(l.name)}" title="Rename">${ICON_EDIT}</button>
@@ -2441,8 +2446,8 @@ function openOrdersDialog() {
     printButton.disabled = !orders.length;
     clearButton.hidden = tab !== 'arrived' || !orders.length;
     const next = {
-      need: (o) => `<button type="button" class="secondary accent" data-ordered="${esc(o.id)}">Ordered</button>`,
-      ordered: (o) => `<button type="button" class="secondary accent" data-arrived="${esc(o.id)}">Arrived</button>`,
+      need: (o) => `<button type="button" class="icon accent" data-ordered="${esc(o.id)}" aria-label="Ordered ${esc(o.name)}" title="Ordered">${ICON_TRUCK}</button>`,
+      ordered: (o) => `<button type="button" class="icon accent" data-arrived="${esc(o.id)}" aria-label="Arrived ${esc(o.name)}" title="Arrived">${ICON_BOX}</button>`,
       arrived: () => '',
     }[tab];
     list.innerHTML = orders.map((o) => {
@@ -2453,10 +2458,14 @@ function openOrdersDialog() {
         <span class="order-text" data-edit="${esc(o.id)}"><strong>${esc(o.name)}</strong> ×${o.quantity} <span class="muted small order-details">${details.join(' · ')}</span>${o.notes ? `<span class="small order-notes">${esc(o.notes)}</span>` : ''}</span>
         <span class="row">
           ${next(o)}
-          <button type="button" class="danger" data-remove="${esc(o.id)}">Remove</button>
+          <button type="button" class="icon danger" data-remove="${esc(o.id)}" aria-label="Remove ${esc(o.name)}" title="Remove">${ICON_TRASH}</button>
         </span>
       </li>`;
-    }).join('') || `<li class="muted">${{ need: 'Nothing to order.', ordered: 'Nothing on order.', arrived: 'Nothing has arrived yet.' }[tab]}</li>`;
+    }).join('') || `<li class="muted"><span>${{
+      need: 'Nothing to order. Tap <strong>+ Add item</strong> for parts the team needs.',
+      ordered: `Nothing on order. Once you buy something under Need to order, tap ${ICON_TRUCK} to move it here.`,
+      arrived: `Nothing has arrived yet. When an order comes, tap ${ICON_BOX} under Ordered to add it to the inventory.`,
+    }[tab]}</span></li>`;
   };
   // Adding keeps the dialog open; Enter in a field adds too.
   form.onsubmit = (e) => {
@@ -2503,7 +2512,7 @@ function openOrdersDialog() {
     renderOrders();
   };
   list.onclick = (e) => {
-    const { ordered, arrived, remove } = e.target.dataset;
+    const { ordered, arrived, remove } = e.target.closest('button')?.dataset ?? {};
     if (ordered) return markOrdered(state.orders.find((o) => o.id === ordered));
     if (arrived) return receiveOrder(state.orders.find((o) => o.id === arrived)).catch(showError);
     if (remove) return trashOrder(state.orders.find((o) => o.id === remove));

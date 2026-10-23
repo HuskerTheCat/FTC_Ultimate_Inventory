@@ -192,8 +192,8 @@ Open **☰ → Orders** to track parts you need, have ordered, and got. The list
 
 - On **Need to order**, tap **+ Add item**, then search the parts catalog, pick a part you have, or type any item with your own link. A supported part number fills in the rest. Link and notes are optional. New orders go under **Need to order**.
 - New items appear in Main Inventory right away as **to order**, so projects and packing lists can use them early.
-- Once you've bought it, tap **Ordered** to move it to the Ordered tab.
-- When it arrives, tap **Arrived** to add it to the inventory and move it to the Arrived tab. If only some came, enter how many; the rest stays under Ordered.
+- Once you've bought it, tap the truck (**Ordered**) to move it to the Ordered tab.
+- When it arrives, tap the box (**Arrived**) to add it to the inventory and move it to the Arrived tab. If only some came, enter how many; the rest stays under Ordered.
 - **Clear arrived** empties the Arrived tab. The parts stay in the inventory.
 - Tap an order to change it. **Print** prints the tab you're on.
 
