@@ -7,6 +7,7 @@ import { printLabels, printSheet, LABEL_SHEET_URL, LABEL_STYLES } from './labels
 import { toCsv, parseCsv } from './csv.js';
 import { BACKUP_COLLECTIONS, makeBackup, readBackup } from './backup.js';
 import { startStatusBanners, checkRules } from './status.js';
+import { hasUnseenNews, whatsNewHtml } from './whatsnew.js';
 import { RULES, consolePage, AUTH_PAGE, RULES_PAGE, AUTH_OFF_CODES, setupProblems } from './setup.js';
 import { CUBE, morphCube } from './cube.js';
 import { openApp, prefetchApps } from './switching.js';
@@ -98,6 +99,7 @@ const ICON_UPLOAD = icon('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 
 const ICON_USERS = icon('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>');
 const ICON_BUG = icon('<path d="M9 7.13v-1a3 3 0 1 1 6 0v1"/><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6zM12 20v-9M6 13H2M22 13h-4M3 21c0-2.1 1.7-3.9 3.8-4M21 21c0-2.1-1.7-3.9-3.8-4M3 5c0 2.1 1.6 3.8 3.5 4M21 5c0 2.1-1.6 3.8-3.5 4"/>');
 const ICON_BULB = icon('<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5M9 18h6M10 22h4"/>');
+const ICON_MEGAPHONE = icon('<path d="m3 11 18-5v12L3 14z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>');
 const ICON_HELP = icon('<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>');
 const ICON_SUN = icon('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>');
 const ICON_SIGNOUT = icon('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>');
@@ -653,7 +655,7 @@ function renderInventory() {
       <div class="row">
         <button id="scan" class="secondary">${ICON_SCAN}<span>Scan</span></button>
         <div class="menuwrap">
-          <button id="main-menu-toggle" class="icon" aria-label="Menu" title="Menu" aria-haspopup="true" aria-expanded="false" aria-controls="main-menu">${ICON_MENU}</button>
+          <button id="main-menu-toggle" class="icon" aria-label="Menu" title="Menu" aria-haspopup="true" aria-expanded="false" aria-controls="main-menu">${ICON_MENU}<span class="new-dot" hidden></span></button>
           <div id="main-menu" class="menu right" hidden>
             <h3>Lists</h3>
             <button id="orders" class="menu-item">${ICON_CART}Orders</button>
@@ -669,6 +671,7 @@ function renderInventory() {
             <button id="invite" class="menu-item">${ICON_USERS}Team</button>
             <button id="bug" class="menu-item">${ICON_BUG}Report bug</button>
             <button id="feature" class="menu-item">${ICON_BULB}Request feature</button>
+            <button id="whats-new" class="menu-item">${ICON_MEGAPHONE}What’s new<span class="new-dot" hidden></span></button>
             <a class="menu-item" href="${HELP_URL}" target="_blank" rel="noopener">${ICON_HELP}Help</a>
             <hr />
             <button id="theme" class="menu-item" role="switch" aria-checked="${document.documentElement.dataset.theme === 'light'}">${ICON_SUN}Pain and suffering mode<span class="switch" aria-hidden="true"></span></button>
@@ -796,6 +799,8 @@ function renderInventory() {
   app.querySelector('#scan').onclick = () => scanCode(dialog).then((text) => text && openScanned(text)).catch(showError);
   app.querySelector('#invite').onclick = () => openTeamDialog().catch(showError);
   app.querySelector('#log').onclick = openLogDialog;
+  app.querySelector('#whats-new').onclick = () => openWhatsNewDialog().catch(showError);
+  hasUnseenNews().then(showNewDots).catch(console.error);
   app.querySelector('#bug').onclick = () => openSendDialog({
     title: 'Report bug', label: 'What went wrong?', placeholder: 'What you did, what you expected, and what happened instead',
     goal: 'fix your issue', sent: 'Report submitted', send: sendBugReport,
@@ -3649,6 +3654,24 @@ function openLogDialog() {
   }, showError);
   dialog.addEventListener('close', stopLog, { once: true });
   dialog.showModal();
+}
+
+// A blue dot on ☰ and its What's new item until the latest changes have been opened.
+function showNewDots(show) {
+  app.querySelectorAll('.new-dot').forEach((dot) => { dot.hidden = !show; });
+}
+
+async function openWhatsNewDialog() {
+  const html = await whatsNewHtml();
+  const dialog = app.querySelector('#dialog');
+  dialog.innerHTML = `
+    <form method="dialog" class="card">
+      <h2>What’s new</h2>
+      <div class="whats-new">${html}</div>
+      <div class="row"><button value="close" class="secondary">Close</button></div>
+    </form>`;
+  dialog.showModal();
+  showNewDots(false);
 }
 
 const FOLLOW_GITHUB = `You can follow the app’s development on <a href="${SOURCE_URL}" target="_blank" rel="noopener">GitHub</a>.`;

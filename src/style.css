@@ -368,6 +368,11 @@ button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised)
 a.menu-item { min-height: 42px; border-radius: 10px; text-decoration: none; }
 .menu-version { margin: 4px 10px 2px; font-size: 0.75rem; color: var(--muted); }
 .menu-item svg { flex: none; color: var(--muted); }
+/* What's new: a blue dot on ☰ and its menu item until the latest changes have been opened. */
+.new-dot { flex: none; width: 8px; height: 8px; margin-left: auto; border-radius: 50%; background: var(--accent); }
+.new-dot[hidden] { display: none; }
+#main-menu-toggle { position: relative; }
+#main-menu-toggle .new-dot { position: absolute; top: 8px; right: 8px; box-shadow: 0 0 0 2px var(--surface); }
 .menu-item:hover { background: var(--row-hover); }
 .menu-item[aria-current="true"] { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
 .menu-item[aria-current="true"] svg { color: var(--accent); }
@@ -533,6 +538,12 @@ button.tag.removed { padding: 3px 12px; font-size: 0.875rem; text-decoration: li
 dialog { border: 1px solid var(--border); border-radius: 16px; padding: 0; background: var(--surface); box-shadow: var(--float-shadow); width: min(480px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; color: var(--text); }
 dialog::backdrop { background: var(--backdrop); backdrop-filter: blur(3px); }
 dialog .card { padding: 24px; border: none; }
+/* What's new: one section per version, its heading small and blue with a line above. */
+.whats-new h2 { margin: 20px 0 8px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 0.95rem; color: var(--accent); }
+.whats-new h2:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+.whats-new ul { margin: 8px 0; padding-left: 20px; }
+.whats-new li { margin: 6px 0; line-height: 1.45; }
+.whats-new p { margin: 8px 0; color: var(--muted); }
 /* A yes or no question's red button sits beside Cancel, not pushed to the far side. */
 #ask button.danger { margin-left: 0; }
 /* The last row of buttons stays in view while a long form scrolls. */

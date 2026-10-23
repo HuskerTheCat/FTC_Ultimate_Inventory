@@ -20,6 +20,7 @@
     "@fontsource/orbitron": "^5.3.0",
     "@fontsource/saira": "^5.3.0",
     "firebase": "^13.0.0",
+    "marked": "^18.1.1",
     "qrcode": "^1.5.4",
     "zxing-wasm": "^3.1.5"
   },
@@ -29,7 +30,6 @@
     "@capacitor/core": "^8.5.3",
     "electron": "^44.7.0",
     "electron-builder": "^26.15.3",
-    "marked": "^18.1.1",
     "vite": "^8.3.4"
   },
   "private": true,
