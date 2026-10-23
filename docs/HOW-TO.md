@@ -142,7 +142,7 @@ In a part's dialog, pick the grid location, then tap the part's spot. In the lis
 Pick a style before printing:
 
 - **Normal** and **Stylized** fit [OnlineLabels OL911](https://www.onlinelabels.com/products/ol911) sticker sheets: 2.5" × 1.25", 21 a page. Plain paper works too; cut them out and tape them on. Stylized has the app's dark map look.
-- **Mini** prints half-inch codes to cut out and stick on parts, 110 a page. Each code's name prints below its cut line.
+- **Mini** prints 0.6" codes to cut out and stick on parts, 90 a page. Each code's name prints below its cut line.
 
 Print at 100% scale (Actual size), not Fit to page, or the labels won't line up with the sheet. The app remembers the style you last picked on that device.
 

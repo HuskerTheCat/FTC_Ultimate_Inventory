@@ -6,7 +6,7 @@ import TOPO from './topo.svg?raw';
 // Mini labels are tiny codes to cut out, each captioned outside its cut line.
 export const LABEL_SHEET_URL = 'https://www.onlinelabels.com/products/ol911';
 export const LABEL_STYLES = { normal: 'Normal', stylized: 'Stylized', mini: 'Mini' };
-const PER_PAGE = { normal: 21, stylized: 21, mini: 110 };
+const PER_PAGE = { normal: 21, stylized: 21, mini: 90 };
 // Each contour line of the topographic map with its bounds, so a stylized label draws only the lines on its patch.
 const CONTOURS = TOPO.match(/ d="([^"]+)"/)[1].split(/(?=M)/).map((d) => {
   const numbers = d.match(/[\d.]+/g).map(Number);

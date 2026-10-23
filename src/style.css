@@ -798,11 +798,11 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
   #labels.stylized .cube-tile { position: absolute; z-index: 1; right: 0.06in; bottom: 0.06in; display: grid; place-items: center; width: 0.32in; height: 0.32in; border-radius: 0.07in; background: linear-gradient(135deg, #1f2640, #0e1221); }
   #labels.stylized .cube-mark { width: 0.24in; height: 0.24in; }
 
-  /* Mini: 1/2" squares to cut out, the code filling all but a thin white edge. The caption below stays on the paper. */
-  #labels.mini .page { padding: 0.5in; grid-template-columns: repeat(10, 0.65in); grid-template-rows: repeat(11, 0.8in); gap: 0.05in 0.1in; justify-content: center; }
+  /* Mini: 0.6" squares to cut out, the code filling all but a thin white edge. The caption below stays on the paper. */
+  #labels.mini .page { padding: 0.5in; grid-template-columns: repeat(9, 0.75in); grid-template-rows: repeat(10, 0.9in); gap: 0.05in 0.08in; justify-content: center; }
   #labels.mini figure { display: flex; flex-direction: column; align-items: center; gap: 0.03in; }
-  #labels.mini .cut { display: grid; place-items: center; width: 0.5in; height: 0.5in; box-sizing: border-box; border: 0.5pt solid #999; }
-  #labels.mini .qr { width: 0.45in; height: 0.45in; }
+  #labels.mini .cut { display: grid; place-items: center; width: 0.6in; height: 0.6in; box-sizing: border-box; border: 0.5pt solid #999; }
+  #labels.mini .qr { width: 0.52in; height: 0.52in; }
   #labels.mini figcaption { width: 100%; text-align: center; font-size: 6pt; line-height: 1.15; }
   #labels.mini strong { font-weight: 600; -webkit-line-clamp: 2; }
   #labels.mini span { color: #555; -webkit-line-clamp: 1; }
