@@ -9,7 +9,7 @@ export function parseFirebaseConfig(text) {
   const config = {};
   for (const key of CONFIG_KEYS) {
     const match = text.match(new RegExp(`["']?${key}["']?\\s*:\\s*["']([^"']+)["']`));
-    if (!match) throw new Error(`Couldn't find "${key}" in the pasted Firebase config.`);
+    if (!match) throw new Error(`Couldn’t find "${key}" in the pasted Firebase config.`);
     config[key] = match[1];
   }
   return config;

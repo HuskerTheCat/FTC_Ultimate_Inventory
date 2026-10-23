@@ -81,7 +81,7 @@ const SAMPLE_PARTS = [
   ['Yellow Jacket motor 312 RPM', '5203-2402-0019', 6, 'Shelf A', 'goBILDA', 'Electronics/Motors', ['drivetrain'], { notes: 'Two of these have a worn encoder cable. Test before using.', minQuantity: 4 }],
   ['Yellow Jacket motor 435 RPM', '5203-2402-0014', 4, 'Shelf A', 'goBILDA', 'Electronics/Motors', ['drivetrain']],
   ['Core Hex motor', 'REV-41-1300', 3, 'Shelf A', 'REV Robotics', 'Electronics/Motors', ['intake']],
-  ['HD Hex motor 40:1', 'REV-41-1301', 2, 'Shelf A', 'REV Robotics', 'Electronics/Motors', ['lift'], { condition: 'used', notes: 'Spares from last season\'s arm.' }],
+  ['HD Hex motor 40:1', 'REV-41-1301', 2, 'Shelf A', 'REV Robotics', 'Electronics/Motors', ['lift'], { condition: 'used', notes: 'Spares from last season’s arm.' }],
   ['Speed servo', '2000-0025-0003', 5, 'Bin 1', 'goBILDA', 'Electronics/Servos', ['intake']],
   ['Torque servo', '2000-0025-0002', 3, 'Bin 1', 'goBILDA', 'Electronics/Servos', ['claw'], { notes: 'Use for the claw. The speed servo is too weak.' }],
   ['Super speed servo', '2000-0025-0001', 2, 'Bin 1', 'goBILDA', 'Electronics/Servos', ['claw'], { condition: 'used' }],
@@ -221,7 +221,7 @@ const SAMPLE_BUILDS = [
 const SAMPLE_LOG = [
   [1, 'demo', 'Husker', 'added', 'Pinpoint odometry computer', ''],
   [2, 'demo', 'Husker', 'quantity', '12V Slim battery', 'Quantity -1'],
-  [3, 'demo-gabby', 'Gabby', 'made', 'Odometry pod mount', '+2 from the print list'],
+  [3, 'demo-gabby', 'Gabby', 'made', 'Odometry pod mount', '+2 from the make list'],
   [5, 'demo-gabby', 'Gabby', 'edited', 'Gamepad', 'Condition damaged'],
   [7, 'demo-gabby', 'Gabby', 'used', 'Touch sensor', 'Competition Robot: 1'],
   [26, 'demo-grace', 'Grace', 'arrived', 'USB camera', 'Received 1'],

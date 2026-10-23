@@ -99,9 +99,9 @@ Then join with **Scan QR** or the join code inside that app. It keeps its own si
 
 ## Updating the rules
 
-A blue **Your Firebase rules are out of date** banner means a new app version needs newer rules. Only your team's admin (who set up the Firebase project) can update them, so send them this section. It doesn't change any data, and the app keeps working meanwhile, but new features won't until you update.
+A blue **Firebase rules out of date** banner means a new app version needs newer rules. Only your team's admin (who set up the Firebase project) can update them, so send them this section. It doesn't change any data, and the app keeps working meanwhile, but new features won't until you update.
 
-A red **Your Firebase is configured incorrectly and your account is not secure** banner means your project isn't using the app's rules (for example, test mode), so anyone could read your inventory and members' emails. Follow the same steps right away.
+A red **Your Firebase isn’t secure** banner means your project isn't using the app's rules (for example, test mode), so anyone could read your inventory and members' emails. Follow the same steps right away.
 
 On a computer:
 

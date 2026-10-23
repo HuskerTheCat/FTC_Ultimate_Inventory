@@ -14,11 +14,17 @@ const loadDecoder = () => (decoder ??= prepareZXingModule({ overrides: { locateF
 loadDecoder().catch(() => {});
 
 // The barcodes suppliers print on packages (UPC/EAN numbers or part numbers).
+// The browser's camera errors in plain words.
+const CAMERA_ERRORS = {
+  NotFoundError: 'No camera found on this device.',
+  NotAllowedError: 'Camera access is blocked. Allow it in your browser or phone settings.',
+};
+
 export const BARCODES = ['EANUPC', 'Code128', 'Code39'];
 
 // Shows the camera in the dialog and resolves with the text of the first code it sees, or null if cancelled.
 // By default it reads the app's own QR labels and package barcodes.
-export function scanCode(dialog, title = 'Scan a label or barcode', hint = 'Point the camera at a QR label or the barcode on a part\'s package.', formats = ['QRCode', ...BARCODES]) {
+export function scanCode(dialog, title = 'Scan a label or barcode', hint = 'Point the camera at a QR label or the barcode on a part’s package.', formats = ['QRCode', ...BARCODES]) {
   const options = { formats, tryHarder: true, maxNumberOfSymbols: 1 };
   dialog.innerHTML = `
     <form method="dialog" class="card">
@@ -70,7 +76,7 @@ export function scanCode(dialog, title = 'Scan a label or barcode', hint = 'Poin
         dialog.close();
       });
     }, (error) => {
-      reject(new Error(`Couldn't open the camera: ${error.message}`));
+      reject(new Error(CAMERA_ERRORS[error.name] ?? `Couldn’t open the camera: ${error.message}`));
       dialog.close();
     });
   });

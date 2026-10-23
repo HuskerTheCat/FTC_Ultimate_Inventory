@@ -14,7 +14,7 @@ Something wrong? [Troubleshooting and FAQ](TROUBLESHOOTING.md). Running the team
 4. [Find parts fast](#4-find-parts-fast)
 5. [Locations and QR labels](#5-locations-and-qr-labels)
 6. [Inventories, projects and packing lists](#6-inventories-projects-and-packing-lists)
-7. [Order list and print list](#7-order-list-and-print-list)
+7. [Order list and make list](#7-order-list-and-make-list)
 8. [Edit many parts at once](#8-edit-many-parts-at-once)
 9. [Import, export and backups](#9-import-export-and-backups)
 10. [Change log, Undo and Trash](#10-change-log-undo-and-trash)
@@ -57,14 +57,14 @@ A new team's inventory starts with **Add your first parts** and buttons to add a
 1. **List picker.** Switch between inventories, projects and packing lists, or make a new one.
 2. **Rename or delete** the inventory, project or list you're looking at.
 3. **Scan.** Scan a QR label to open that bin or part, or a supplier package barcode to find or add that part. A part you already have opens with big **−** and **+** buttons, so taking one or putting some back is two taps; **Edit part** opens everything else.
-4. **☰ menu.** Orders, Print list, Locations, Change log, Trash, Export backup, Restore backup, Team, Report bug, Request feature, Pain and suffering mode and Sign out.
+4. **☰ menu.** Orders, Make list, Locations, Change log, Trash, Export backup, Restore backup, Team, Report bug, Request feature, Pain and suffering mode and Sign out.
 5. **Search** by name, part number, barcode, supplier, location, category, condition, material or notes. Each word can match anywhere, so `m4 screw` finds *M4 x 8mm socket head screw*.
 6. **Filters.** Filter, sort and group the list.
 7. **⋯ menu.** Select parts, Print QR labels, Print inventory, Export CSV and Import spreadsheet.
 8. **Add part.**
 9. **− and +** change the quantity by one.
 10. **Add to** puts the part in a project or packing list. **In use** shows how many are free, with a chip for each project using the part. Tap a chip to open that project.
-11. **Badges** (square, with an outline) flag parts that are **Low stock**, **to order** (on the order list), **on order** (ordered), **to make** and **in progress** (on the print list), how the team makes it (like **3D printed**), used, damaged or broken. The round chips next to them are the part's tags; click one to show only parts with that tag.
+11. **Badges** (square, with an outline) flag parts that are **Low stock**, **to order** (on the order list), **on order** (ordered), **not started** and **in progress** (on the make list), how the team makes it (like **3D printed**), used, damaged or broken. The round chips next to them are the part's tags; click one to show only parts with that tag.
 
 Click a part to open and edit it. On a computer, click a column heading to sort, and again to reverse.
 
@@ -131,7 +131,7 @@ Your team has one list of locations (bins, shelves, drawers). **☰ → Location
 
 ### Storage grids
 
-For a cabinet of small drawers or a shelf of bins, tap **+ Add grid**, type a name, the number of rows and the number of columns, then tap **Create**. Spots are named by row and column: A1 is the top left, C12 the third row, twelfth column. The grid button (**Edit grid**) changes the size later; the app won't make it smaller while a spot it would cut off still has parts.
+For a cabinet of small drawers or a shelf of bins, tap **+ Add grid**, type a name, the number of rows and the number of columns, then tap **Add**. Spots are named by row and column: A1 is the top left, C12 the third row, twelfth column. The grid button (**Edit grid**) changes the size later; the app won't make it smaller while a spot it would cut off still has parts.
 
 In a part's dialog, pick the grid location, then tap the part's spot. In the list, the part shows its spot by its location. Tap that spot, or **Find part** in the part's dialog or after scanning its label, to see the grid with it highlighted. Tapping any spot in a grid lists what's in it.
 
@@ -184,28 +184,28 @@ In the inventory, **Add to** on a part sends it to a project or packing list.
 
 <picture><source media="(prefers-color-scheme: dark)" srcset="header/divider-dark.png"><img src="header/divider-light.png" alt="" width="720"></picture>
 
-## 7. Order list and print list
+## 7. Order list and make list
 
-Open **☰ → Orders** to track parts you need, have ordered, and got. The list has three tabs: **Need to order**, **Ordered** and **Arrived**.
+Open **☰ → Orders** to track parts you need, have ordered, and got. The list has three tabs: **To order**, **Ordered** and **Arrived**.
 
 <img src="how-to/orders.png" alt="The order list" width="440">
 
-- On **Need to order**, tap **+ Add item**, then search the parts catalog, pick a part you have, or type any item with your own link. A supported part number fills in the rest. Link and notes are optional. New orders go under **Need to order**.
+- On **To order**, tap **+ Add item**, then search the parts catalog, pick a part you have, or type any item with your own link. A supported part number fills in the rest. Link and notes are optional. New orders go under **To order**.
 - New items appear in Main Inventory right away as **to order**, so projects and packing lists can use them early.
 - Once you've bought it, tap the truck (**Ordered**) to move it to the Ordered tab.
 - When it arrives, tap the box (**Arrived**) to add it to the inventory and move it to the Arrived tab. If only some came, enter how many; the rest stays under Ordered.
 - **Clear arrived** empties the Arrived tab. The parts stay in the inventory.
 - Tap an order to change it. **Print** prints the tab you're on.
 
-### Print list
+### Make list
 
-**☰ → Print list** tracks parts the team makes: 3D prints, CNC and laser cut parts. Tabs: **Not started**, **In progress** and **Complete**.
+**☰ → Make list** tracks parts the team makes: 3D prints, CNC and laser cut parts. Tabs: **Not started**, **In progress** and **Complete**.
 
-<img src="how-to/print-list.png" alt="The print list" width="440">
+<img src="how-to/make-list.png" alt="The make list" width="440">
 
 - **+ Add part to make**: pick a part the team makes, or type a new one with how it's made, material and file link. A new one appears in Main Inventory with 0 in stock.
 - **Make more** in a made part's dialog puts it on the list too.
-- Tap **Start** when you begin, so nobody prints it twice; starting only some? Enter how many and the rest stays under Not started. Tap **Made** when it's done to add it to the inventory; if only some came out, enter how many and the rest stays under In progress.
+- Tap the play button (**Start**) when you begin, so nobody makes it twice; starting only some? Enter how many and the rest stays under Not started. Tap the check (**Made**) when it's done to add it to the inventory; if only some came out, enter how many and the rest stays under In progress.
 - **Clear complete** empties the Complete tab. Tap an item to change its quantity or notes. **Print** prints the tab you're on.
 
 ---
@@ -241,7 +241,7 @@ Rows the app can't add are listed with the reason (*250 pcs* and *1,200* are fin
 
 ### Back up the whole team
 
-**☰ → Export backup** saves everything in one `.inv` file: inventories, projects, packing lists, parts, orders, the print list, locations and which QR labels are printed. Not members, the change log or the trash. Works on the website and Windows app, not Android. Keep it on a shared drive.
+**☰ → Export backup** saves everything in one `.inv` file: inventories, projects, packing lists, parts, orders, the make list, locations and which QR labels are printed. Not members, the change log or the trash. Works on the website and Windows app, not Android. Keep it on a shared drive.
 
 **☰ → Restore backup** opens a `.inv` file, then you pick how. The app lists what each way will do before anything changes.
 

@@ -63,9 +63,9 @@ If the code or link got shared where it shouldn't, tap **Reset join code**. The 
 
 ## 4. Update the Firebase rules
 
-A blue **Your Firebase rules are out of date** banner means a new app version needs newer rules. Only the owner of the Firebase project can fix it. Tap the banner for **Copy rules** and a link to your rules. Full steps: [Updating the rules](../SETUP.md#updating-the-rules). No data changes, and the app keeps working until you do it.
+A blue **Firebase rules out of date** banner means a new app version needs newer rules. Only the owner of the Firebase project can fix it. Tap the banner for **Copy rules** and a link to your rules. Full steps: [Updating the rules](../SETUP.md#updating-the-rules). No data changes, and the app keeps working until you do it.
 
-A red **Your Firebase is configured incorrectly and your account is not secure** banner means your project isn't using the app's rules, so anyone could read your inventory. Fix it right away.
+A red **Your Firebase isn’t secure** banner means your project isn't using the app's rules, so anyone could read your inventory. Fix it right away.
 
 ---
 
@@ -75,7 +75,7 @@ A red **Your Firebase is configured incorrectly and your account is not secure**
 
 Deleted items stay in **☰ → Trash** for 30 days. A backup file protects against bigger mistakes, like a bad bulk edit or a deleted Firebase project.
 
-**☰ → Export backup** (website or Windows app; Android can't save files) saves one `.inv` file with every inventory, project, packing list, part, order, print list item and location, and which QR labels are printed. It doesn't include members, the change log or the trash. Make one before each season and after a big count, and keep it on a shared drive.
+**☰ → Export backup** (website or Windows app; Android can't save files) saves one `.inv` file with every inventory, project, packing list, part, order, make list item and location, and which QR labels are printed. It doesn't include members, the change log or the trash. Make one before each season and after a big count, and keep it on a shared drive.
 
 **☰ → Restore backup**: pick the file, then **Add** (only what's missing) or **Replace** (make the team match the backup; type your team number). Replace sends removed items to the Trash. The app previews the result first. See [Import, export and backups](HOW-TO.md#9-import-export-and-backups).
 

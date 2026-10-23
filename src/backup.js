@@ -37,7 +37,7 @@ export function readBackup(name, text) {
   }
   if (backup?.format !== FORMAT) throw notBackup;
   if (backup.version > VERSION) throw new Error(`${name} was made by a newer version of the app. Update the app, then restore it.`);
-  // Backups before version 3 have no print list.
+  // Backups before version 3 have no make list.
   if (backup.version < 3) backup.builds = [];
   if (!BACKUP_COLLECTIONS.every((key) => Array.isArray(backup[key]))) throw notBackup;
   // Version 1 backups list locations by name only.

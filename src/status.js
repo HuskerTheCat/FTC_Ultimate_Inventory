@@ -8,7 +8,7 @@ import { getNews } from './hub.js';
 const RELEASES_API = 'https://api.github.com/repos/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest';
 const RELEASES_PAGE = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest';
 const LATEST_APK = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory/releases/latest/download/FTC-Ultimate-Inventory.apk';
-const ANDROID_UPDATE_TEXT = 'Your app is out of date, tap here to update';
+const ANDROID_UPDATE_TEXT = 'Update available. Install →';
 const CHECK_MS = 15 * 60 * 1000;
 // The last news message this device closed, so it stays closed until the developer writes a new one.
 const CLOSED_NEWS_KEY = 'ftc-inventory-closed-news';
@@ -35,7 +35,7 @@ async function checkWebsite() {
   const response = await fetch('version.json', { cache: 'no-store' });
   if (!response.ok) throw new Error(`version.json: ${response.status}`);
   const { build } = await response.json();
-  if (build !== __BUILD_ID__) showUpdate('New version available, tap to refresh', location.href.split('#')[0]);
+  if (build !== __BUILD_ID__) showUpdate('New version available. Refresh →', location.href.split('#')[0]);
 }
 
 async function checkApp() {
@@ -45,7 +45,7 @@ async function checkApp() {
   const { tag_name } = await response.json();
   if (tag_name === `v${__APP_VERSION__}`) return;
   if (window.Capacitor?.isNativePlatform()) showAndroidUpdate();
-  else showUpdate(`Update available (${tag_name}), tap to download`, RELEASES_PAGE, '_blank');
+  else showUpdate(`Update available (${tag_name}). Download →`, RELEASES_PAGE, '_blank');
 }
 
 // Android downloads the new APK itself and opens Android's installer, which installs it over this app

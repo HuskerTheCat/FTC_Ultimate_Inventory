@@ -52,7 +52,7 @@ export async function clearDeviceData() {
 export async function ensureMembership(user, connection, name, acceptedPrivacy) {
   const memberRef = doc(db, 'members', user.uid);
   if (await isMember(memberRef)) return false;
-  if (!connection.secret) throw new Error(`You're not on ${connection.teamName}. Ask your team admin for the join code.`);
+  if (!connection.secret) throw new Error(`You’re not on ${connection.teamName}. Ask your team admin for the join code.`);
   if (!acceptedPrivacy) throw new Error(`Accept the privacy policy to join ${connection.teamName}.`);
   // New members confirm their email first, so a mistyped one can't be taken over later with Forgot password?.
   if (!user.emailVerified) throw Object.assign(new Error('Confirm your email to join.'), { code: 'unverified' });
@@ -222,15 +222,15 @@ export async function deleteOrders(ids) {
   await batch.commit();
 }
 
-// The print list: parts the team makes itself (3D prints, CNC and laser cut parts). partId is the part it makes.
+// The make list: parts the team makes itself (3D prints, CNC and laser cut parts). partId is the part it makes.
 // status is 'making' or 'made'; items without one are still to make.
 // Made on the device, so adding an item can be undone before it reaches the server.
 export const newBuildId = () => doc(collection(db, 'builds')).id;
 
-// Writes a print list item: a new one, a changed one, or one brought back.
+// Writes a make list item: a new one, a changed one, or one brought back.
 export const saveBuild = (id, build) => setDoc(doc(db, 'builds', id), build);
 
-// Moves `count` of a print list item to `status`: the whole item, or a new item `newId` with `count` while the rest stays.
+// Moves `count` of a make list item to `status`: the whole item, or a new item `newId` with `count` while the rest stays.
 function moveBuild(batch, build, status, count, newId) {
   const { id, ...data } = build;
   if (count < build.quantity) {

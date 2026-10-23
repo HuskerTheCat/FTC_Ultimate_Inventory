@@ -26,13 +26,14 @@
     <script src="switching.js"></script>
   </head>
   <body>
-    <p id="offline-banner" class="status-banner offline" role="status" hidden>Offline, changes will sync when you reconnect</p>
+    <p id="offline-banner" class="status-banner offline" role="status" hidden>Offline. Changes sync when you reconnect.</p>
     <a id="update-banner" class="status-banner update" hidden></a>
     <p id="news-banner" class="status-banner news" hidden><span></span><button type="button" aria-label="Close">×</button></p>
-    <a id="rules-banner" class="status-banner update" href="https://huskerthecat.github.io/FTC_Ultimate_Inventory/setup.html#updating-the-rules" target="_blank" rel="noopener" hidden>Your Firebase rules are out of date, click for update instructions</a>
-    <a id="open-rules-banner" class="status-banner danger" href="https://huskerthecat.github.io/FTC_Ultimate_Inventory/setup.html#updating-the-rules" target="_blank" rel="noopener" hidden>Your Firebase is configured incorrectly and your account is not secure. Click here to fix</a>
+    <a id="rules-banner" class="status-banner update" href="https://huskerthecat.github.io/FTC_Ultimate_Inventory/setup.html#updating-the-rules" target="_blank" rel="noopener" hidden>Firebase rules out of date. How to update →</a>
+    <a id="open-rules-banner" class="status-banner danger" href="https://huskerthecat.github.io/FTC_Ultimate_Inventory/setup.html#updating-the-rules" target="_blank" rel="noopener" hidden>Your Firebase isn’t secure. How to fix →</a>
     <a id="demo-banner" class="status-banner demo" href="index.html" hidden>Demo only. <u>Set up your team →</u></a>
     <div id="app"></div>
+    <dialog id="ask"></dialog>
     <div id="switching" data-app="inventory" aria-hidden="true"><img src="loading.svg" alt="" /><p><span class="name">FTC Ultimate</span><span class="app-name">Inventory</span></p></div>
     <script type="module" src="/src/main.js"></script>
   </body>

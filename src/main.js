@@ -86,6 +86,23 @@ const ICON_TRASH = icon('<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 
 // A truck for "Ordered" (it's on its way) and a box for "Arrived" (it's in stock), like the inventory badges.
 const ICON_TRUCK = icon('<path d="M2 5h12v11H2zM14 9h4l4 4v3h-8"/><circle cx="6.5" cy="18.5" r="2"/><circle cx="17.5" cy="18.5" r="2"/>');
 const ICON_BOX = icon('<path d="M21 8 12 3 3 8v8l9 5 9-5Z"/><path d="m3 8 9 5 9-5M12 13v8"/>');
+// A play triangle for "Start" and a check for "Made" on the make list.
+const ICON_PLAY = icon('<path d="M7 4v16l13-8Z"/>');
+const ICON_CHECK = icon('<path d="M20 6 9 17l-5-5"/>');
+// Menu icons.
+const ICON_CART = icon('<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 2h2.5l2.7 12.4a2 2 0 0 0 2 1.6h9.6a2 2 0 0 0 2-1.6L22 7H5.1"/>');
+const ICON_HAMMER = icon('<path d="m15 12-8.5 8.5a2.12 2.12 0 0 1-3-3L12 9"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25a2 2 0 0 1-.59-1.42V7.83l-2.44-2.44A6 6 0 0 0 12.4 3.6h-.8l.88.88A6 6 0 0 1 14 8.1v1.56l2 2h1.17a2 2 0 0 1 1.41.59l1.25 1.25"/>');
+const ICON_HISTORY = icon('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/>');
+const ICON_DOWNLOAD = icon('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>');
+const ICON_UPLOAD = icon('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>');
+const ICON_USERS = icon('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>');
+const ICON_BUG = icon('<path d="M9 7.13v-1a3 3 0 1 1 6 0v1"/><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6zM12 20v-9M6 13H2M22 13h-4M3 21c0-2.1 1.7-3.9 3.8-4M21 21c0-2.1-1.7-3.9-3.8-4M3 5c0 2.1 1.6 3.8 3.5 4M21 5c0 2.1-1.6 3.8-3.5 4"/>');
+const ICON_BULB = icon('<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5M9 18h6M10 22h4"/>');
+const ICON_HELP = icon('<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>');
+const ICON_SUN = icon('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>');
+const ICON_SIGNOUT = icon('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>');
+const ICON_SELECT = icon('<path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>');
+const ICON_PRINT = icon('<path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/>');
 const ICON_PIN = icon('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>');
 
 // Every project is an inventory (holds its own parts), a project or a packing list (both use parts from inventories).
@@ -188,7 +205,7 @@ const holdsPart = (use) => use.packed !== false;
 const inUse = (partId) => usesOfPart(partId).filter(holdsPart).reduce((sum, u) => sum + u.quantity, 0);
 // An order is to be ordered (no status, like every order from before statuses), ordered, or arrived.
 const orderStatus = (order) => order.status ?? 'need';
-const ORDER_TABS = [['need', 'Need to order'], ['ordered', 'Ordered'], ['arrived', 'Arrived']];
+const ORDER_TABS = [['need', 'To order'], ['ordered', 'Ordered'], ['arrived', 'Arrived']];
 // Orders still to come: arrived ones are already in the inventory.
 const openOrders = () => state.orders.filter((o) => orderStatus(o) !== 'arrived');
 // How many of a part are on the order list with this status.
@@ -197,10 +214,10 @@ const ordering = (partId, status) => state.orders.filter((o) => o.partId === par
 const onOrder = (partId) => ordering(partId, 'need') + ordering(partId, 'ordered');
 // None of the part has arrived yet: the team has none and some are on order.
 const waiting = (partId) => onOrder(partId) > 0 && !state.parts.find((p) => p.id === partId).quantity;
-// A print list item is to make (no status), being made, or made.
+// A make list item is to make (no status), being made, or made.
 const buildStatus = (build) => build.status ?? 'need';
 const BUILD_TABS = [['need', 'Not started'], ['making', 'In progress'], ['made', 'Complete']];
-// How many of a part are on the print list with this status.
+// How many of a part are on the make list with this status.
 const making = (partId, status) => state.builds.filter((b) => b.partId === partId && buildStatus(b) === status).reduce((sum, b) => sum + b.quantity, 0);
 // The Made by filter: bought parts, every made part, or one way of making them.
 const madeMatches = (part, filter) => (filter === 'bought' ? !part.made : filter === 'made' ? Boolean(part.made) : part.made === filter);
@@ -233,11 +250,15 @@ const ERROR_MS = 10000;
 let errorTimer;
 
 // Shows a message at the top of the screen, over any dialog, for a few seconds, so it doesn't stay up after the problem is fixed.
-function showError(error) {
-  const message = ERROR_MESSAGES[error.code] ?? error.message.replace(/^Firebase: /, '').replace(/\s*\(.*\)\.?$/, '');
+// × hides it sooner. A notice (good news) is drawn plain instead of red.
+function showBanner(text, { link, linkText, notice = false } = {}) {
   const banner = document.getElementById('error');
-  banner.textContent = message;
-  if (error.link) banner.append(' ', Object.assign(document.createElement('a'), { href: error.link, target: '_blank', rel: 'noopener', textContent: error.linkText }));
+  banner.textContent = text;
+  banner.classList.toggle('notice', notice);
+  if (link) banner.append(' ', Object.assign(document.createElement('a'), { href: link, target: '_blank', rel: 'noopener', textContent: linkText }));
+  const close = Object.assign(document.createElement('button'), { type: 'button', className: 'close', textContent: '×', onclick: () => banner.hidePopover() });
+  close.setAttribute('aria-label', 'Dismiss');
+  banner.append(close);
   // A popover sits above open dialogs; showing it again puts it above one opened since.
   if (banner.matches(':popover-open')) banner.hidePopover();
   banner.showPopover();
@@ -245,13 +266,31 @@ function showError(error) {
   errorTimer = setTimeout(() => banner.hidePopover(), ERROR_MS);
 }
 
+function showError(error) {
+  showBanner(ERROR_MESSAGES[error.code] ?? error.message.replace(/^Firebase: /, '').replace(/\s*\(.*\)\.?$/, ''), error);
+}
+
+const showNotice = (text) => showBanner(text, { notice: true });
+
+// A field left empty or filled in wrong is outlined red with the app's banner, instead of the browser's bubble.
+// Only the first such field of a form gets focus and the message.
+document.addEventListener('invalid', (e) => {
+  e.preventDefault();
+  const field = e.target;
+  field.classList.add('invalid');
+  field.addEventListener('input', () => field.classList.remove('invalid'), { once: true });
+  if (field.form && [...field.form.elements].find((f) => !f.validity.valid) !== field) return;
+  field.focus();
+  showError(new Error(field.validity.valueMissing ? 'Fill in the field marked in red.' : 'Check the field marked in red.'));
+}, true);
+
 // An error that links to where it can be fixed, like a page of the team's Firebase project.
 const errorWithLink = (message, link, linkText) => Object.assign(new Error(message), { link, linkText });
 
 // Asks for a line of text over whatever dialog is open. The Windows app has no prompt(), so the app uses this instead.
 // Resolves with the trimmed text, or '' when cancelled. `value` fills the box to start with.
 function ask(question, value = '') {
-  const dialog = app.querySelector('#ask');
+  const dialog = document.getElementById('ask');
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <label>${esc(question)}<input name="answer" value="${esc(value)}" /></label>
@@ -267,9 +306,28 @@ function ask(question, value = '') {
   });
 }
 
+// Asks a yes or no question over whatever dialog is open, in place of the browser's confirm(). Resolves true for `yes`.
+// `danger` draws the yes button red, for things that delete or remove. `no` names the other button.
+function askConfirm(question, yes, { danger = false, no = 'Cancel' } = {}) {
+  const dialog = document.getElementById('ask');
+  dialog.innerHTML = `
+    <form method="dialog" class="card">
+      <p>${esc(question)}</p>
+      <div class="row">
+        <button value="yes" ${danger ? 'class="danger"' : ''}>${esc(yes)}</button>
+        <button value="no" class="secondary">${esc(no)}</button>
+      </div>
+    </form>`;
+  dialog.returnValue = ''; // Escape keeps the last returnValue
+  dialog.showModal();
+  return new Promise((resolve) => {
+    dialog.addEventListener('close', () => resolve(dialog.returnValue === 'yes'), { once: true });
+  });
+}
+
 // A heading and a paragraph of HTML with an OK button, over whatever dialog is open.
 function showMessage(heading, html) {
-  const dialog = app.querySelector('#ask');
+  const dialog = document.getElementById('ask');
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>${esc(heading)}</h2>
@@ -334,7 +392,7 @@ function renderLoading() {
       <input type="search" placeholder="Search parts…" disabled />
       <button class="secondary" disabled>${ICON_FILTER}<span>Filters</span></button>
       <button class="icon" disabled aria-label="More">${ICON_MORE}</button>
-      <button disabled>+ Add part</button>
+      <button disabled>${ICON_PLUS}<span>Add part</span></button>
     </div>
     <table>
       <thead><tr>${skeletonHead}</tr></thead>
@@ -535,7 +593,7 @@ function renderSignIn() {
     if (!form.email.value) return showError(new Error('Enter your email first.'));
     try {
       await fb.resetPassword(form.email.value);
-      showError(new Error('Password reset email sent.'));
+      showNotice('Password reset email sent.');
     } catch (error) {
       showError(error);
     }
@@ -580,7 +638,7 @@ function renderVerify(user, onVerified) {
   app.querySelector('#resend').onclick = async () => {
     try {
       await fb.sendVerification(user);
-      showError(new Error(`Sent again to ${user.email}.`));
+      showNotice(`Sent again to ${user.email}.`);
     } catch (error) {
       showError(error);
     }
@@ -598,22 +656,23 @@ function renderInventory() {
           <button id="main-menu-toggle" class="icon" aria-label="Menu" title="Menu" aria-haspopup="true" aria-expanded="false" aria-controls="main-menu">${ICON_MENU}</button>
           <div id="main-menu" class="menu right" hidden>
             <h3>Lists</h3>
-            <button id="orders" class="menu-item">Orders</button>
-            <button id="builds" class="menu-item">Print list</button>
-            <button id="locations" class="menu-item">Locations</button>
-            <button id="log" class="menu-item">Change log</button>
-            <button id="trash" class="menu-item">Trash</button>
+            <button id="orders" class="menu-item">${ICON_CART}Orders</button>
+            <button id="builds" class="menu-item">${ICON_HAMMER}Make list</button>
+            <button id="locations" class="menu-item">${ICON_PIN}Locations</button>
+            <h3>History</h3>
+            <button id="log" class="menu-item">${ICON_HISTORY}Change log</button>
+            <button id="trash" class="menu-item">${ICON_TRASH}Trash</button>
             <h3>Backup</h3>
-            <button id="export-backup" class="menu-item">Export backup</button>
-            <button id="restore-backup" class="menu-item">Restore backup</button>
+            <button id="export-backup" class="menu-item">${ICON_DOWNLOAD}Export backup</button>
+            <button id="restore-backup" class="menu-item">${ICON_UPLOAD}Restore backup</button>
             <h3>Team and help</h3>
-            <button id="invite" class="menu-item">Team</button>
-            <button id="bug" class="menu-item">Report bug</button>
-            <button id="feature" class="menu-item">Request feature</button>
-            <a class="menu-item" href="${HELP_URL}" target="_blank" rel="noopener">Help</a>
+            <button id="invite" class="menu-item">${ICON_USERS}Team</button>
+            <button id="bug" class="menu-item">${ICON_BUG}Report bug</button>
+            <button id="feature" class="menu-item">${ICON_BULB}Request feature</button>
+            <a class="menu-item" href="${HELP_URL}" target="_blank" rel="noopener">${ICON_HELP}Help</a>
             <hr />
-            <button id="theme" class="menu-item" role="switch" aria-checked="${document.documentElement.dataset.theme === 'light'}">Pain and suffering mode<span class="switch" aria-hidden="true"></span></button>
-            <button id="signout" class="menu-item">Sign out</button>
+            <button id="theme" class="menu-item" role="switch" aria-checked="${document.documentElement.dataset.theme === 'light'}">${ICON_SUN}Pain and suffering mode<span class="switch" aria-hidden="true"></span></button>
+            <button id="signout" class="menu-item">${ICON_SIGNOUT}Sign out</button>
             <p class="menu-version">Version ${esc(__APP_VERSION__)}</p>
           </div>
         </div>
@@ -633,15 +692,15 @@ function renderInventory() {
       <div class="menuwrap">
         <button id="more-toggle" class="icon" aria-label="More" title="More" aria-haspopup="true" aria-expanded="false" aria-controls="more-menu">${ICON_MORE}</button>
         <div id="more-menu" class="menu right" hidden>
-          <button id="select" class="menu-item">Select parts</button>
-          <button id="print-labels" class="menu-item">Print QR labels</button>
-          <button id="print-inventory" class="menu-item">Print inventory</button>
-          <button id="unpack-all" class="menu-item" hidden>Unpack all</button>
-          <button id="export-csv" class="menu-item">Export CSV</button>
-          <button id="import" class="menu-item">Import spreadsheet</button>
+          <button id="select" class="menu-item">${ICON_SELECT}Select parts</button>
+          <button id="print-labels" class="menu-item">${ICON_QR}Print QR labels</button>
+          <button id="print-inventory" class="menu-item">${ICON_PRINT}Print inventory</button>
+          <button id="unpack-all" class="menu-item" hidden>${ICON_BOX}Unpack all</button>
+          <button id="export-csv" class="menu-item">${ICON_DOWNLOAD}Export CSV</button>
+          <button id="import" class="menu-item">${ICON_UPLOAD}Import spreadsheet</button>
         </div>
       </div>
-      <button id="add" disabled>+ Add part</button>
+      <button id="add" disabled>${ICON_PLUS}<span>Add part</span></button>
     </div>
     <div id="filters" class="filters" hidden>
       <div class="row">
@@ -681,7 +740,7 @@ function renderInventory() {
     <div id="getting-started" class="card getting-started" hidden>
       <h2>Add your first parts</h2>
       <div class="row">
-        <button data-start="#add">+ Add part</button>
+        <button data-start="#add">${ICON_PLUS}<span>Add part</span></button>
         <button data-start="#scan" class="secondary">Scan a package</button>
         <button data-start="#import" class="secondary">Import spreadsheet</button>
         <button data-start="#locations" class="secondary">Add locations</button>
@@ -690,7 +749,6 @@ function renderInventory() {
     </div>
     <div id="undo" class="toast" role="status" hidden><span></span><button class="link">Undo</button></div>
     <dialog id="dialog"></dialog>
-    <dialog id="ask"></dialog>
   </main>`;
 
   const dialog = app.querySelector('#dialog');
@@ -739,7 +797,7 @@ function renderInventory() {
   app.querySelector('#invite').onclick = () => openTeamDialog().catch(showError);
   app.querySelector('#log').onclick = openLogDialog;
   app.querySelector('#bug').onclick = () => openSendDialog({
-    title: 'Report a bug', label: 'What went wrong?', placeholder: 'What you did, what you expected, and what happened instead',
+    title: 'Report bug', label: 'What went wrong?', placeholder: 'What you did, what you expected, and what happened instead',
     goal: 'fix your issue', sent: 'Report submitted', send: sendBugReport,
   });
   app.querySelector('#feature').onclick = openFeatureRequest;
@@ -958,7 +1016,7 @@ function columnsFor(current) {
 
 function renderViewBar(columns) {
   app.querySelector('#sort').innerHTML = [...columns, ['updatedAt', 'Recently changed']].map(([key, label]) =>
-    `<option value="${key}" ${key === state.sort ? 'selected' : ''}>Sort: ${label}</option>`).join('');
+    `<option value="${key}" ${key === state.sort ? 'selected' : ''}>${label}</option>`).join('');
   app.querySelector('#sort-dir').textContent = state.sortDir > 0 ? 'Ascending' : 'Descending';
   app.querySelector('#group').value = state.group;
   const selecting = Boolean(state.selected);
@@ -993,14 +1051,14 @@ function renderRows() {
   // Only teams that make parts get the Made by filter.
   const madeFilter = app.querySelector('#made');
   madeFilter.hidden = !state.made && !all.some((p) => p.made);
-  madeFilter.innerHTML = Object.entries({ '': 'All', bought: 'Vendor', made: 'Custom', '3d-print': '3D printed', laser: 'Laser cut', cnc: 'CNC machined', other: 'Other' })
+  madeFilter.innerHTML = Object.entries({ '': 'All makers', bought: 'Vendor', made: 'Custom', '3d-print': '3D printed', laser: 'Laser cut', cnc: 'CNC machined', other: 'Other' })
     .map(([value, label]) => `<option value="${value}" ${value === state.made ? 'selected' : ''}>${label}</option>`).join('');
   app.querySelector('#low').classList.toggle('active', state.low);
   app.querySelector('#low').setAttribute('aria-pressed', String(state.low));
   app.querySelector('#reset-filters').hidden = Object.entries(DEFAULT_FILTERS).every(([key, value]) => state[key] === value);
   renderFilterCount();
   renderViewBar(columns);
-  app.querySelector('#add').textContent = usesParts ? '+ Add parts' : '+ Add part';
+  app.querySelector('#add').innerHTML = `${ICON_PLUS}<span>${usesParts ? 'Add parts' : 'Add part'}</span>`;
   app.querySelector('#export-csv').hidden = usesParts;
   app.querySelector('#import').hidden = usesParts;
   app.querySelector('#add').disabled = false;
@@ -1024,8 +1082,8 @@ function renderRows() {
   empty.hidden = rows.length > 0 || !gettingStarted.hidden;
   app.querySelector('#show-all').hidden = !all.length;
   empty.querySelector('p').textContent = all.length ? 'No parts match your filters.'
-    : usesParts ? 'No parts yet. Tap “+ Add parts” to pick parts this project uses.'
-      : 'No parts yet. Tap “+ Add part” to add the first one.';
+    : usesParts ? 'No parts yet. Tap “Add parts” to pick parts this project uses.'
+      : 'No parts yet. Tap “Add part” to add the first one.';
   renderElsewhere(usesParts);
   renderPacked();
 }
@@ -1043,10 +1101,10 @@ function renderPacked() {
 }
 
 // Unchecks every packed item of the packing list on screen, putting them back in the inventory, with one Undo.
-function unpackAll() {
+async function unpackAll() {
   const list = currentProject();
   const packed = state.uses.filter((u) => u.projectId === list.id && u.packed);
-  if (!confirm(`Unpack all ${packed.length} packed items in ${list.name}? They count as back in the inventory.`)) return;
+  if (!await askConfirm(`Unpack all ${packed.length} packed items in ${list.name}? They count as back in the inventory.`, 'Unpack all')) return;
   const write = (packedNow, details) => logged(
     Promise.all(packed.map((u) => fb.setUse(u.projectId, u.partId, u.quantity, packedNow))), 'used', list.name, details);
   write(false, `Unpacked all ${packed.length} items`);
@@ -1414,7 +1472,7 @@ const useDetails = (use) => ({ quantity: use.quantity, packed: use.packed === un
 // with `duplicates`, parts the team already has are added again as copies, and without it, a part with the same name or
 // part number as one in the same inventory is left out. Replace makes the team match the backup: `change` holds what
 // differs from it, and `remove` what isn't in it. Something whose inventory or part won't be there goes in Main
-// Inventory, or for an order, becomes an order for a new part, like bringing it back from the trash. Uses and print list
+// Inventory, or for an order, becomes an order for a new part, like bringing it back from the trash. Uses and make list
 // items of a project or part that won't be there are left out.
 function restorePlan(backup, team, { replace, duplicates }) {
   const byId = (docs) => new Map(docs.map((d) => [d.id, d]));
@@ -1479,7 +1537,7 @@ function restorePlan(backup, team, { replace, duplicates }) {
     if (!now) add.builds.push({ id, ...build });
     else if (replace) {
       const how = describeEdit(now, build, BUILD_FIELDS);
-      if (how) change.builds.push({ id, build, text: `Print list ${now.name}: ${how}` });
+      if (how) change.builds.push({ id, build, text: `Make list ${now.name}: ${how}` });
     }
   }
   if (!replace) return { add, change, remove: { projects: [], parts: [], uses: [], orders: [], builds: [], locations: [] } };
@@ -1506,7 +1564,7 @@ function planLines({ projects = [], parts = [], uses = [], orders = [], builds =
     parts.length && `${countParts(parts.length)}: ${listNames(parts.map((p) => p.name))}`,
     uses.length && `${count(uses.length, 'item')} in projects and packing lists`,
     orders.length && `${count(orders.length, 'order')}: ${listNames(orders.map((o) => o.name))}`,
-    builds.length && `${count(builds.length, 'print list item')}: ${listNames(builds.map((b) => b.name))}`,
+    builds.length && `${count(builds.length, 'make list item')}: ${listNames(builds.map((b) => b.name))}`,
     locations.length && `${count(locations.length, 'location')}: ${listNames(locations.map((l) => l.name))}`,
     printed.length && `${count(printed.length, 'QR label')} marked as printed`,
   ].filter(Boolean);
@@ -1582,7 +1640,7 @@ async function openRestoreDialog(file) {
         ? `${esc(teamName)} now matches ${esc(file.name)}.${removed ? ` Removed items will stay in the <button type="button" id="open-trash" class="link inline">Trash</button> for ${TRASH_DAYS} days.` : ''}`
         : `Added what was in ${esc(file.name)} to ${esc(teamName)}.`);
       app.querySelector('#open-trash')?.addEventListener('click', () => {
-        app.querySelector('#ask').close();
+        document.getElementById('ask').close();
         openTrashDialog();
       });
     }, (error) => {
@@ -1641,8 +1699,8 @@ const orderBadge = (partId) => [['need', 'to-order', 'to order'], ['ordered', 'o
   .filter(([, , n]) => n)
   .map(([kind, text, n]) => `<small class="badge ${kind}">${n} ${text}</small>`)
   .join('');
-// One badge for what's still to make on the print list and another for what's being made.
-const buildBadge = (partId) => [['need', 'to-make', 'to make'], ['making', 'making', 'in progress']]
+// One badge for what's still to make on the make list and another for what's being made.
+const buildBadge = (partId) => [['need', 'to-make', 'not started'], ['making', 'making', 'in progress']]
   .map(([status, kind, text]) => [kind, text, making(partId, status)])
   .filter(([, , n]) => n)
   .map(([kind, text, n]) => `<small class="badge ${kind}">${n} ${text}</small>`)
@@ -1785,7 +1843,7 @@ function autofillFromCatalog(form) {
 
 // Scans a package barcode into the part form, and fills the form's empty fields from the supplier catalog.
 async function scanBarcodeInto(form) {
-  const code = (await scanCode(app.querySelector('#ask'), 'Scan a barcode', 'Point the camera at the barcode on the part’s package.', BARCODES))?.trim();
+  const code = (await scanCode(document.getElementById('ask'), 'Scan a barcode', 'Point the camera at the barcode on the part’s package.', BARCODES))?.trim();
   if (!code) return;
   form.barcode.value = code;
   const product = await findProduct(code);
@@ -1814,7 +1872,7 @@ const catalogPhoto = (image, className) => `<img class="${className}" src="${esc
 const CATALOG_SEARCH = `<div class="field catalog-search">
         <label for="catalog-search">Search the parts catalog</label>
         <div class="catalog-row">
-          <input id="catalog-search" type="search" autocomplete="off" placeholder="Name or part #, e.g. u-beam 8mm" />
+          <input id="catalog-search" type="search" autocomplete="off" placeholder="Name or part #" />
           <select aria-label="Supplier"><option value="">All suppliers</option></select>
         </div>
         <ul class="picker" hidden></ul>
@@ -2098,19 +2156,19 @@ function openProjectDialog() {
 const locationAdders = (open = false) => `
   <div class="adders">
     <details class="adder collapsible"${open ? ' open' : ''}>
-      <summary>+ Add location</summary>
+      <summary>${ICON_PLUS}Add location</summary>
       <div class="password">
         <input id="new-location" maxlength="200" placeholder="Bin or shelf, e.g. Bin 3" aria-label="Location name" />
         <button type="button" id="add-location">Add</button>
       </div>
     </details>
     <details class="adder collapsible"${open ? ' open' : ''}>
-      <summary>+ Add grid</summary>
+      <summary>${ICON_PLUS}Add grid</summary>
       <input id="new-grid-name" maxlength="200" placeholder="Name, e.g. Drawer cabinet" aria-label="Grid name" />
       <div class="password">
         <input id="new-grid-rows" type="number" min="1" max="${GRID_MAX.rows}" placeholder="Rows" aria-label="Rows" />
         <input id="new-grid-cols" type="number" min="1" max="${GRID_MAX.cols}" placeholder="Columns" aria-label="Columns" />
-        <button type="button" id="add-grid">Create</button>
+        <button type="button" id="add-grid">Add</button>
       </div>
     </details>
     <p class="adder-error small" role="alert" hidden></p>
@@ -2161,7 +2219,7 @@ function watchLocationAdders(root, onAdded) {
 
 // Over the dialog that's open, the same boxes as in Locations. Resolves with the added location's name, or '' if cancelled.
 function askNewLocation() {
-  const dialog = app.querySelector('#ask');
+  const dialog = document.getElementById('ask');
   dialog.innerHTML = `
     <form method="dialog" class="card locations">
       <h2>New location</h2>
@@ -2295,7 +2353,7 @@ function openGridDialog(start, part = null, spot = part?.spot ?? '') {
         <button value="remove" class="secondary">Remove grid</button>
       </div>`}
       <div class="row">
-        ${finding ? '<button value="close">Close</button>' : '<button type="button" id="back" class="secondary">Back</button>'}
+        ${finding ? '<button value="close" class="secondary">Close</button>' : '<button type="button" id="back" class="secondary">Back</button>'}
       </div>
     </form>`;
   const form = dialog.querySelector('form');
@@ -2366,14 +2424,14 @@ function openOrdersDialog() {
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `
     <form method="dialog" class="card">
-      <h2>Order list</h2>
+      <h2>Orders</h2>
       <div class="order-tabs" role="group" aria-label="Show orders">
         ${ORDER_TABS.map(([key, label]) => `<button type="button" class="secondary" data-tab="${key}">${label} <span class="tab-count"></span></button>`).join('')}
       </div>
       <ul id="order-list" class="members"></ul>
       <button type="button" id="clear-arrived" class="link" hidden>Clear arrived</button>
       <details id="order-form" class="collapsible">
-        <summary id="order-form-title">+ Add item</summary>
+        <summary id="order-form-title">${ICON_PLUS}Add item</summary>
         ${CATALOG_SEARCH}
         <input name="name" maxlength="200" list="order-parts" placeholder="Item, or pick one you have" />
         <datalist id="order-parts">${sorted(state.parts.map((p) => p.name)).map((n) => `<option value="${esc(n)}">`).join('')}</datalist>
@@ -2382,7 +2440,7 @@ function openOrdersDialog() {
           <input name="partNumber" maxlength="200" placeholder="Part #" />
           <input name="supplier" maxlength="200" placeholder="Supplier" />
         </div>
-        <input name="link" maxlength="1000" inputmode="url" placeholder="Item link (optional)" />
+        <input name="link" maxlength="1000" inputmode="url" placeholder="Link (optional)" />
         <input name="notes" maxlength="1000" placeholder="Notes (optional)" />
       </details>
       <div class="row">
@@ -2399,7 +2457,7 @@ function openOrdersDialog() {
   const list = dialog.querySelector('#order-list');
   const orderForm = dialog.querySelector('#order-form');
   const saveButton = dialog.querySelector('#save-order');
-  // New items go under Need to order, so the form shows there, or on any tab while changing an order.
+  // New items go under To order, so the form shows there, or on any tab while changing an order.
   // Add only shows while the form is open.
   const showForm = () => {
     orderForm.hidden = tab !== 'need' && !editing;
@@ -2427,7 +2485,7 @@ function openOrdersDialog() {
     if (order) for (const key of ['name', 'quantity', 'partNumber', 'supplier', 'link', 'notes']) form[key].value = order[key] ?? '';
     form.name.readOnly = Boolean(order);
     catalogField.hidden = Boolean(order); // a changed order keeps its item
-    dialog.querySelector('#order-form-title').textContent = order ? `Change ${order.name}` : '+ Add item';
+    dialog.querySelector('#order-form-title').innerHTML = order ? `Change ${esc(order.name)}` : `${ICON_PLUS}Add item`;
     saveButton.textContent = order ? 'Save' : 'Add';
     if (order) orderForm.open = true;
     showForm();
@@ -2453,7 +2511,7 @@ function openOrdersDialog() {
     list.innerHTML = orders.map((o) => {
       const part = state.parts.find((p) => p.id === o.partId);
       const details = [o.partNumber, o.supplier, part ? `have ${part.quantity}` : 'new part'].filter(Boolean).map((d) => `<span>${esc(d)}</span>`);
-      if (o.link) details.push(`<a href="${esc(o.link)}" target="_blank" rel="noopener">Item link ↗</a>`);
+      if (o.link) details.push(`<a href="${esc(o.link)}" target="_blank" rel="noopener">Link ↗</a>`);
       return `<li>
         <span class="order-text" data-edit="${esc(o.id)}"><strong>${esc(o.name)}</strong> ×${o.quantity} <span class="muted small order-details">${details.join(' · ')}</span>${o.notes ? `<span class="small order-notes">${esc(o.notes)}</span>` : ''}</span>
         <span class="row">
@@ -2462,8 +2520,8 @@ function openOrdersDialog() {
         </span>
       </li>`;
     }).join('') || `<li class="muted"><span>${{
-      need: 'Nothing to order. Tap <strong>+ Add item</strong> for parts the team needs.',
-      ordered: `Nothing on order. Once you buy something under Need to order, tap ${ICON_TRUCK} to move it here.`,
+      need: 'Nothing to order. Tap <strong>Add item</strong> for parts the team needs.',
+      ordered: `Nothing on order. Once you buy something under To order, tap ${ICON_TRUCK} to move it here.`,
       arrived: `Nothing has arrived yet. When an order comes, tap ${ICON_BOX} under Ordered to add it to the inventory.`,
     }[tab]}</span></li>`;
   };
@@ -2476,7 +2534,7 @@ function openOrdersDialog() {
     if (!name) return showError(new Error('Enter the item to order.'));
     if (!Number.isInteger(quantity) || quantity < 1) return showError(new Error('Order at least 1.'));
     const link = webLink(form.link.value);
-    if (link === null) return showError(new Error('That item link is not a web address.'));
+    if (link === null) return showError(new Error('That link is not a web address.'));
     const notes = form.notes.value.trim();
     if (editing) {
       const { id, ...before } = editing;
@@ -2581,22 +2639,22 @@ async function receiveOrder(order) {
   logged(fb.receiveOrder(order, newPart, state.user, count), 'arrived', order.name, `+${count} from the order list`);
 }
 
-// ---------- print list ----------
+// ---------- make list ----------
 
-// The print list: parts the team makes itself, Not started, In progress and Complete, like the order list.
+// The make list: parts the team makes itself, Not started, In progress and Complete, like the order list.
 // Every item is for a part; how it's made, its material and its file are the part's.
 function openBuildsDialog() {
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `
     <form method="dialog" class="card">
-      <h2>Print list</h2>
-      <div class="order-tabs" role="group" aria-label="Show print list">
+      <h2>Make list</h2>
+      <div class="order-tabs" role="group" aria-label="Show make list">
         ${BUILD_TABS.map(([key, label]) => `<button type="button" class="secondary" data-tab="${key}">${label} <span class="tab-count"></span></button>`).join('')}
       </div>
       <ul id="build-list" class="members"></ul>
       <button type="button" id="clear-made" class="link" hidden>Clear complete</button>
       <details id="build-form" class="collapsible">
-        <summary id="build-form-title">+ Add part to make</summary>
+        <summary id="build-form-title">${ICON_PLUS}Add part to make</summary>
         <input name="name" maxlength="200" list="build-parts" placeholder="Part, or pick one the team makes" />
         <datalist id="build-parts">${sorted(state.parts.filter((p) => p.made).map((p) => p.name)).map((n) => `<option value="${esc(n)}">`).join('')}</datalist>
         <div class="row order-fields">
@@ -2649,7 +2707,7 @@ function openBuildsDialog() {
     form.reset();
     if (build) for (const key of ['name', 'quantity', 'notes']) form[key].value = build[key] ?? '';
     form.name.readOnly = Boolean(build);
-    dialog.querySelector('#build-form-title').textContent = build ? `Change ${build.name}` : '+ Add part to make';
+    dialog.querySelector('#build-form-title').innerHTML = build ? `Change ${esc(build.name)}` : `${ICON_PLUS}Add part to make`;
     saveButton.textContent = build ? 'Save' : 'Add';
     if (build) buildForm.open = true;
     showForm();
@@ -2668,22 +2726,26 @@ function openBuildsDialog() {
     printButton.disabled = !builds.length;
     clearButton.hidden = tab !== 'made' || !builds.length;
     const next = {
-      need: (b) => `<button type="button" class="secondary accent" data-start="${esc(b.id)}">Start</button>`,
-      making: (b) => `<button type="button" class="secondary accent" data-made="${esc(b.id)}">Made</button>`,
+      need: (b) => `<button type="button" class="icon accent" data-start="${esc(b.id)}" aria-label="Start ${esc(b.name)}" title="Start">${ICON_PLAY}</button>`,
+      making: (b) => `<button type="button" class="icon accent" data-made="${esc(b.id)}" aria-label="Made ${esc(b.name)}" title="Made">${ICON_CHECK}</button>`,
       made: () => '',
     }[tab];
     list.innerHTML = builds.map((b) => {
       const part = state.parts.find((p) => p.id === b.partId);
-      const details = (part ? [MADE[part.made] ?? 'Bought', part.material, `have ${part.quantity}`] : ['part deleted']).filter(Boolean).map((d) => `<span>${esc(d)}</span>`);
+      const details = (part ? [MADE[part.made] ?? 'Vendor', part.material, `have ${part.quantity}`] : ['part deleted']).filter(Boolean).map((d) => `<span>${esc(d)}</span>`);
       if (part?.link) details.push(`<a href="${esc(part.link)}" target="_blank" rel="noopener">File ↗</a>`);
       return `<li>
         <span class="order-text" data-edit="${esc(b.id)}"><strong>${esc(b.name)}</strong> ×${b.quantity} <span class="muted small order-details">${details.join(' · ')}</span>${b.notes ? `<span class="small order-notes">${esc(b.notes)}</span>` : ''}</span>
         <span class="row">
           ${next(b)}
-          <button type="button" class="danger" data-remove="${esc(b.id)}">Remove</button>
+          <button type="button" class="icon danger" data-remove="${esc(b.id)}" aria-label="Remove ${esc(b.name)}" title="Remove">${ICON_TRASH}</button>
         </span>
       </li>`;
-    }).join('') || `<li class="muted">${{ need: 'Nothing to make.', making: 'Nothing in progress.', made: 'Nothing complete yet.' }[tab]}</li>`;
+    }).join('') || `<li class="muted"><span>${{
+      need: 'Nothing to make. Tap <strong>Add part to make</strong> for parts the team makes.',
+      making: `Nothing in progress. When you start making something under Not started, tap ${ICON_PLAY} to move it here.`,
+      made: `Nothing complete yet. When a part is done, tap ${ICON_CHECK} under In progress to add it to the inventory.`,
+    }[tab]}</span></li>`;
   };
   // Adding keeps the dialog open; Enter in a field adds too.
   form.onsubmit = (e) => {
@@ -2717,7 +2779,7 @@ function openBuildsDialog() {
     renderBuilds();
   };
   list.onclick = (e) => {
-    const { start, made, remove } = e.target.dataset;
+    const { start, made, remove } = e.target.closest('button')?.dataset ?? {};
     const build = state.builds.find((b) => b.id === (start || made || remove));
     if (start) return startBuild(build).catch(showError);
     if (made) return makeBuild(build).catch(showError);
@@ -2733,27 +2795,27 @@ function openBuildsDialog() {
   dialog.showModal();
 }
 
-// A Main Inventory part the team makes, new on the print list with none made yet.
+// A Main Inventory part the team makes, new on the make list with none made yet.
 const madePart = (name, made, material, link) => ({
   projectId: fb.MAIN_PROJECT, name, partNumber: '', quantity: 0, location: '', supplier: '', category: '', tags: [], unit: '',
   condition: 'new', notes: '', made, ...(material && { material }), ...(link && { link }),
 });
 
-// Puts a part on the print list, still to make. Returns the new item's id.
+// Puts a part on the make list, still to make. Returns the new item's id.
 function addBuild(part, quantity, notes = '') {
   const id = fb.newBuildId();
   fb.saveBuild(id, { name: part.name, partId: part.id, quantity, ...(notes && { notes }) }).catch(showError);
   return id;
 }
 
-// Make more, in the part dialog: puts the part on the print list.
+// Make more, in the part dialog: puts the part on the make list.
 async function makeMore(part) {
   const answer = await ask(`How many ${part.name} to make?`, 1);
   if (!answer) return;
   const quantity = Number(answer);
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1000000) throw new Error('Enter a whole number, 1 or more.');
   const id = addBuild(part, quantity);
-  offerUndo(`${quantity} ${part.name} on the print list`, () => fb.deleteBuilds([id]).catch(showError));
+  offerUndo(`${quantity} ${part.name} on the make list`, () => fb.deleteBuilds([id]).catch(showError));
 }
 
 // How many of an item to move on: all of it, or fewer when typed. 0 when cancelled.
@@ -2783,7 +2845,7 @@ async function makeBuild(build) {
   if (!part) throw new Error(`${build.name} was deleted. Bring it back from the Trash first.`);
   const count = await howMany(build, `How many ${build.name} were made?`);
   if (!count) return;
-  logged(fb.makeBuild(build, state.user, count), 'made', build.name, `+${count} from the print list`);
+  logged(fb.makeBuild(build, state.user, count), 'made', build.name, `+${count} from the make list`);
 }
 
 function removeBuild(build) {
@@ -2798,7 +2860,7 @@ function clearMade(builds) {
   offerUndo(`Cleared ${count(builds.length, 'complete item')}`, () => Promise.all(builds.map(({ id, ...build }) => fb.saveBuild(id, build))).catch(showError));
 }
 
-// Prints one tab of the print list as a table.
+// Prints one tab of the make list as a table.
 function printBuilds(tab, builds) {
   const headers = ['Part', 'Part #', 'Qty', 'Made by', 'Material', 'Notes'];
   const rows = builds.map((b) => {
@@ -2806,14 +2868,14 @@ function printBuilds(tab, builds) {
     return [b.name, part?.partNumber ?? '', String(b.quantity), MADE[part?.made] ?? '', part?.material ?? '', b.notes ?? ''];
   });
   const title = BUILD_TABS.find(([key]) => key === tab)[1];
-  printSheet(`Print list: ${title}`, `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, [['', rows]]);
+  printSheet(`Make list: ${title}`, `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, [['', rows]]);
 }
 
 async function deleteProject(current) {
   if (!current.source && inventoryParts(current.id).length) throw new Error(`Delete the parts in ${current.name} first.`);
   const note = current.source ? ' Its parts stay in their inventories.' : '';
   const type = TYPES[typeOf(current)].label.toLowerCase();
-  if (!confirm(`Delete the ${type} "${current.name}"?${note} You can bring it back from Trash for ${TRASH_DAYS} days.`)) return;
+  if (!await askConfirm(`Delete the ${type} "${current.name}"?${note} You can bring it back from Trash for ${TRASH_DAYS} days.`, 'Delete', { danger: true })) return;
   if (current === currentProject()) switchProject(fb.MAIN_PROJECT);
   const { id, ...data } = current;
   const uses = state.uses.filter((u) => u.projectId === id).map(useData);
@@ -2963,7 +3025,7 @@ function openPartDialog(part, carry = null, note = '') {
         </div>
       </label>
       ${input('quantity', 'Quantity', 'type="number" min="0" step="1" required')}
-      ${input('minQuantity', 'Low stock at', 'type="number" min="0" max="1000000" step="1" placeholder="Flag at this many free or fewer (optional)"')}
+      ${input('minQuantity', 'Low stock at', 'type="number" min="0" max="1000000" step="1" placeholder="Optional"')}
       <label>Location
         <select name="location">
           <option value="">No location</option>
@@ -2977,7 +3039,7 @@ function openPartDialog(part, carry = null, note = '') {
       </div>
       <label>Made by
         <select name="made">
-          ${Object.entries({ '': 'Bought', ...MADE }).map(([value, label]) =>
+          ${Object.entries({ '': 'Vendor', ...MADE }).map(([value, label]) =>
             `<option value="${value}" ${value === (values?.made ?? '') ? 'selected' : ''}>${label}</option>`).join('')}
         </select>
       </label>
@@ -3107,7 +3169,7 @@ function openPartDialog(part, carry = null, note = '') {
 
   form.onsubmit = (e) => {
     const action = e.submitter.value;
-    if (action === 'delete' && confirm(deleteMessage(part))) deletePart(part);
+    if (action === 'delete') askConfirm(deleteMessage(part), 'Delete', { danger: true }).then((yes) => yes && deletePart(part));
     if (action !== 'save' && action !== 'next') return;
     const data = Object.fromEntries([...FIELDS, ...DETAIL_FIELDS].map(([key]) => [key, form[key].value.trim()]));
     data.quantity = Number(data.quantity);
@@ -3125,12 +3187,16 @@ function openPartDialog(part, carry = null, note = '') {
     if (form.made.value) data.made = form.made.value;
     if (form.made.value && form.material.value.trim()) data.material = form.material.value.trim();
     if (part) return editPart(part, data);
-    if (!confirmDuplicate(data)) return e.preventDefault();
-    addPart(data);
-    if (action !== 'next') return;
+    // A part like one already in the project asks first, over the form, so going back keeps what was typed.
     e.preventDefault();
-    const kept = Object.fromEntries(CARRIED_FIELDS.map((key) => [key, data[key]]));
-    openPartDialog(null, { ...kept, added: (carry?.added ?? 0) + 1 });
+    const duplicate = duplicateQuestion(data);
+    (duplicate ? askConfirm(duplicate, 'Add anyway') : Promise.resolve(true)).then((yes) => {
+      if (!yes) return;
+      addPart(data);
+      if (action !== 'next') return dialog.close();
+      const kept = Object.fromEntries(CARRIED_FIELDS.map((key) => [key, data[key]]));
+      openPartDialog(null, { ...kept, added: (carry?.added ?? 0) + 1 });
+    });
   };
   if (!dialog.open) dialog.showModal();
   showMarked(spotBox);
@@ -3170,13 +3236,13 @@ function watchNewLocation(select) {
 const locationNames = (part) =>
   [...new Set([...state.locations.map((l) => l.name), part?.location])].filter(Boolean).sort(naturalCompare);
 
-// Asks before adding a part that looks like one already in the project.
-function confirmDuplicate(data) {
+// The question to ask before adding a part that looks like one already in the project, or null.
+function duplicateQuestion(data) {
   const twin = inventoryParts(data.projectId).find((p) =>
     sameName(p.name, data.name) || (data.partNumber && p.partNumber === data.partNumber));
-  if (!twin) return true;
+  if (!twin) return null;
   const where = [twin.location, `qty ${twin.quantity}`].filter(Boolean).join(', ');
-  return confirm(`A part named ${twin.name} already exists in this project (${where}). Add it anyway?`);
+  return `A part named ${twin.name} already exists in this project (${where}). Add it anyway?`;
 }
 
 function deleteMessage(part) {
@@ -3278,11 +3344,11 @@ function trashPart(part, details) {
 }
 
 // Removing an order can also remove the part it would leave behind with nothing in it.
-function trashOrder(order) {
+async function trashOrder(order) {
   const { id, ...data } = order;
   const entry = { kind: 'order', docId: id, name: order.name, data, uses: [] };
   const part = emptyPartOf(order);
-  const partEntry = part && confirm(`Also remove ${part.name} from ${project(part.projectId).name}? None are in stock.`)
+  const partEntry = part && await askConfirm(`Also remove ${part.name} from ${project(part.projectId).name}? None are in stock.`, 'Remove it too', { no: 'Keep it' })
     ? trashPart(part, 'Removed with its order') : null;
   fb.moveToTrash(entry, state.user).catch(showError);
   // The part comes back first, because an order can only be for a part that exists.
@@ -3412,7 +3478,7 @@ async function openTrashDialog() {
   list.onclick = (e) => {
     const { restore: restoreIndex, forever } = e.target.dataset;
     if (restoreIndex) restore(entries[restoreIndex]);
-    if (forever && confirm(`Delete "${entries[forever].name}" for good? This can't be undone.`)) deleteForever(entries[forever]);
+    if (forever) askConfirm(`Delete "${entries[forever].name}" for good? This can’t be undone.`, 'Delete forever', { danger: true }).then((yes) => yes && deleteForever(entries[forever]));
   };
   dialog.addEventListener('close', stop, { once: true });
   dialog.showModal();
@@ -3440,7 +3506,7 @@ function openBulkEditDialog() {
       <h2>Edit ${countParts(parts.length)}</h2>
       <label>Location
         <select name="location">
-          <option value="${KEEP}">Keep each part's location</option>
+          <option value="${KEEP}">Keep each part’s location</option>
           <option value="">No location</option>
           ${locationNames().map((name) => `<option>${esc(name)}</option>`).join('')}
           <option value="${NEW_OPTION}">+ New location…</option>
@@ -3448,14 +3514,14 @@ function openBulkEditDialog() {
       </label>
       <label>Category
         <select name="category">
-          <option value="${KEEP}">Keep each part's category</option>
+          <option value="${KEEP}">Keep each part’s category</option>
           <option value="">No category</option>
           ${categoryPaths(state.parts).map((c) => `<option value="${esc(c)}">${esc(categoryLabel(c))}</option>`).join('')}
           <option value="${NEW_OPTION}">+ New category…</option>
         </select>
       </label>
       <label>Low stock at
-        <input name="minQuantity" type="number" min="0" max="1000000" step="1" placeholder="Keep each part's" />
+        <input name="minQuantity" type="number" min="0" max="1000000" step="1" placeholder="Keep each part’s value" />
       </label>
       <div class="field">Tags
         <div id="bulk-tags" class="tags"></div>
@@ -3480,7 +3546,7 @@ function openBulkEditDialog() {
       ...allTags(parts).filter((t) => !add.includes(t)).map((t) => (remove.includes(t)
         ? chip(t, 'Keep', esc(t), ' removed')
         : chip(t, 'Remove from selected parts:', `${esc(t)}${TAG_X}`))),
-      ...add.map((t) => chip(t, "Don't add", `+ ${esc(t)}${TAG_X}`)),
+      ...add.map((t) => chip(t, "Don’t add", `+ ${esc(t)}${TAG_X}`)),
     ].join('');
     addTag.innerHTML = '<option value="">Add a tag…</option>' +
       allTags(state.parts).filter((t) => !add.includes(t) && !remove.includes(t)).map((t) => `<option>${esc(t)}</option>`).join('') +
@@ -3566,11 +3632,11 @@ function openLogDialog() {
   dialog.showModal();
 }
 
-const FOLLOW_GITHUB = `You can follow the app's development on <a href="${SOURCE_URL}" target="_blank" rel="noopener">GitHub</a>.`;
+const FOLLOW_GITHUB = `You can follow the app’s development on <a href="${SOURCE_URL}" target="_blank" rel="noopener">GitHub</a>.`;
 
 // Bug reports and feature requests go to the app's developer, not the team (see hub.js).
 const openFeatureRequest = () => openSendDialog({
-  title: 'Request a feature', label: 'What would you like the app to do?', placeholder: 'What you want to do and how it would help your team',
+  title: 'Request feature', label: 'What would you like the app to do?', placeholder: 'What you want to do and how it would help your team',
   goal: 'implement your feature', sent: 'Request submitted', send: sendFeatureRequest,
 });
 
@@ -3579,7 +3645,7 @@ function openSendDialog({ title, label, placeholder, goal, sent, send }) {
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>${title}</h2>
-      <p class="muted small">This will be logged on the developer's server with your team name and app version. Please don't include personal info. I will do my best to ${goal}. ${FOLLOW_GITHUB}</p>
+      <p class="muted small">Sent to the developer with your team name and app version. Please don’t include personal info.</p>
       <label>${label}<textarea name="text" rows="6" maxlength="5000" required placeholder="${placeholder}"></textarea></label>
       <div class="row">
         <button value="send">Send</button>
@@ -3645,7 +3711,7 @@ async function openTeamDialog() {
   const link = `${WEB_URL}#join=${code}`;
   dialog.innerHTML = `
     <form method="dialog" class="card">
-      <h2>Invite teammates</h2>
+      <h2>Team</h2>
       <canvas id="qr"></canvas>
       <div class="field">Join code
         <div class="password">
@@ -3675,7 +3741,7 @@ async function openTeamDialog() {
 
   dialog.querySelector('#save-name').onclick = async () => {
     const name = dialog.querySelector('#my-name').value.trim();
-    if (!name) return showError(new Error('Your name can\'t be empty.'));
+    if (!name) return showError(new Error('Your name can’t be empty.'));
     await fb.setMyName(state.user.uid, name).catch(showError);
   };
   const list = dialog.querySelector('#members');
@@ -3695,11 +3761,11 @@ async function openTeamDialog() {
     // Removing someone also replaces the join code, so the code they still have can't get them back in.
     list.onclick = async (e) => {
       const { uid, name } = e.target.dataset;
-      if (!uid || !confirm(`Remove ${name} from the team? This also makes a new join code.`)) return;
+      if (!uid || !await askConfirm(`Remove ${name} from the team? This also makes a new join code.`, 'Remove', { danger: true })) return;
       await fb.removeMember(uid, newSecret()).then(reopenTeamDialog).catch(showError);
     };
     dialog.querySelector('#reset-code').onclick = async () => {
-      if (confirm('Make a new join code? The old code and link will stop working.')) await fb.setTeamSecret(newSecret()).then(reopenTeamDialog).catch(showError);
+      if (await askConfirm('Make a new join code? The old code and link will stop working.', 'Reset join code', { danger: true })) await fb.setTeamSecret(newSecret()).then(reopenTeamDialog).catch(showError);
     };
     dialog.querySelector('#delete-team').onclick = () => deleteTeam().catch(showError);
   }
@@ -3709,11 +3775,11 @@ async function openTeamDialog() {
 // Like ask(), with an optional reason that goes to the developer with the deleted team (see hub.js).
 // Resolves to the form, or null if cancelled.
 function askDeleteTeam() {
-  const dialog = app.querySelector('#ask');
+  const dialog = document.getElementById('ask');
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <label>Delete your team? Type your team number to confirm, e.g. FTC 12345.<input name="team" /></label>
-      <label>Why are you leaving? (optional)<textarea name="reason" rows="3" maxlength="1000" placeholder="This is logged to a central server. Please don't include personal info."></textarea></label>
+      <label>Why are you leaving? (optional)<textarea name="reason" rows="3" maxlength="1000" placeholder="This is logged to a central server. Please don’t include personal info."></textarea></label>
       <div class="row">
         <button value="ok">OK</button>
         <button value="cancel" formnovalidate class="secondary">Cancel</button>
@@ -3739,13 +3805,13 @@ async function deleteTeam() {
   if (!ownerKey) throw new Error('This team isn’t on the central server’s list of active teams.');
   await recordDeletedTeam(program, Number(match[2]), ownerKey, form.reason.value.trim()).catch((error) => {
     if (error.code !== 'permission-denied') throw error;
-    throw new Error(`${program} team ${match[2]} isn't on the central server's list of active teams.`);
+    throw new Error(`${program} team ${match[2]} isn’t on the central server’s list of active teams.`);
   });
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>Team deleted</h2>
-      <p>To erase your inventory and everyone's accounts, delete your Firebase project: open it, scroll to the bottom and click <strong>Delete project</strong>.</p>
+      <p>To erase your inventory and everyone’s accounts, delete your Firebase project: open it, scroll to the bottom and click <strong>Delete project</strong>.</p>
       <p><a href="https://console.firebase.google.com/project/${esc(state.connection.config.projectId)}/settings/general" target="_blank" rel="noopener">Open your Firebase project</a></p>
       <div class="row"><button value="done">Done</button></div>
     </form>`;
@@ -3773,7 +3839,7 @@ async function registerTeam(user) {
   }
   await recordTeam(teamName, program, teamNumber, config.projectId, ownerKey).catch((error) => {
     if (error.code !== 'permission-denied') throw error;
-    throw new Error(`${program} team ${teamNumber} is already on the central server's team list, so teammates can't sign in by team number. They can still join with the join code. Use Report bug to get it fixed.`);
+    throw new Error(`${program} team ${teamNumber} is already on the central server’s team list, so teammates can’t sign in by team number. They can still join with the join code. Use Report bug to get it fixed.`);
   });
 }
 
@@ -3785,7 +3851,7 @@ async function joinFromLink() {
   const current = state.connection;
   // Already on this team: keep the secret, so someone new on this device can join with it.
   if (current?.config.projectId === joining.config.projectId) return saveConnection({ ...current, secret: joining.secret });
-  if (current && !confirm(`Switch from ${current.teamName} to ${joining.teamName}?`)) return;
+  if (current && !await askConfirm(`Switch from ${current.teamName} to ${joining.teamName}?`, 'Switch team')) return;
   saveConnection({ ...joining, role: 'member' });
 }
 
@@ -3832,7 +3898,7 @@ async function start() {
       await joinFromLink();
       labelFromLink();
     } catch (error) {
-      alert(error.message);
+      showMessage('Couldn’t open the link', esc(error.message));
     }
     if (!state.connection) return renderWelcome();
   }
@@ -3859,7 +3925,7 @@ async function start() {
         // The owner's first sign-in creates the team, which only the app's rules allow.
         : creating ? errorWithLink('Your Firebase project doesn’t have the app’s rules yet (setup step 3). Publish them, then sign in.',
           `${SETUP_URL}#3-create-the-database`, 'Show me how')
-          : new Error(`Couldn't join ${state.connection.teamName}. Ask your team admin for a fresh join code.`);
+          : new Error(`Couldn’t join ${state.connection.teamName}. Ask your team admin for a fresh join code.`);
       await fb.logOut();
       return;
     }
@@ -3890,7 +3956,7 @@ async function start() {
         state.picker?.();
         state.onOrdersChange?.();
       }, onError),
-      // Teams whose published rules are older than the print list can't read it yet; the rules banner asks for an update.
+      // Teams whose published rules are older than the make list can't read it yet; the rules banner asks for an update.
       fb.watchBuilds((docs) => {
         state.builds = docs;
         renderRows();

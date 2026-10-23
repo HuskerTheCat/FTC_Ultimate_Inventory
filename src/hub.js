@@ -46,7 +46,7 @@ export const teamProject = async (program, number) =>
 // Lets teammates sign in on a new device with their team number instead of a join code.
 export async function findTeamProject(program, number) {
   const projectId = await teamProject(program, number);
-  if (!projectId) throw new Error(`${program} team ${number} can't sign in by number yet. Join with your team's join code instead. Team admins can sign in from Set up a new team.`);
+  if (!projectId) throw new Error(`${program} team ${number} can’t sign in by number yet. Join with your team’s join code instead. Team admins can sign in from Set up a new team.`);
   return projectId;
 }
 

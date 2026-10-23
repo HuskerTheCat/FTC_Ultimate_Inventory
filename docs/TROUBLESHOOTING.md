@@ -22,16 +22,16 @@ Examples use the team **12345 Example Team**; your app shows your own.
 
 ### Offline
 
-![Offline, changes will sync when you reconnect](help/offline-banner.png)
+![Offline. Changes sync when you reconnect.](help/offline-banner.png)
 
 No internet. Keep working: changes are saved on the device and sent when it's back online. Signing in and joining need the internet.
 
 ### New version available
 
-![New version available, tap to refresh](help/update-banner.png)
+![New version available. Refresh →](help/update-banner.png)
 
-- **Website:** tap **New version available, tap to refresh**.
-- **Windows and Android:** tap **Update available (v0.6.0), tap to download**, then install the new installer or APK over the old app. See [Installing and updating](#installing-and-updating).
+- **Website:** tap **New version available. Refresh →**.
+- **Windows and Android:** tap **Update available (v0.6.0). Download →**, then install the new installer or APK over the old app. See [Installing and updating](#installing-and-updating).
 
 Your inventory lives in your team's Firebase project, so updating never loses it.
 
@@ -41,15 +41,15 @@ Your inventory lives in your team's Firebase project, so updating never loses it
 
 A message from the developer to every team, such as planned downtime. Tap **×** to close it until the next message.
 
-### Your Firebase rules are out of date
+### Firebase rules out of date
 
-![Your Firebase rules are out of date, click for update instructions](help/rules-banner.png)
+![Firebase rules out of date. How to update →](help/rules-banner.png)
 
 New features need newer security rules in your team's Firebase project. Only your admin can fix it: tap the banner for the steps, or send them [Updating the rules](../SETUP.md#updating-the-rules). No data changes. Until then, new features may fail with **The server didn't allow that change**.
 
-### Your Firebase is configured incorrectly
+### Your Firebase isn’t secure
 
-![Your Firebase is configured incorrectly and your account is not secure. Click here to fix](help/open-rules-banner.png)
+![Your Firebase isn’t secure. How to fix →](help/open-rules-banner.png)
 
 Your Firebase project isn't using the app's rules (for example, test mode), so anyone could read your inventory and members' emails. Your admin should publish the rules right away: tap the banner or see [Updating the rules](../SETUP.md#updating-the-rules).
 
@@ -177,9 +177,9 @@ Your rules are older than the app. Your admin needs to [update them](../SETUP.md
 
 This device hasn't saved the data for offline use. Try again once the Offline banner is gone.
 
-### "Couldn't open the camera"
+### "Camera access is blocked" or "No camera found on this device"
 
-Allow camera access. If you said no before: in Chrome or Edge, tap the icon left of the address; on Android, **Settings → Apps → FTC Ultimate Inventory → Permissions**; on Windows, **Settings → Privacy & security → Camera**. Close other apps using the camera.
+Allow camera access. If you said no before: in Chrome or Edge, tap the icon left of the address; on Android, **Settings → Apps → FTC Ultimate Inventory → Permissions**; on Windows, **Settings → Privacy & security → Camera**. Close other apps using the camera. **No camera found** means the device has none: scan with your phone instead.
 
 ### "Couldn't load the scanner. Check your internet connection and try again."
 
