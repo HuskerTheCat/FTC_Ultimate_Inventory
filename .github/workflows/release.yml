@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           awk -v v="## v$VERSION" 'index($0, v " ") == 1 || $0 == v { on = 1; next } /^## / { on = 0 } on' WHATS-NEW.md > notes.md
-          grep -q '[^[:space:]]' notes.md || { echo "WHATS-NEW.md has no '## v$VERSION' section. Rename 'Next update' to 'v$VERSION · <date>' first."; exit 1; }
+          grep -q '[^[:space:]]' notes.md || { echo "WHATS-NEW.md has no '## v$VERSION' section. Add '## v$VERSION · <date>' at the top first."; exit 1; }
         env:
           VERSION: ${{ inputs.version }}
       - uses: actions/upload-artifact@v4
