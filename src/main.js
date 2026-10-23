@@ -635,7 +635,7 @@ function renderInventory() {
       <div class="row">
         <span class="muted small">Sort</span>
         <select id="sort" aria-label="Sort by"></select>
-        <button id="sort-dir" class="secondary" aria-label="Reverse sort order">▾</button>
+        <button id="sort-dir" class="secondary" aria-label="Reverse sort order">Ascending</button>
         <select id="group" aria-label="Group by">
           <option value="">No grouping</option>
           <option value="category">Group by category</option>
@@ -934,7 +934,7 @@ function columnsFor(current) {
 function renderViewBar(columns) {
   app.querySelector('#sort').innerHTML = [...columns, ['updatedAt', 'Recently changed']].map(([key, label]) =>
     `<option value="${key}" ${key === state.sort ? 'selected' : ''}>Sort: ${label}</option>`).join('');
-  app.querySelector('#sort-dir').textContent = state.sortDir > 0 ? '▾' : '▴';
+  app.querySelector('#sort-dir').textContent = state.sortDir > 0 ? 'Ascending' : 'Descending';
   app.querySelector('#group').value = state.group;
   const selecting = Boolean(state.selected);
   app.querySelector('#select').hidden = selecting;
@@ -1598,7 +1598,7 @@ const conditionBadge = (condition) => ['used', 'broken'].includes(condition)
 // line under the name. Supplier and category are left to the part dialog there.
 // Each piece is its own span, so a line breaks between pieces instead of inside a part number.
 const cardMeta = (p, withInventory) => [[p.location, findButton(p)], [withInventory && inventoryNote(p)], [p.partNumber]]
-  .filter(([text]) => text).map(([text, html = '']) => `<span>${esc(text)}${html}</span>`).join(' · ');
+  .filter(([text]) => text).map(([text, html = '']) => `<span>${esc(text)}${html}</span>`).join('');
 // The part's link, in the Part # column, which phones' short cards leave out.
 const partLink = (p) => p.link ? `<a class="part-link small" href="${esc(p.link)}" target="_blank" rel="noopener" aria-label="Link: ${esc(p.name)}">Link ↗</a>` : '';
 const notesLine = (notes) => notes ?`<div class="notes muted small">${esc(notes.split('\n')[0])}</div>` : '';
@@ -2007,33 +2007,101 @@ function openProjectDialog() {
   dialog.showModal();
 }
 
+// The two boxes that add a location: a plain one, or grid storage with its rows and columns.
+const locationAdders = (open = false) => `
+  <div class="adders">
+    <details class="adder collapsible"${open ? ' open' : ''}>
+      <summary>+ Add location</summary>
+      <div class="password">
+        <input id="new-location" maxlength="200" placeholder="Bin or shelf, e.g. Bin 3" aria-label="Location name" />
+        <button type="button" id="add-location">Add</button>
+      </div>
+    </details>
+    <details class="adder collapsible"${open ? ' open' : ''}>
+      <summary>+ Add grid</summary>
+      <input id="new-grid-name" maxlength="200" placeholder="Name, e.g. Drawer cabinet" aria-label="Grid name" />
+      <div class="password">
+        <input id="new-grid-rows" type="number" min="1" max="${GRID_MAX.rows}" placeholder="Rows" aria-label="Rows" />
+        <input id="new-grid-cols" type="number" min="1" max="${GRID_MAX.cols}" placeholder="Columns" aria-label="Columns" />
+        <button type="button" id="add-grid">Create</button>
+      </div>
+    </details>
+    <p class="adder-error small" role="alert" hidden></p>
+  </div>`;
+
+// Wires the boxes from locationAdders inside root. onAdded gets the new location's name.
+function watchLocationAdders(root, onAdded) {
+  const input = root.querySelector('#new-location');
+  const gridName = root.querySelector('#new-grid-name');
+  const gridRows = root.querySelector('#new-grid-rows');
+  const gridCols = root.querySelector('#new-grid-cols');
+  const errorLine = root.querySelector('.adder-error');
+  // Shown in the dialog, since the page's error banner sits behind it.
+  const fail = (message) => Object.assign(errorLine, { textContent: message, hidden: false });
+  const taken = (name) => state.locations.some((l) => sameName(l.name, name));
+  const add = () => {
+    const name = input.value.trim();
+    if (!name) return;
+    if (taken(name)) return fail(`${name} is already a location.`);
+    input.value = '';
+    errorLine.hidden = true;
+    fb.addLocation(name).catch(showError);
+    onAdded(name);
+  };
+  const addGrid = () => {
+    const name = gridName.value.trim();
+    if (!name) return gridName.focus();
+    if (taken(name)) return fail(`${name} is already a location.`);
+    const grid = gridOf(gridRows.value, gridCols.value);
+    if (!grid) return fail(GRID_SIZE_HELP);
+    gridName.value = gridRows.value = gridCols.value = '';
+    errorLine.hidden = true;
+    fb.addLocation(name, grid).catch(showError);
+    onAdded(name);
+  };
+  root.querySelector('#add-location').onclick = add;
+  root.querySelector('#add-grid').onclick = addGrid;
+  const onEnter = (action) => (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    action();
+  };
+  input.onkeydown = onEnter(add);
+  gridName.onkeydown = onEnter(() => gridRows.focus());
+  gridRows.onkeydown = onEnter(() => gridCols.focus());
+  gridCols.onkeydown = onEnter(addGrid);
+}
+
+// Over the dialog that's open, the same boxes as in Locations. Resolves with the added location's name, or '' if cancelled.
+function askNewLocation() {
+  const dialog = app.querySelector('#ask');
+  dialog.innerHTML = `
+    <form method="dialog" class="card locations">
+      <h2>New location</h2>
+      ${locationAdders(true)}
+      <div class="row"><button value="cancel" formnovalidate class="secondary">Cancel</button></div>
+    </form>`;
+  dialog.returnValue = ''; // Escape keeps the last returnValue
+  let added = '';
+  watchLocationAdders(dialog, (name) => {
+    added = name;
+    dialog.close();
+  });
+  dialog.showModal();
+  dialog.querySelector('#new-location').focus();
+  return new Promise((resolve) => dialog.addEventListener('close', () => resolve(added), { once: true }));
+}
+
 // A location can only be deleted once no part in any project is there.
 function openLocationsDialog() {
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `
     <form method="dialog" class="card locations">
       <h2>Locations</h2>
-      <div class="adders">
-        <div class="adder">
-          <label for="new-location">Add a location</label>
-          <div class="password">
-            <input id="new-location" maxlength="200" placeholder="Bin or shelf, e.g. Bin 3" />
-            <button type="button" id="add-location">Add</button>
-          </div>
-        </div>
-        <div class="adder">
-          <label for="new-grid-name">Add grid storage</label>
-          <input id="new-grid-name" maxlength="200" placeholder="Name, e.g. Drawer cabinet" />
-          <div class="password">
-            <input id="new-grid-size" autocomplete="off" placeholder="Rows x columns, e.g. 4x7" aria-label="Grid size" />
-            <button type="button" id="add-grid">Create</button>
-          </div>
-        </div>
-      </div>
+      ${locationAdders()}
       <ul id="location-list" class="members"></ul>
       <div class="row"><button value="close" class="secondary">Close</button></div>
     </form>`;
-  const input = dialog.querySelector('#new-location');
   const list = dialog.querySelector('#location-list');
   const renderLocations = () => {
     list.innerHTML = state.locations.map((l) => {
@@ -2049,35 +2117,7 @@ function openLocationsDialog() {
       </li>`;
     }).join('') || '<li class="muted">No locations yet.</li>';
   };
-  const gridName = dialog.querySelector('#new-grid-name');
-  const gridSizeInput = dialog.querySelector('#new-grid-size');
-  const taken = (name) => state.locations.some((l) => sameName(l.name, name));
-  const add = () => {
-    const name = input.value.trim();
-    if (!name) return;
-    if (taken(name)) return showError(new Error(`${name} is already a location.`));
-    input.value = '';
-    fb.addLocation(name).catch(showError);
-  };
-  const addGrid = () => {
-    const name = gridName.value.trim();
-    if (!name) return gridName.focus();
-    if (taken(name)) return showError(new Error(`${name} is already a location.`));
-    const grid = parseGridSize(gridSizeInput.value);
-    if (!grid) return showError(new Error(GRID_SIZE_HELP));
-    gridName.value = gridSizeInput.value = '';
-    fb.addLocation(name, grid).catch(showError);
-  };
-  dialog.querySelector('#add-location').onclick = add;
-  dialog.querySelector('#add-grid').onclick = addGrid;
-  const onEnter = (action) => (e) => {
-    if (e.key !== 'Enter') return;
-    e.preventDefault();
-    action();
-  };
-  input.onkeydown = onEnter(add);
-  gridName.onkeydown = onEnter(() => gridSizeInput.focus());
-  gridSizeInput.onkeydown = onEnter(addGrid);
+  watchLocationAdders(dialog, () => {});
   list.onclick = (e) => {
     const { id, count } = e.target.dataset;
     if (id && count) return showMessage(`${state.locations.find((l) => l.id === id).name} still has parts`, `Move its ${count === '1' ? 'part' : `${count} parts`} to another location first.`);
@@ -2100,14 +2140,14 @@ const GRID_MAX = { rows: 26, cols: 50 }; // as in the rules
 const spotName = (row, col) => `${String.fromCharCode(65 + row)}${col + 1}`;
 const gridSize = (location) => (location.rows ? { rows: location.rows, cols: location.cols } : null);
 const gridLocation = (name) => state.locations.find((l) => l.name === name && l.rows);
-const GRID_SIZE_HELP = `Type the size as rows x columns, like 4x7, up to ${GRID_MAX.rows}x${GRID_MAX.cols}.`;
+const GRID_SIZE_HELP = `Enter rows (1 to ${GRID_MAX.rows}) and columns (1 to ${GRID_MAX.cols}).`;
 const sizeText = (grid) => `${grid.rows}x${grid.cols}`;
 
-// { rows, cols } from a size typed like "4x7", "4 x 7" or "4×7", or null when it isn't one the grid can have.
-function parseGridSize(text) {
-  const match = /^\s*(\d+)\s*[x×*]\s*(\d+)\s*$/i.exec(text);
-  const [rows, cols] = match ? [Number(match[1]), Number(match[2])] : [0, 0];
-  return rows >= 1 && rows <= GRID_MAX.rows && cols >= 1 && cols <= GRID_MAX.cols ? { rows, cols } : null;
+// { rows, cols } from the two number boxes, or null when it isn't a size the grid can have.
+function gridOf(rowsText, colsText) {
+  const [rows, cols] = [Number(rowsText), Number(colsText)];
+  const fits = (n, max) => Number.isInteger(n) && n >= 1 && n <= max;
+  return fits(rows, GRID_MAX.rows) && fits(cols, GRID_MAX.cols) ? { rows, cols } : null;
 }
 
 // Whether a spot like "C12" is on the location's grid.
@@ -2162,7 +2202,8 @@ function openGridDialog(start, part = null, spot = part?.spot ?? '') {
       <div class="grid-box"></div>
       <ul class="members spot-parts"></ul>
       ${finding ? '' : `<div class="grid-size">
-        <label>Size, rows x columns<input name="size" autocomplete="off" value="${sizeText(start)}" /></label>
+        <label>Rows<input name="rows" type="number" min="1" max="${GRID_MAX.rows}" value="${start.rows}" /></label>
+        <label>Columns<input name="cols" type="number" min="1" max="${GRID_MAX.cols}" value="${start.cols}" /></label>
         <button value="size" class="secondary">Save size</button>
         <button value="remove" class="secondary">Remove grid</button>
       </div>`}
@@ -2203,7 +2244,7 @@ function openGridDialog(start, part = null, spot = part?.spot ?? '') {
     const action = e.submitter.value;
     if (action !== 'size' && action !== 'remove') return;
     e.preventDefault();
-    const grid = action === 'size' ? parseGridSize(form.size.value) : null;
+    const grid = action === 'size' ? gridOf(form.rows.value, form.cols.value) : null;
     if (action === 'size' && !grid) return showError(new Error(GRID_SIZE_HELP));
     const location = state.locations.find((l) => l.id === start.id);
     // Parts keep their spot, so a grid can only lose spots that have no parts.
@@ -2244,18 +2285,20 @@ function openOrdersDialog() {
       </div>
       <ul id="order-list" class="members"></ul>
       <button type="button" id="clear-arrived" class="link" hidden>Clear arrived</button>
-      <h2 id="order-form-title">Add to the order list</h2>
-      <input name="name" maxlength="200" list="order-parts" placeholder="Item, or pick a part you already have" />
-      <datalist id="order-parts">${sorted(state.parts.map((p) => p.name)).map((n) => `<option value="${esc(n)}">`).join('')}</datalist>
-      <div class="row order-fields">
-        <input name="quantity" type="number" min="1" step="1" value="1" aria-label="Quantity" />
-        <input name="partNumber" maxlength="200" placeholder="Part #" />
-        <input name="supplier" maxlength="200" placeholder="Supplier" />
-      </div>
-      <input name="link" maxlength="1000" inputmode="url" placeholder="Item link (optional)" />
-      <input name="notes" maxlength="1000" placeholder="Notes (optional)" />
+      <details id="order-form" class="collapsible">
+        <summary id="order-form-title">+ Add item</summary>
+        <input name="name" maxlength="200" list="order-parts" placeholder="Item, or pick one you have" />
+        <datalist id="order-parts">${sorted(state.parts.map((p) => p.name)).map((n) => `<option value="${esc(n)}">`).join('')}</datalist>
+        <div class="row order-fields">
+          <input name="quantity" type="number" min="1" step="1" value="1" aria-label="Quantity" />
+          <input name="partNumber" maxlength="200" placeholder="Part #" />
+          <input name="supplier" maxlength="200" placeholder="Supplier" />
+        </div>
+        <input name="link" maxlength="1000" inputmode="url" placeholder="Item link (optional)" />
+        <input name="notes" maxlength="1000" placeholder="Notes (optional)" />
+      </details>
       <div class="row">
-        <button value="add" id="save-order">Add</button>
+        <button value="add" id="save-order" hidden>Add</button>
         <button type="button" id="cancel-edit" class="secondary" hidden>Cancel</button>
         <button type="button" id="print-orders" class="secondary">Print</button>
         <button value="close" formnovalidate class="secondary">Close</button>
@@ -2264,6 +2307,10 @@ function openOrdersDialog() {
   const form = dialog.querySelector('form');
   autofillFromCatalog(form);
   const list = dialog.querySelector('#order-list');
+  const orderForm = dialog.querySelector('#order-form');
+  const saveButton = dialog.querySelector('#save-order');
+  // Add only shows while the item form is open.
+  orderForm.ontoggle = () => { saveButton.hidden = !orderForm.open; };
   const printButton = dialog.querySelector('#print-orders');
   const clearButton = dialog.querySelector('#clear-arrived');
   // The tab shown: one of ORDER_TABS.
@@ -2284,8 +2331,9 @@ function openOrdersDialog() {
     form.reset();
     if (order) for (const key of ['name', 'quantity', 'partNumber', 'supplier', 'link', 'notes']) form[key].value = order[key] ?? '';
     form.name.readOnly = Boolean(order);
-    dialog.querySelector('#order-form-title').textContent = order ? `Change ${order.name}` : 'Add to the order list';
-    dialog.querySelector('#save-order').textContent = order ? 'Save' : 'Add';
+    dialog.querySelector('#order-form-title').textContent = order ? `Change ${order.name}` : '+ Add item';
+    saveButton.textContent = order ? 'Save' : 'Add';
+    if (order) orderForm.open = true;
     dialog.querySelector('#cancel-edit').hidden = !order;
     printButton.hidden = Boolean(order);
   };
@@ -2680,6 +2728,9 @@ function openPartDialog(part, carry = null, note = '') {
     renderSpot();
   };
   renderSpot();
+  // A grid made with "+ New location…" shows once the team's locations update.
+  state.onLocationsChange = renderSpot;
+  dialog.addEventListener('close', () => { state.onLocationsChange = null; }, { once: true });
   autofillFromCatalog(form);
   const photo = dialog.querySelector('.part-photo');
   photo.onerror = () => (photo.hidden = true);
@@ -2760,14 +2811,11 @@ function watchNewLocation(select) {
   let previous = select.value;
   select.addEventListener('change', async () => {
     if (select.value !== NEW_OPTION) return (previous = select.value);
-    const name = await ask('New location, e.g. Bin 3');
-    const known = state.locations.find((l) => sameName(l.name, name));
-    if (name && !known) {
-      fb.addLocation(name).catch(showError);
-      select.add(new Option(name), select.options.length - 1);
-    }
-    select.value = known?.name ?? (name || previous);
+    const name = await askNewLocation();
+    if (name) select.add(new Option(name), select.options.length - 1);
+    select.value = name || previous;
     previous = select.value;
+    if (name) select.dispatchEvent(new Event('change'));
   });
 }
 

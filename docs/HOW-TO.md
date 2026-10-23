@@ -124,13 +124,13 @@ The Filters button shows how many are on. **Reset filters** clears them.
 
 ## 5. Locations and QR labels
 
-Your team has one list of locations (bins, shelves, drawers). **☰ → Locations** adds, renames and deletes them (only empty ones) and prints a bin's label.
+Your team has one list of locations (bins, shelves, drawers). **☰ → Locations** adds, renames and deletes them (only empty ones) and prints a bin's label. **+ New location…** in a part's Location list opens the same boxes, so a grid can be made right there.
 
-<img src="how-to/locations.png" alt="The Locations list, with Add a location and Add grid storage" width="640">
+<img src="how-to/locations.png" alt="The Locations list, with + Add location and + Add grid" width="640">
 
 ### Storage grids
 
-For a cabinet of small drawers or a shelf of bins, use **Add grid storage**: type a name and its size as rows x columns, like 4x7, then tap **Create**. Spots are named by row and column: A1 is the top left, C12 the third row, twelfth column. **Edit grid** changes the size later; the app won't make it smaller while a spot it would cut off still has parts.
+For a cabinet of small drawers or a shelf of bins, tap **+ Add grid**, type a name, the number of rows and the number of columns, then tap **Create**. Spots are named by row and column: A1 is the top left, C12 the third row, twelfth column. **Edit grid** changes the size later; the app won't make it smaller while a spot it would cut off still has parts.
 
 In a part's dialog, pick the grid location, then tap the part's spot. In the list, the part shows its spot by its location. Tap that spot, or **Find part** in the part's dialog or after scanning its label, to see the grid with it highlighted. Tapping any spot in a grid lists what's in it.
 
@@ -182,7 +182,7 @@ Open **☰ → Orders** to track parts you need, have ordered, and got. The list
 
 <img src="how-to/orders.png" alt="The order list" width="440">
 
-- Add an order by typing the item or picking a part you have. A supported part number fills in the rest. Link and notes are optional. New orders go under **Need to order**.
+- Tap **+ Add item** and type the item or pick a part you have. A supported part number fills in the rest. Link and notes are optional. New orders go under **Need to order**.
 - New items appear in Main Inventory right away as **to order**, so projects and packing lists can use them early.
 - Once you've bought it, tap **Ordered** to move it to the Ordered tab.
 - When it arrives, tap **Arrived** to add it to the inventory and move it to the Arrived tab. If only some came, enter how many; the rest stays under Ordered.

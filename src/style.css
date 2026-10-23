@@ -323,7 +323,7 @@ button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised)
   left: 0;
   width: 100%;
   min-width: 260px;
-  max-height: 60dvh;
+  max-height: calc(100dvh - 120px);
   overflow: auto;
   padding: 6px;
   background: var(--raised);
@@ -603,7 +603,7 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   td.qty:not(:has(.unit)) span { grid-row: 1 / 3; }
   button.step { width: 40px; min-height: 40px; font-size: 1.25rem; }
   td.card-meta:not(:empty) { display: block; grid-column: 2 / -1; grid-row: 2; }
-  td.card-meta span { display: inline-block; }
+  td.card-meta span { display: block; }
   /* Add to always sits under the stepper, beside location and part #. The free count and the projects using the part get the full width below. */
   td[data-label="In use"] { display: contents; }
   td[data-label="In use"] .in-use { grid-column: 2 / -1; grid-row: 3; margin-top: 6px; font-size: 0.85rem; }
@@ -637,9 +637,16 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
 .members.stacked li { flex-direction: column; align-items: stretch; }
 /* Location rows: the buttons stay together, moving under the name when they don't fit beside it. */
 #location-list li { flex-wrap: wrap; }
-#location-list li > .row { flex-wrap: nowrap; margin-left: auto; }
+#location-list li > .row { flex-wrap: wrap; margin-left: auto; }
+@media (max-width: 600px) {
+  #location-list li > .row { margin-left: 0; width: 100%; gap: 6px; }
+  #location-list button { padding: 4px 10px; }
+}
 /* Order rows: details on their own line without splitting a part number, Arrived and Remove stacked the same on every row. */
 #order-list li > .row { flex-direction: column; align-items: stretch; flex-shrink: 0; }
+/* Remove is quiet until hovered, so Ordered and Arrived stand out. */
+#order-list button.danger { color: var(--muted); font-weight: 500; }
+#order-list button.danger:hover { color: var(--danger); }
 #order-list .order-text { cursor: pointer; }
 /* Need to order, Ordered and Arrived: one row of equal tabs, the shown one in the accent color like a picked filter. */
 .order-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
@@ -711,13 +718,19 @@ button.spot[aria-pressed="true"]::after { background: currentColor; opacity: 0.8
 .spot-parts li { flex-direction: column; align-items: flex-start; gap: 0; }
 .spot-parts button.link { min-height: 0; padding: 2px 0; align-self: flex-start; white-space: normal; text-align: left; font-size: 1rem; }
 .grid-size { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; padding-top: 14px; border-top: 1px solid var(--border); }
-.grid-size label { width: 170px; }
+.grid-size label { width: 100px; }
 /* Locations: one box adds a plain location, the other a grid. Side by side on computers, stacked on phones. */
 dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
-.adders { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.adder { display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--field); }
-.adder > label { font-weight: 600; color: var(--text); }
+.adders { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 12px; }
+.adder input[type="number"] { min-width: 0; padding-inline: 10px; }
+.adder { display: block; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--field); }
+.collapsible > summary { cursor: pointer; font-weight: 600; color: var(--accent); list-style: none; }
+.collapsible > summary::-webkit-details-marker { display: none; }
+/* Browsers wrap a details' content in one box, so its fields are spaced with margins instead of a flex gap. */
+.collapsible > * + :not(datalist) { margin-top: 8px; }
+.collapsible[open] > summary + * { margin-top: 12px; }
 .adder input { background: var(--surface); }
+.adder-error { grid-column: 1 / -1; margin: 0; color: var(--danger); }
 @media (max-width: 600px) { .adders { grid-template-columns: 1fr; } }
 .spot-field[hidden] { display: none; }
 .spot-field > span { color: var(--muted); }
