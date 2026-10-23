@@ -146,7 +146,7 @@ Pick a style before printing:
 
 Print at 100% scale (Actual size), not Fit to page, or the labels won't line up with the sheet. The app remembers the style you last picked on that device.
 
-The app remembers which labels are printed, so only new ones are checked. The list follows your filters, so filter to one location to print just its labels. A part's dialog has **Print label** for one.
+The app remembers which labels are printed, so only new ones are checked. The list follows your filters, so filter to one location to print just its labels. A part's dialog has **Print label** for one. To print more than one of a label, change the **×** number beside it, or type how many after **Print label**.
 
 A grid's label opens the whole grid. To print labels for its drawers too, tap **Choose spots** under it and tap the spots you want, or **All spots**. Scanning one shows that spot and what's in it.
 

@@ -1775,7 +1775,18 @@ const spotLabels = (name) => {
 // They print in the style last picked in the labels dialog.
 function printAndMark(labels) {
   printLabels(labels, localStorage.getItem(LABEL_STYLE_KEY) ?? 'normal').catch(showError);
-  fb.markPrinted(labels.filter((l) => l.key).map((l) => l.key)).catch(showError);
+  fb.markPrinted([...new Set(labels.filter((l) => l.key).map((l) => l.key))]).catch(showError);
+}
+
+const MAX_COPIES = 500;
+
+// Print label, for one part or location: asks how many copies, 1 to start with.
+async function printCopies(label) {
+  const answer = await ask(`How many copies of the ${label.title} label?`, 1);
+  if (!answer) return;
+  const copies = Number(answer);
+  if (!Number.isInteger(copies) || copies < 1 || copies > MAX_COPIES) throw new Error(`Enter a whole number from 1 to ${MAX_COPIES}.`);
+  printAndMark(Array(copies).fill(label));
 }
 
 // A scan is one of the app's own QR labels, or the barcode on a part's package.
@@ -2005,10 +2016,11 @@ function openLabelsDialog() {
   ];
   const bins = labels.length - rows.length;
   const style = localStorage.getItem(LABEL_STYLE_KEY) ?? 'normal';
-  const item = (label, i) => `<li><label>
+  // Each label prints once unless its copies are changed.
+  const item = (label, i) => `<li class="label-row"><label>
     <input type="checkbox" data-index="${i}" ${state.printed.has(label.key) ? '' : 'checked'} />
     <span>${esc(label.title)} ${state.printed.has(label.key) ? '' : '<span class="badge">Not printed</span>'}</span>
-  </label></li>`;
+  </label><span class="copies">×<input type="number" data-copies="${i}" min="1" max="${MAX_COPIES}" step="1" required value="1" aria-label="Copies of ${esc(label.title)}" /></span></li>`;
   // Under a grid location's label, its spots can be picked on the grid to print a label for each of them too.
   const chosen = new Map(locations.filter(gridLocation).map((name) => [name, new Set()]));
   const spotsItem = (name) => (chosen.has(name) ? `<li class="spot-labels" data-spots-of="${esc(name)}">
@@ -2044,12 +2056,14 @@ function openLabelsDialog() {
       </ul>
       <div class="row">
         <button value="print" id="print"></button>
-        <button value="cancel" class="secondary">Cancel</button>
+        <button value="cancel" formnovalidate class="secondary">Cancel</button>
       </div>
     </form>`;
   const boxes = [...dialog.querySelectorAll('[data-index]')];
+  // A copies box with no whole number in it counts as none until it's fixed; the form won't print until then.
+  const copies = (i) => Math.max(0, Math.floor(Number(dialog.querySelector(`[data-copies="${i}"]`).value)) || 0);
   const picked = () => [
-    ...boxes.filter((b) => b.checked).map((b) => labels[b.dataset.index]),
+    ...boxes.filter((b) => b.checked).flatMap((b) => Array(copies(b.dataset.index)).fill(labels[b.dataset.index])),
     ...[...chosen].flatMap(([name, spots]) => spotLabels(name).filter((l) => spots.has(l.title))),
   ];
   const renderSpots = (item) => {
@@ -2076,6 +2090,12 @@ function openLabelsDialog() {
   };
   renderStyle();
   dialog.querySelector('.label-list').onchange = update;
+  // Asking for more copies of a label picks it.
+  dialog.querySelector('.label-list').oninput = (e) => {
+    if (!e.target.dataset.copies) return;
+    dialog.querySelector(`[data-index="${e.target.dataset.copies}"]`).checked = true;
+    update();
+  };
   dialog.querySelector('.label-list').onclick = (e) => {
     const item = e.target.closest('[data-spots-of]');
     if (!item) return;
@@ -2267,7 +2287,7 @@ function openLocationsDialog() {
     const { id, count, label, grid, rename } = e.target.closest('button')?.dataset ?? {};
     if (id && count) return showMessage(`${state.locations.find((l) => l.id === id).name} still has parts`, `Move its ${count === '1' ? 'part' : `${count} parts`} to another location first.`);
     if (id) fb.deleteLocation(id).catch(showError);
-    if (label) printAndMark([locationLabel(label)]);
+    if (label) printCopies(locationLabel(label)).catch(showError);
     if (grid) openGridDialog(state.locations.find((l) => l.id === grid));
     if (rename) renameLocation(state.locations.find((l) => l.id === rename)).catch(showError);
   };
@@ -3086,7 +3106,7 @@ function openPartDialog(part, carry = null, note = '') {
 
   const form = dialog.querySelector('form');
   if (!part) form.quantity.value = values?.quantity ?? 0;
-  if (part) dialog.querySelector('#label').onclick = () => printAndMark([partLabel(part)]);
+  if (part) dialog.querySelector('#label').onclick = () => printCopies(partLabel(part)).catch(showError);
   dialog.querySelector('#find')?.addEventListener('click', () => findPart(part));
   dialog.querySelector('#make-more')?.addEventListener('click', () => makeMore(part).catch(showError));
   // A part the team makes has a material and a file instead of a supplier, barcode and product page.

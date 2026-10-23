@@ -719,6 +719,9 @@ input[name="name"]:read-only { color: var(--muted); }
 label.check { flex-direction: row; align-items: center; gap: 10px; font-weight: 400; }
 label.check input { width: 18px; min-height: 18px; margin: 0; accent-color: var(--accent); }
 .label-list input { width: 18px; min-height: 18px; margin: 0; accent-color: var(--accent); }
+.label-list .label-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.label-list .copies { display: flex; flex: none; align-items: center; gap: 4px; color: var(--muted); }
+.label-list .copies input { width: 3.5em; min-height: 32px; padding: 4px 8px; }
 .label-list h3 { margin: 8px 0 0; font-size: 0.9rem; color: var(--muted); }
 .label-list .spot-labels { display: flex; flex-direction: column; gap: 8px; padding-left: 28px; }
 .spot-picker { display: flex; flex-direction: column; gap: 8px; }
