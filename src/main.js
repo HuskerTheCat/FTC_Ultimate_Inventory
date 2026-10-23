@@ -180,8 +180,10 @@ const orderStatus = (order) => order.status ?? 'need';
 const ORDER_TABS = [['need', 'Need to order'], ['ordered', 'Ordered'], ['arrived', 'Arrived']];
 // Orders still to come: arrived ones are already in the inventory.
 const openOrders = () => state.orders.filter((o) => orderStatus(o) !== 'arrived');
+// How many of a part are on the order list with this status.
+const ordering = (partId, status) => state.orders.filter((o) => o.partId === partId && orderStatus(o) === status).reduce((sum, o) => sum + o.quantity, 0);
 // How many of a part the team is waiting on from the order list.
-const onOrder = (partId) => openOrders().filter((o) => o.partId === partId).reduce((sum, o) => sum + o.quantity, 0);
+const onOrder = (partId) => ordering(partId, 'need') + ordering(partId, 'ordered');
 // None of the part has arrived yet: the team has none and some are on order.
 const waiting = (partId) => onOrder(partId) > 0 && !state.parts.find((p) => p.id === partId).quantity;
 // The inventory part's free count (what projects and packed lists aren't using) is down to its "Low stock at" quantity
@@ -1584,7 +1586,12 @@ async function restoreBackup({ add, change, remove }, team, source) {
 }
 
 const lowBadge = (partId) => lowStock(partId) ? '<small class="badge low">Low stock</small>' : '';
-const orderBadge = (partId) => onOrder(partId) ? `<small class="badge on-order">${onOrder(partId)} on order</small>` : '';
+// One badge for what still needs ordering and another for what's ordered.
+const orderBadge = (partId) => [['need', 'to-order', 'to order'], ['ordered', 'on-order', 'on order']]
+  .map(([status, kind, text]) => [kind, text, ordering(partId, status)])
+  .filter(([, , n]) => n)
+  .map(([kind, text, n]) => `<small class="badge ${kind}">${n} ${text}</small>`)
+  .join('');
 const conditionBadge = (condition) => ['used', 'broken'].includes(condition)
   ? `<small class="badge ${condition}">${CONDITIONS[condition]}</small>` : '';
 // Phones show a part as a short card, with its location (and inventory, outside inventories) and part number on one
@@ -2344,7 +2351,7 @@ function openOrdersDialog() {
       ...((link || part?.link) && { link: link || part.link }),
       ...(notes && { notes }),
     };
-    // Something new is added to the inventory with none in stock, so it shows as on order and projects can use it.
+    // Something new is added to the inventory with none in stock, so it shows as to order and projects can use it.
     // The part is written first, because the rules only accept an order for a part that exists.
     if (!part) writeParts([[order.partId, orderedPart(order, 0)]], 'added', order.name, `Ordered ${quantity}`);
     fb.addOrder(order).catch(showError);

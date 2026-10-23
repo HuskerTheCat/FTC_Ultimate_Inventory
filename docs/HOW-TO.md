@@ -64,7 +64,7 @@ A new team's inventory starts with **Add your first parts** and buttons to add a
 8. **Add part.**
 9. **− and +** change the quantity by one.
 10. **Add to** puts the part in a project or packing list. **In use** shows how many are free, with a chip for each project using the part. Tap a chip to open that project.
-11. **Badges** (square, with an outline) flag parts that are **Low stock**, **on order**, used or broken. The round chips next to them are the part's tags; click one to show only parts with that tag.
+11. **Badges** (square, with an outline) flag parts that are **Low stock**, **to order** (on the order list), **on order** (ordered), used or broken. The round chips next to them are the part's tags; click one to show only parts with that tag.
 
 Click a part to open and edit it. On a computer, click a column heading to sort, and again to reverse.
 
@@ -183,7 +183,7 @@ Open **☰ → Orders** to track parts you need, have ordered, and got. The list
 <img src="how-to/orders.png" alt="The order list" width="440">
 
 - Add an order by typing the item or picking a part you have. A supported part number fills in the rest. Link and notes are optional. New orders go under **Need to order**.
-- New items appear in Main Inventory right away as **on order**, so projects and packing lists can use them early.
+- New items appear in Main Inventory right away as **to order**, so projects and packing lists can use them early.
 - Once you've bought it, tap **Ordered** to move it to the Ordered tab.
 - When it arrives, tap **Arrived** to add it to the inventory and move it to the Arrived tab. If only some came, enter how many; the rest stays under Ordered.
 - **Clear arrived** empties the Arrived tab. The parts stay in the inventory.
