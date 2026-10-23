@@ -790,11 +790,11 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
   #labels.stylized figure::before { background: linear-gradient(110deg, #0e1221 40%, #3460d6 100%); }
   #labels.stylized figure::after { background: #5b9bff; opacity: 0.35; -webkit-mask: url(./topo.svg) var(--topo-x) var(--topo-y) / 4in auto; mask: url(./topo.svg) var(--topo-x) var(--topo-y) / 4in auto; }
   #labels.stylized .qr { position: relative; z-index: 1; width: 1.11in; height: 1.11in; }
-  #labels.stylized figcaption { position: relative; z-index: 1; align-self: stretch; justify-content: center; overflow: hidden; padding-bottom: 0.14in; }
+  #labels.stylized figcaption { position: relative; z-index: 1; align-self: stretch; justify-content: center; overflow: hidden; padding-bottom: 0.2in; }
   #labels.stylized strong { font-family: Orbitron, sans-serif; font-size: 8.5pt; font-weight: 800; line-height: 1.25; letter-spacing: 0.02em; color: #fff; -webkit-line-clamp: 3; }
   #labels.stylized .short strong { font-size: 18pt; line-height: 1.15; }
   #labels.stylized span { margin-top: 3pt; font-size: 7.5pt; font-weight: 500; line-height: 1.2; color: #9cc1ff; -webkit-line-clamp: 2; }
-  #labels.stylized .cube-mark { position: absolute; z-index: 1; right: 0.07in; bottom: 0.06in; width: 0.2in; height: 0.2in; }
+  #labels.stylized .cube-mark { position: absolute; z-index: 1; right: 0.06in; bottom: 0.05in; width: 0.3in; height: 0.3in; }
 
   /* Mini: 1/2" squares to cut out, the code filling all but a thin white edge. The caption below stays on the paper. */
   #labels.mini .page { padding: 0.5in; grid-template-columns: repeat(10, 0.65in); grid-template-rows: repeat(11, 0.8in); gap: 0.05in 0.1in; justify-content: center; }

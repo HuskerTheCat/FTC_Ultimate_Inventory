@@ -49,24 +49,23 @@ function qr(url) {
   return `<svg class="qr" viewBox="0 0 ${modules.size} ${modules.size}" shape-rendering="crispEdges" aria-hidden="true"><path d="${path}"/></svg>`;
 }
 
-// A QR code in the app's look: navy modules with softened corners, blue corner eyes, on a white tile. Modules stay full
-// size and the eyes a dark blue: gaps between modules, or the brighter blue, made blurry photos on the dark label fail.
+// A QR code in the app's look: square modules shaded navy to blue, rounded blue corner eyes, on a white tile.
+// The blues stay dark: a brighter blue made blurry photos on the dark label fail.
 function brandedQr(url) {
   const { modules } = QRCode.create(url);
   const n = modules.size;
   const eyes = [[0, 0], [0, n - 7], [n - 7, 0]];
   const inEye = (r, c) => eyes.some(([er, ec]) => r >= er && r < er + 7 && c >= ec && c < ec + 7);
-  let dots = '';
+  let path = '';
   for (let r = 0; r < n; r++) {
-    for (let c = 0; c < n; c++) {
-      if (modules.get(r, c) && !inEye(r, c)) dots += `<rect x="${c}" y="${r}" width="1" height="1" rx="0.25"/>`;
-    }
+    for (let c = 0; c < n; c++) if (modules.get(r, c) && !inEye(r, c)) path += `M${c} ${r}h1v1h-1z`;
   }
   const eye = ([r, c]) => `<rect x="${c + 0.5}" y="${r + 0.5}" width="6" height="6" rx="1.8" fill="none" stroke="#1e40af"/>
     <rect x="${c + 2}" y="${r + 2}" width="3" height="3" rx="0.9" fill="#13204a"/>`;
   return `<svg class="qr" viewBox="-3 -3 ${n + 6} ${n + 6}" aria-hidden="true">
+    <defs><linearGradient id="qr-shade" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#13204a"/><stop offset="1" stop-color="#1e40af"/></linearGradient></defs>
     <rect x="-3" y="-3" width="${n + 6}" height="${n + 6}" rx="3" fill="#fff"/>
-    <g fill="#13204a">${dots}</g>${eyes.map(eye).join('')}
+    <path fill="url(#qr-shade)" d="${path}"/>${eyes.map(eye).join('')}
   </svg>`;
 }
 
