@@ -4,7 +4,7 @@ service cloud.firestore {
     // Add 1 whenever these rules change. The app is built with this number (vite.config.js) and, after sign-in,
     // reads rulesVersion/<number>; if the team's published rules are older, that's denied and the app shows a
     // banner linking to "Updating the rules" in SETUP.md.
-    function rulesVersion() { return 6; }
+    function rulesVersion() { return 7; }
 
     function signedIn() {
       return request.auth != null;
@@ -81,8 +81,9 @@ service cloud.firestore {
     }
     function validOrder() {
       let order = request.resource.data;
-      return order.keys().hasOnly(['name', 'partNumber', 'quantity', 'supplier', 'partId', 'link', 'notes'])
+      return order.keys().hasOnly(['name', 'partNumber', 'quantity', 'supplier', 'partId', 'link', 'notes', 'status'])
         && shortText(order.name) && order.name.size() > 0
+        && (!('status' in order) || order.status in ['ordered', 'arrived'])
         && (!('link' in order) || webLink(order.link))
         && (!('notes' in order) || (order.notes is string && order.notes.size() <= 1000))
         && shortText(order.partNumber)

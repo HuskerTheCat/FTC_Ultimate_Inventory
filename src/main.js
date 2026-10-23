@@ -175,8 +175,13 @@ const inventoryNote = (part) => (inventories().length > 1 ? project(part.project
 // A packing list only holds a part once it's checked off as packed.
 const holdsPart = (use) => use.packed !== false;
 const inUse = (partId) => usesOfPart(partId).filter(holdsPart).reduce((sum, u) => sum + u.quantity, 0);
+// An order is to be ordered (no status, like every order from before statuses), ordered, or arrived.
+const orderStatus = (order) => order.status ?? 'need';
+const ORDER_TABS = [['need', 'Need to order'], ['ordered', 'Ordered'], ['arrived', 'Arrived']];
+// Orders still to come: arrived ones are already in the inventory.
+const openOrders = () => state.orders.filter((o) => orderStatus(o) !== 'arrived');
 // How many of a part the team is waiting on from the order list.
-const onOrder = (partId) => state.orders.filter((o) => o.partId === partId).reduce((sum, o) => sum + o.quantity, 0);
+const onOrder = (partId) => openOrders().filter((o) => o.partId === partId).reduce((sum, o) => sum + o.quantity, 0);
 // None of the part has arrived yet: the team has none and some are on order.
 const waiting = (partId) => onOrder(partId) > 0 && !state.parts.find((p) => p.id === partId).quantity;
 // The inventory part's free count (what projects and packed lists aren't using) is down to its "Low stock at" quantity
@@ -1339,7 +1344,7 @@ function chooseBackup() {
 const NAME_FIELDS = [['name', 'Name']];
 const USE_FIELDS = [['quantity', 'Using'], ['packed', 'Packed']];
 const GRID_FIELDS = [['rows', 'Rows'], ['cols', 'Columns']];
-const ORDER_FIELDS = [['name', 'Item'], ['partNumber', 'Part #'], ['quantity', 'Qty'], ['supplier', 'Supplier'], ['link', 'Link'], ['notes', 'Notes']];
+const ORDER_FIELDS = [['name', 'Item'], ['partNumber', 'Part #'], ['quantity', 'Qty'], ['supplier', 'Supplier'], ['link', 'Link'], ['notes', 'Notes'], ['status', 'Status']];
 const useDetails = (use) => ({ quantity: use.quantity, packed: use.packed === undefined ? '' : use.packed ? 'Yes' : 'No' });
 
 // What restoring a backup does: `add` holds what's in it and not in the team. Add mode keeps everything the team has;
@@ -2196,13 +2201,18 @@ async function renameLocation(location) {
   if (edits.length) editParts(edits, 'edited', countParts(edits.length), `Location ${location.name} → ${name}`);
 }
 
-// Parts the team is waiting on. "Arrived" moves an order into the inventory. Tapping an order loads it into the form below to change it.
+// Parts the team needs, has ordered, or got, one tab each. "Ordered" moves an order to the next tab, "Arrived" adds it to the
+// inventory and keeps it under Arrived until the team clears it. Tapping an order loads it into the form below to change it.
 function openOrdersDialog() {
   const dialog = app.querySelector('#dialog');
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>Order list</h2>
+      <div class="order-tabs" role="group" aria-label="Show orders">
+        ${ORDER_TABS.map(([key, label]) => `<button type="button" class="secondary" data-tab="${key}">${label} <span class="tab-count"></span></button>`).join('')}
+      </div>
       <ul id="order-list" class="members"></ul>
+      <button type="button" id="clear-arrived" class="link" hidden>Clear arrived</button>
       <h2 id="order-form-title">Add to the order list</h2>
       <input name="name" maxlength="200" list="order-parts" placeholder="Item, or pick a part you already have" />
       <datalist id="order-parts">${sorted(state.parts.map((p) => p.name)).map((n) => `<option value="${esc(n)}">`).join('')}</datalist>
@@ -2224,7 +2234,18 @@ function openOrdersDialog() {
   autofillFromCatalog(form);
   const list = dialog.querySelector('#order-list');
   const printButton = dialog.querySelector('#print-orders');
-  printButton.onclick = printOrders;
+  const clearButton = dialog.querySelector('#clear-arrived');
+  // The tab shown: one of ORDER_TABS.
+  let tab = 'need';
+  const shown = () => sortedOrders().filter((o) => orderStatus(o) === tab);
+  printButton.onclick = () => printOrders(tab, shown());
+  clearButton.onclick = () => clearArrived(shown());
+  dialog.querySelector('.order-tabs').onclick = (e) => {
+    const button = e.target.closest('[data-tab]');
+    if (!button) return;
+    tab = button.dataset.tab;
+    renderOrders();
+  };
   // The order being changed, or null while the form adds new orders. Its item stays the same.
   let editing = null;
   const setEditing = (order) => {
@@ -2240,19 +2261,30 @@ function openOrdersDialog() {
   dialog.querySelector('#cancel-edit').onclick = () => setEditing(null);
   const renderOrders = () => {
     if (editing && !state.orders.some((o) => o.id === editing.id)) setEditing(null);
-    printButton.disabled = !state.orders.length;
-    list.innerHTML = sortedOrders().map((o) => {
+    for (const button of dialog.querySelectorAll('[data-tab]')) {
+      button.setAttribute('aria-pressed', String(button.dataset.tab === tab));
+      button.querySelector('.tab-count').textContent = state.orders.filter((o) => orderStatus(o) === button.dataset.tab).length;
+    }
+    const orders = shown();
+    printButton.disabled = !orders.length;
+    clearButton.hidden = tab !== 'arrived' || !orders.length;
+    const next = {
+      need: (o) => `<button type="button" class="secondary accent" data-ordered="${esc(o.id)}">Ordered</button>`,
+      ordered: (o) => `<button type="button" class="secondary accent" data-arrived="${esc(o.id)}">Arrived</button>`,
+      arrived: () => '',
+    }[tab];
+    list.innerHTML = orders.map((o) => {
       const part = state.parts.find((p) => p.id === o.partId);
       const details = [o.partNumber, o.supplier, part ? `have ${part.quantity}` : 'new part'].filter(Boolean).map((d) => `<span>${esc(d)}</span>`);
       if (o.link) details.push(`<a href="${esc(o.link)}" target="_blank" rel="noopener">Item link ↗</a>`);
       return `<li>
         <span class="order-text" data-edit="${esc(o.id)}"><strong>${esc(o.name)}</strong> ×${o.quantity} <span class="muted small order-details">${details.join(' · ')}</span>${o.notes ? `<span class="small order-notes">${esc(o.notes)}</span>` : ''}</span>
         <span class="row">
-          <button type="button" class="secondary accent" data-arrived="${esc(o.id)}">Arrived</button>
+          ${next(o)}
           <button type="button" class="danger" data-remove="${esc(o.id)}">Remove</button>
         </span>
       </li>`;
-    }).join('') || '<li class="muted">Nothing on order.</li>';
+    }).join('') || `<li class="muted">${{ need: 'Nothing to order.', ordered: 'Nothing on order.', arrived: 'Nothing has arrived yet.' }[tab]}</li>`;
   };
   // Adding keeps the dialog open; Enter in a field adds too.
   form.onsubmit = (e) => {
@@ -2271,6 +2303,7 @@ function openOrdersDialog() {
         name: editing.name, partId: editing.partId, quantity, partNumber: form.partNumber.value.trim(), supplier: form.supplier.value.trim(),
         ...(link && { link }),
         ...(notes && { notes }),
+        ...(editing.status && { status: editing.status }),
       };
       fb.saveOrder(id, order).catch(showError);
       offerUndo(`Changed ${editing.name}`, () => fb.saveOrder(id, before).catch(showError));
@@ -2293,9 +2326,13 @@ function openOrdersDialog() {
     fb.addOrder(order).catch(showError);
     form.reset();
     form.name.focus();
+    // New orders are still to be ordered.
+    tab = 'need';
+    renderOrders();
   };
   list.onclick = (e) => {
-    const { arrived, remove } = e.target.dataset;
+    const { ordered, arrived, remove } = e.target.dataset;
+    if (ordered) return markOrdered(state.orders.find((o) => o.id === ordered));
     if (arrived) return receiveOrder(state.orders.find((o) => o.id === arrived)).catch(showError);
     if (remove) return trashOrder(state.orders.find((o) => o.id === remove));
     const edit = e.target.closest('[data-edit]')?.dataset.edit;
@@ -2311,11 +2348,24 @@ function openOrdersDialog() {
 
 const sortedOrders = () => [...state.orders].sort((a, b) => a.name.localeCompare(b.name));
 
-// Prints the order list as a table.
-function printOrders() {
+// Prints one tab of the order list as a table.
+function printOrders(tab, orders) {
   const headers = ['Item', 'Part #', 'Qty', 'Supplier', 'Notes'];
-  const rows = sortedOrders().map((o) => [o.name, o.partNumber, String(o.quantity), o.supplier, o.notes ?? '']);
-  printSheet('Order list', `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, [['', rows]]);
+  const rows = orders.map((o) => [o.name, o.partNumber, String(o.quantity), o.supplier, o.notes ?? '']);
+  const title = ORDER_TABS.find(([key]) => key === tab)[1];
+  printSheet(`Order list: ${title}`, `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, [['', rows]]);
+}
+
+function markOrdered(order) {
+  const { id, ...before } = order;
+  fb.saveOrder(id, { ...before, status: 'ordered' }).catch(showError);
+  offerUndo(`${order.name} is ordered`, () => fb.saveOrder(id, before).catch(showError));
+}
+
+// Arrived orders are already in the inventory, so clearing them deletes them without the trash.
+function clearArrived(orders) {
+  fb.deleteOrders(orders.map((o) => o.id)).catch(showError);
+  offerUndo(`Cleared ${count(orders.length, 'arrived order')}`, () => Promise.all(orders.map(({ id, ...order }) => fb.saveOrder(id, order))).catch(showError));
 }
 
 // A typed link as an https:// address ('' when empty, null when it isn't a web address).
@@ -2812,9 +2862,10 @@ function trashOrder(order) {
 }
 
 // The order's part when removing the order would leave it empty: none in stock, not used anywhere and on no other order.
+// An arrived order's part came in, so it stays.
 function emptyPartOf(order) {
   const part = state.parts.find((p) => p.id === order.partId);
-  const empty = part && !part.quantity && !usesOfPart(part.id).length && !state.orders.some((o) => o.id !== order.id && o.partId === part.id);
+  const empty = orderStatus(order) !== 'arrived' && part && !part.quantity && !usesOfPart(part.id).length && !openOrders().some((o) => o.id !== order.id && o.partId === part.id);
   return empty ? part : null;
 }
 

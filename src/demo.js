@@ -142,11 +142,12 @@ const SAMPLE_PACKING = [
   ['Control Hub (spare)', 1, false], ['Battery charger', 1, true],
 ];
 
-// [name, part number, quantity, supplier, existing part name or '', notes or '']
+// [name, part number, quantity, supplier, existing part name or '', notes or '', status or '' (still to order)]
 const SAMPLE_ORDERS = [
-  ['Yellow Jacket motor 312 RPM', '5203-2402-0019', 2, 'goBILDA', 'Yellow Jacket motor 312 RPM'],
+  ['Yellow Jacket motor 312 RPM', '5203-2402-0019', 2, 'goBILDA', 'Yellow Jacket motor 312 RPM', '', 'ordered'],
   ['Servo extension cable 300mm', '3802-0003-0300', 6, 'goBILDA', '', 'For the intake rebuild'],
   ['Limit switch', 'REV-31-1462', 2, 'REV Robotics', ''],
+  ['Grip wheel 96mm', '3606-0014-0096', 4, 'goBILDA', 'Grip wheel 96mm', '', 'arrived'],
 ];
 
 function loadSamples() {
@@ -168,9 +169,9 @@ function loadSamples() {
     write('uses', `${PACKING}_${partId}`, { projectId: PACKING, partId, quantity, packed });
   }
   // An order for something new comes with a part in Main Inventory that has none yet, like in the app.
-  for (const [name, partNumber, quantity, supplier, partName, notes] of SAMPLE_ORDERS) {
+  for (const [name, partNumber, quantity, supplier, partName, notes, status] of SAMPLE_ORDERS) {
     if (!partName) addParts([[name, partNumber, 0, '', supplier, '', []]], MAIN_PROJECT);
-    add('orders', { name, partNumber, quantity, supplier, partId: ids.get(partName || name), ...(SAMPLE_LINKS[partNumber] && { link: SAMPLE_LINKS[partNumber] }), ...(notes && { notes }) });
+    add('orders', { name, partNumber, quantity, supplier, partId: ids.get(partName || name), ...(SAMPLE_LINKS[partNumber] && { link: SAMPLE_LINKS[partNumber] }), ...(notes && { notes }), ...(status && { status }) });
   }
   write('uses', `${ROBOT}_${ids.get('Limit switch')}`, { projectId: ROBOT, partId: ids.get('Limit switch'), quantity: 2 });
   add('log', { at: hoursAgo(2), by: USER.uid, byName: 'Husker', action: 'quantity', part: '12V Slim battery', details: 'Quantity +1' });
@@ -289,8 +290,14 @@ export async function receiveOrder(order, newPart, user, count) {
   if (newPart) await saveParts([[newPartId(), newPart]], user);
   else await changeQuantity(order.partId, count, user);
   const { id, ...data } = order;
-  if (count < order.quantity) write('orders', id, { ...data, quantity: order.quantity - count });
-  else remove('orders', id);
+  if (count < order.quantity) {
+    write('orders', id, { ...data, quantity: order.quantity - count });
+    add('orders', { ...data, quantity: count, status: 'arrived' });
+  } else write('orders', id, { ...data, status: 'arrived' });
+}
+
+export async function deleteOrders(ids) {
+  for (const id of ids) remove('orders', id);
 }
 
 const TRASH_COLLECTIONS = { part: 'parts', project: 'projects', order: 'orders' };

@@ -193,20 +193,31 @@ export const setUse = (projectId, partId, quantity, packed) => quantity > 0
   : deleteDoc(useRef(projectId, partId));
 
 // The order list: parts the team is waiting on. partId is the inventory part it's for, or '' for a new part.
+// status is 'ordered' or 'arrived'; orders without one still need to be ordered.
 export const addOrder = (order) => addDoc(collection(db, 'orders'), order);
 
 // Replaces an order with its changed version.
 export const saveOrder = (id, order) => setDoc(doc(db, 'orders', id), order);
 
 // Moves `count` of an arrived order into the inventory: creates newPart, or adds them to the order's part.
-// The order is deleted once all of it has arrived; otherwise it keeps what's still to come.
+// The order is marked arrived once all of it has; otherwise it keeps what's still to come and a new arrived order holds `count`.
 export async function receiveOrder(order, newPart, user, count) {
   const batch = writeBatch(db);
   const changed = { updatedBy: user.email, updatedAt: serverTimestamp() };
   if (newPart) batch.set(doc(collection(db, 'parts')), { ...newPart, ...changed });
   else batch.update(doc(db, 'parts', order.partId), { quantity: increment(count), ...changed });
-  if (count < order.quantity) batch.update(doc(db, 'orders', order.id), { quantity: order.quantity - count });
-  else batch.delete(doc(db, 'orders', order.id));
+  const { id, ...data } = order;
+  if (count < order.quantity) {
+    batch.update(doc(db, 'orders', id), { quantity: order.quantity - count });
+    batch.set(doc(collection(db, 'orders')), { ...data, quantity: count, status: 'arrived' });
+  } else batch.update(doc(db, 'orders', id), { status: 'arrived' });
+  await batch.commit();
+}
+
+// Deletes orders for good (arrived ones, whose parts are already in the inventory).
+export async function deleteOrders(ids) {
+  const batch = writeBatch(db);
+  for (const id of ids) batch.delete(doc(db, 'orders', id));
   await batch.commit();
 }
 

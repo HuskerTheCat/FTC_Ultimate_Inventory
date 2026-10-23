@@ -178,14 +178,16 @@ In the inventory, **Add to** on a part sends it to a project or packing list.
 
 ## 7. Order list
 
-Open **☰ → Orders** to track parts you've ordered.
+Open **☰ → Orders** to track parts you need, have ordered, and got. The list has three tabs: **Need to order**, **Ordered** and **Arrived**.
 
 <img src="how-to/orders.png" alt="The order list" width="440">
 
-- Add an order by typing the item or picking a part you have. A supported part number fills in the rest. Link and notes are optional.
+- Add an order by typing the item or picking a part you have. A supported part number fills in the rest. Link and notes are optional. New orders go under **Need to order**.
 - New items appear in Main Inventory right away as **on order**, so projects and packing lists can use them early.
-- When it arrives, tap **Arrived** to add it to the inventory. If only some came, enter how many; the rest stays on the list.
-- Tap an order to change it. **Print** prints the list.
+- Once you've bought it, tap **Ordered** to move it to the Ordered tab.
+- When it arrives, tap **Arrived** to add it to the inventory and move it to the Arrived tab. If only some came, enter how many; the rest stays under Ordered.
+- **Clear arrived** empties the Arrived tab. The parts stay in the inventory.
+- Tap an order to change it. **Print** prints the tab you're on.
 
 ---
 
