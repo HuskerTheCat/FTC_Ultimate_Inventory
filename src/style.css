@@ -304,7 +304,7 @@ body:has(> #app > main:not(.center))::after {
   -webkit-mask: url(./topo.svg) center top / max(100vw, 1280px) auto, linear-gradient(#000 30%, transparent); -webkit-mask-composite: source-in;
   mask: url(./topo.svg) center top / max(100vw, 1280px) auto, linear-gradient(#000 30%, transparent); mask-composite: intersect;
 }
-:root[data-theme="light"] body:has(> #app > main:not(.center))::after { opacity: 0.15; }
+:root[data-theme="light"] body:has(> #app > main:not(.center))::after { opacity: 0.22; }
 header .row { flex-wrap: nowrap; }
 /* Buttons with an icon and a label: Scan, Filters and the part form's barcode Scan. */
 :is(#scan, #filters-toggle, #scan-barcode) { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); }
