@@ -103,7 +103,10 @@ export function printSheet(title, subtitle, headers, groups) {
   }
   const table = document.createElement('table');
   table.append(head, body);
-  sheet.append(element('h1', title), element('p', subtitle), table);
+  const brand = document.createElement('div');
+  brand.className = 'brand';
+  brand.innerHTML = `${CUBE_MARK}<span>FTC Ultimate <b>Inventory</b></span>`;
+  sheet.append(brand, element('h1', title), element('p', subtitle), table);
   print(sheet);
 }
 
