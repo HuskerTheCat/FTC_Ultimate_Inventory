@@ -300,7 +300,7 @@ header .brand .app-name { font-size: 1.05rem; }
 /* The inventory screen has the first screens' contour lines behind its header, fading out above the parts. */
 body:has(> #app > main:not(.center)) { position: relative; }
 body:has(> #app > main:not(.center))::after {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 320px; z-index: -1; pointer-events: none; background: var(--accent); opacity: 0.2;
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 320px; z-index: -1; pointer-events: none; background: var(--accent); opacity: 0.3;
   -webkit-mask: url(./topo.svg) center top / max(100vw, 1280px) auto, linear-gradient(#000 30%, transparent); -webkit-mask-composite: source-in;
   mask: url(./topo.svg) center top / max(100vw, 1280px) auto, linear-gradient(#000 30%, transparent); mask-composite: intersect;
 }
