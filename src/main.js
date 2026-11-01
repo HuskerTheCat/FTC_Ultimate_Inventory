@@ -1758,7 +1758,7 @@ const partLabel = (part) => ({
   key: `part-${part.id}`,
   url: `${WEB_URL}#${new URLSearchParams({ part: part.id })}`,
   title: part.name,
-  subtitle: [part.partNumber, placeText(part)].filter(Boolean).join(' · '),
+  subtitle: [part.partNumber, placeText(part)].filter(Boolean).join('\n'),
 });
 
 // The inventory a bin label opens: the one on screen, or while a project or packing list is on screen (they hold no

@@ -845,7 +845,7 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
 /* QR label and inventory sheets, only shown when printing. */
 #labels, #sheet { display: none; }
 @media print {
-  body { background: #fff; padding: 0; }
+  html, body { background: #fff; padding: 0; }
   body > :not(#labels, #sheet) { display: none; }
   /* The screen's topographic background would print over the top of the first page. */
   body::before, body::after { display: none !important; }
@@ -864,7 +864,7 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
   #labels.normal .qr { width: 1.05in; height: 1.05in; }
   #labels.normal strong { font-size: 10pt; font-weight: 600; line-height: 1.15; -webkit-line-clamp: 3; }
   #labels.normal .short strong { font-size: 20pt; line-height: 1.1; }
-  #labels.normal span { margin-top: 2pt; font-size: 8pt; line-height: 1.2; color: #333; -webkit-line-clamp: 2; }
+  #labels.normal span { margin-top: 2pt; font-size: 8pt; line-height: 1.2; color: #333; white-space: pre-line; -webkit-line-clamp: 3; }
 
   /* Stylized: the whole label is the site's dark topographic map, the QR code on a white tile, the name in Orbitron and
      the cube. The map stops at the sticker's edge and rounds its corners like the die cut, so no ink goes on the gaps. */
@@ -874,7 +874,7 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
   #labels.stylized figcaption { position: relative; z-index: 1; align-self: stretch; justify-content: center; overflow: hidden; padding-bottom: 0.24in; }
   #labels.stylized strong { font-family: Orbitron, sans-serif; font-size: 8.5pt; font-weight: 800; line-height: 1.25; letter-spacing: 0.02em; color: #fff; -webkit-line-clamp: 3; }
   #labels.stylized .short strong { font-size: 18pt; line-height: 1.15; }
-  #labels.stylized span { margin-top: 3pt; font-size: 7.5pt; font-weight: 500; line-height: 1.2; color: #9cc1ff; -webkit-line-clamp: 2; }
+  #labels.stylized span { margin-top: 3pt; font-size: 7.5pt; font-weight: 500; line-height: 1.2; color: #9cc1ff; white-space: pre-line; -webkit-line-clamp: 3; }
   /* The cube on the app icon's navy tile, so it stands out from the map. */
   #labels.stylized .cube-tile { position: absolute; z-index: 1; right: 0.06in; bottom: 0.06in; display: grid; place-items: center; width: 0.32in; height: 0.32in; border-radius: 0.07in; background: linear-gradient(135deg, #1f2640, #0e1221); }
   #labels.stylized .cube-mark { width: 0.24in; height: 0.24in; }
@@ -887,14 +887,22 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
   #labels.mini figcaption { width: 100%; text-align: center; font-size: 6pt; line-height: 1.15; }
   #labels.mini strong { font-weight: 600; -webkit-line-clamp: 2; }
   #labels.mini span { color: #555; -webkit-line-clamp: 1; }
-  #sheet { display: block; color: #000; }
-  #sheet h1 { font-size: 16pt; margin: 0; }
-  #sheet p { margin: 0 0 12pt; font-size: 10pt; }
+  /* Printed tables: white page, thin lines, the brand over the title, page numbers in the footer. Part # (column 2) and
+     the quantity (column 3) never wrap. */
+  @page { margin: 0.6in 0.6in 0.75in; background: #fff; @bottom-left { content: "FTC Ultimate Inventory"; font: 8pt Saira, sans-serif; color: #666; } @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 8pt Saira, sans-serif; color: #666; } }
+  #sheet { display: block; color: #000; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  #sheet .brand { display: flex; align-items: center; gap: 6pt; padding-bottom: 6pt; border-bottom: 1.5pt solid #2563d9; font: 500 9pt Orbitron, sans-serif; color: #2563d9; }
+  #sheet .brand b { font-weight: 800; }
+  #sheet .cube-mark { width: 18pt; height: 18pt; }
+  #sheet h1 { margin: 14pt 0 0; font-size: 20pt; line-height: 1.15; }
+  #sheet p { margin: 2pt 0 14pt; font-size: 10pt; color: #555; }
   #sheet table { border: none; border-radius: 0; background: none; }
-  #sheet th, #sheet td { padding: 3pt 6pt; border-bottom: 1px solid #bbb; color: #000; font-size: 10pt; cursor: auto; }
+  #sheet th, #sheet td { padding: 4pt 8pt 4pt 0; border-bottom: 0.5pt solid #ccc; color: #000; font-size: 10pt; text-align: left; cursor: auto; }
+  #sheet thead th { background: none; border-bottom: 1pt solid #000; font-size: 8pt; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #444; }
   #sheet td { overflow-wrap: anywhere; }
+  #sheet :is(td, th):is(:nth-child(2), :nth-child(3)) { overflow-wrap: normal; white-space: nowrap; }
   #sheet tr { break-inside: avoid; background: none; }
-  #sheet tr.group th { padding-top: 10pt; border-bottom: 1px solid #000; font-size: 11pt; }
+  #sheet tr.group th { padding-top: 14pt; border-bottom: 1pt solid #2563d9; font-size: 11pt; color: #1e40af; }
 }
 
 .status-banner {
