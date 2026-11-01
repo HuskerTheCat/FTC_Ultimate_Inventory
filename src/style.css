@@ -95,8 +95,8 @@ a { color: var(--accent); }
 .split > form .row { display: grid; grid-template-columns: 1fr 1fr; }
 .split > form + form { border-top: 1px solid var(--border); padding-top: 20px; margin-top: 8px; }
 /* The first screens sit on the topographic map of the link preview: dark blue fading to a lighter blue in one corner, thin contour lines over it. */
-body:has(> #app > .center), body.guide { position: relative; --topo-from: #0e1221; --topo-to: #3460d6; --topo-line: #5b9bff; --topo-line-opacity: 0.3; }
-:root[data-theme="light"] body:has(> #app > .center), :root[data-theme="light"] body.guide { --topo-from: #eef1f7; --topo-to: #b9cdf7; --topo-line: #2563d9; --topo-line-opacity: 0.22; }
+body:has(> #app > .center), body.guide { position: relative; --topo-from: #0e1221; --topo-to: #3460d6; --topo-line: #5b9bff; --topo-line-opacity: 0.65; }
+:root[data-theme="light"] body:has(> #app > .center), :root[data-theme="light"] body.guide { --topo-from: #eef1f7; --topo-to: #b9cdf7; --topo-line: #2563d9; --topo-line-opacity: 0.45; }
 /* The gradient stays put. It is as tall as the screen with a phone's address bar hidden, so it still fills the screen once the bar slides away. */
 body:has(> #app > .center)::before, body.guide::before { content: ''; position: fixed; top: 0; left: 0; right: 0; height: 100lvh; z-index: -1; pointer-events: none; background: linear-gradient(110deg, var(--topo-from) 55%, var(--topo-to) 100%); }
 /* The contour lines cover the whole page and scroll with it. */
@@ -119,7 +119,7 @@ body:has(> #app > .center)::after, body.guide::after { content: ''; position: ab
    over "FTC Ultimate" and its name, on the topographic map of that app's first screens. Always the dark map, like the link preview,
    so it looks the same on both pages whatever mode each app is in. */
 #switching { --topo-to: #3460d6; --topo-line: #5b9bff; position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: linear-gradient(110deg, #0e1221 55%, var(--topo-to) 100%); color: #eef1f8; opacity: 0; visibility: hidden; transition: opacity 0.25s, visibility 0s 0.25s; }
-#switching::before { content: ''; position: absolute; inset: 0; background: var(--topo-line); opacity: 0.3; -webkit-mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; }
+#switching::before { content: ''; position: absolute; inset: 0; background: var(--topo-line); opacity: 0.65; -webkit-mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; }
 #switching img { position: relative; width: 128px; height: 128px; }
 #switching p { position: relative; display: flex; flex-direction: column; align-items: center; margin: 0; font: 800 1.6rem/1.15 Orbitron, sans-serif; }
 #switching .app-name { font-weight: 500; color: var(--topo-line); }
