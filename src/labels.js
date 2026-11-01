@@ -87,6 +87,9 @@ function brandedQr(url) {
 
 // Table print styles: Stylized has the brand header, Basic is plain, Compact fits the most rows on a page.
 export const SHEET_STYLES = { stylized: 'Stylized', basic: 'Basic', compact: 'Compact' };
+// About how many one-line rows fit on a compact page, the first page having the title. A few less than really fit, since
+// some rows wrap onto two lines.
+const COMPACT_ROWS = { first: 54, next: 56 };
 
 // Prints a table in one of SHEET_STYLES. groups is [[heading, rows]], each row a list of cell texts; a blank heading
 // prints no heading row.
@@ -107,6 +110,11 @@ export function printSheet(title, subtitle, headers, groups, style) {
     }
     body.append(...rows.map((cells) => tableRow('td', cells)));
   }
+  // Compact sheets fill the rest of the last page with empty rows, to write new parts in by hand.
+  if (style === 'compact') {
+    const blank = () => Object.assign(tableRow('td', headers.map(() => '\u00a0')), { className: 'blank' });
+    body.append(...Array.from({ length: blankRows(body.rows) }, blank));
+  }
   const table = document.createElement('table');
   table.append(head, body);
   // The header: a faint patch of the topographic map behind the brand, title and subtitle.
@@ -115,6 +123,13 @@ export function printSheet(title, subtitle, headers, groups, style) {
   header.append(element('h1', title), element('p', subtitle));
   sheet.append(header, table);
   print(sheet);
+}
+
+// How many empty rows fill the compact sheet's last page. A group heading row is about as tall as two rows.
+function blankRows(rows) {
+  const used = [...rows].reduce((sum, row) => sum + (row.className === 'group' ? 2 : 1), 0);
+  const past = used - COMPACT_ROWS.first;
+  return past <= 0 ? -past : (COMPACT_ROWS.next - (past % COMPACT_ROWS.next)) % COMPACT_ROWS.next;
 }
 
 function element(tag, text) {
