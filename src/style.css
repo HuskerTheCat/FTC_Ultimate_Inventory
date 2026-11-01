@@ -266,9 +266,9 @@ header .lockup .app-icon { width: 46px; height: 46px; }
 header .brand { font-size: 1.3rem; }
 header .brand .app-name { font-size: 1.05rem; }
 /* The cube opens the app switcher: Inventory, Competition and Design, each with its own cube. */
-/* An outlined tile with a chevron, so the cube reads as a button rather than a logo. */
-#apps-toggle { flex: none; display: flex; align-items: center; gap: 4px; min-height: 0; margin-left: -3px; padding: 4px 8px 4px 4px; background: var(--raised); border: 1px solid var(--border); border-radius: 14px; cursor: pointer; transition: transform 0.1s; }
-#apps-toggle:hover, #apps-toggle[aria-expanded="true"] { border-color: var(--accent); }
+/* A tile with a chevron, so the cube reads as a button rather than a logo. */
+#apps-toggle { flex: none; display: flex; align-items: center; gap: 4px; min-height: 0; margin-left: -3px; padding: 4px 8px 4px 4px; background: var(--raised); border: 1px solid transparent; border-radius: 14px; cursor: pointer; transition: transform 0.1s; }
+#apps-toggle:hover, #apps-toggle[aria-expanded="true"] { background: var(--raised-hover); }
 #apps-toggle:active { transform: scale(0.94); }
 #apps-toggle .chevron { flex: none; color: var(--muted); }
 #apps-toggle:hover .chevron, #apps-toggle[aria-expanded="true"] .chevron { color: var(--accent); }
@@ -303,7 +303,8 @@ header .row { flex-wrap: nowrap; }
 /* Buttons with an icon and a label: Scan, Filters and the part form's barcode Scan. */
 :is(#scan, #filters-toggle, #scan-barcode) { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border-color: var(--border); }
 /* Square icon buttons that open a menu: the header menu and More. */
-button.icon { width: 42px; padding: 0; background: var(--surface); color: var(--muted); border-color: var(--border); }
+button.icon { width: 42px; padding: 0; background: var(--surface); color: var(--muted); border-color: transparent; }
+button.icon.danger { color: var(--danger); }
 button.icon svg { display: block; margin: 0 auto; }
 button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised); color: var(--text); }
 /* Flex, so the button inside isn't lifted by the text line around it and every icon button lines up. */
@@ -515,7 +516,7 @@ button.step {
   padding: 0;
   border-radius: 999px;
   background: var(--raised);
-  border-color: var(--border);
+  border-color: transparent;
   color: var(--text);
   font-size: 1.1rem;
   line-height: 1;
