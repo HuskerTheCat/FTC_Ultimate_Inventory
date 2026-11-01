@@ -235,7 +235,7 @@ Keep your parts in a spreadsheet? Import them whatever the columns are called.
 
 Rows the app can't add are listed with the reason (*250 pcs* and *1,200* are fine as quantities). Parts already there (same name or part number) are skipped, so importing twice adds nothing. **Undo** removes the whole import.
 
-**Export CSV** (same menu) saves the inventory as a spreadsheet file, on the website and Windows app but not Android. **Print inventory** prints what's on screen.
+**Export CSV** (same menu) saves the inventory as a spreadsheet file, on the website and Windows app but not Android. **Print inventory** prints what's on screen. Every print (inventory, order list, make list) asks for a style: **Stylized**, **Basic**, or **Compact** to fit the most rows on a page.
 
 <img src="how-to/more-menu.png" alt="The ⋯ menu" height="260">
 

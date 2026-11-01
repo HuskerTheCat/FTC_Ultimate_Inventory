@@ -887,28 +887,49 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
   #labels.mini figcaption { width: 100%; text-align: center; font-size: 6pt; line-height: 1.15; }
   #labels.mini strong { font-weight: 600; -webkit-line-clamp: 2; }
   #labels.mini span { color: #555; -webkit-line-clamp: 1; }
-  /* Printed tables: a white page with light brand touches (map, gradient rule, Orbitron), page numbers in the footer. Part # (column 2) and
-     the quantity (column 3) never wrap. */
-  @page { margin: 0.6in 0.6in 0.75in; background: #fff; @bottom-left { content: "FTC Ultimate Inventory"; font: 500 7.5pt Orbitron, sans-serif; color: #2563d9; } @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 8pt Saira, sans-serif; color: #666; } }
+  /* Printed tables (SHEET_STYLES in labels.js), page numbers in the footer. Part # (column 2) and the quantity (column 3)
+     never wrap. Basic is these plain rules; Stylized adds brand touches; Compact shrinks everything to fit more rows. */
+  @page { margin: 0.6in 0.6in 0.75in; background: #fff; @bottom-left { content: "FTC Ultimate Inventory"; font: 500 7.5pt Orbitron, sans-serif; color: #555; } @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 8pt Saira, sans-serif; color: #555; } }
+  @page compact { margin: 0.4in 0.4in 0.55in; }
   #sheet { display: block; color: #000; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  #sheet header { position: relative; display: block; padding: 0 0 7pt; margin-bottom: 8pt; border-bottom: 3pt solid; border-image: linear-gradient(90deg, #13204a, #2563d9 55%, #5b9bff) 1; }
-  /* A faint patch of the map, fading out before the title. */
-  #sheet header .topo { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: #2563d9; stroke-width: 1.4; opacity: 0.45; -webkit-mask: linear-gradient(90deg, transparent 25%, #000 75%); mask: linear-gradient(90deg, transparent 25%, #000 75%); }
-  #sheet .brand { position: relative; display: flex; align-items: center; gap: 8pt; font: 500 16pt/1 Orbitron, sans-serif; letter-spacing: 0.02em; color: #2563d9; }
+  #sheet header { position: relative; display: block; padding: 0 0 6pt; margin-bottom: 8pt; border-bottom: 1pt solid #000; }
+  #sheet header .topo { display: none; }
+  #sheet .brand { position: relative; display: flex; align-items: center; gap: 5pt; font: 500 9pt/1 Orbitron, sans-serif; color: #333; }
   #sheet .brand b { font-weight: 800; }
-  #sheet .cube-mark { width: 26pt; height: 26pt; }
-  #sheet h1 { position: relative; margin: 5pt 0 0; font: 800 20pt/1.15 Orbitron, sans-serif; color: #13204a; }
-  #sheet header p { position: relative; margin: 1pt 0 0; font-size: 10pt; font-weight: 500; color: #2563d9; }
+  #sheet .cube-mark { width: 14pt; height: 14pt; }
+  #sheet h1 { position: relative; margin: 6pt 0 0; font-size: 18pt; line-height: 1.15; }
+  #sheet header p { position: relative; margin: 1pt 0 0; font-size: 10pt; color: #555; }
   #sheet table { border: none; border-radius: 0; background: none; box-shadow: none; }
-  #sheet th, #sheet td { padding: 4pt 8pt; border-bottom: 0.5pt solid #d5dcea; color: #000; font-size: 10pt; text-align: left; cursor: auto; }
-  #sheet thead th { background: #eef3fd; border-bottom: 1pt solid #2563d9; font-size: 7.5pt; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #1e40af; }
+  #sheet th, #sheet td { padding: 4pt 8pt 4pt 0; border-bottom: 0.5pt solid #bbb; color: #000; font-size: 10pt; text-align: left; cursor: auto; }
+  #sheet thead th { background: none; border-bottom: 1pt solid #000; font-size: 7.5pt; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #333; }
   #sheet td { overflow-wrap: anywhere; }
-  #sheet td:first-child { font-weight: 600; }
-  #sheet td:nth-child(2) { color: #333; }
   #sheet :is(td, th):is(:nth-child(2), :nth-child(3)) { overflow-wrap: normal; white-space: nowrap; }
   #sheet tr { break-inside: avoid; background: none; }
-  #sheet tbody tr:not(.group):nth-child(even) td { background: #f7f9fd; }
-  #sheet tr.group th { padding: 14pt 8pt 4pt; border-bottom: 1pt solid #2563d9; font: 800 10pt Orbitron, sans-serif; letter-spacing: 0.02em; color: #13204a; }
+  #sheet tr.group th { padding-top: 12pt; font-size: 11pt; }
+
+  /* Stylized: a patch of the topo map behind the header, Orbitron, the app's blue, light row stripes. */
+  #sheet.stylized header { padding-bottom: 7pt; border-bottom: 3pt solid; border-image: linear-gradient(90deg, #13204a, #2563d9 55%, #5b9bff) 1; }
+  #sheet.stylized header .topo { display: block; position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: #2563d9; stroke-width: 1.4; opacity: 0.45; -webkit-mask: linear-gradient(90deg, transparent 25%, #000 75%); mask: linear-gradient(90deg, transparent 25%, #000 75%); }
+  #sheet.stylized .brand { gap: 8pt; font-size: 16pt; letter-spacing: 0.02em; color: #2563d9; }
+  #sheet.stylized .cube-mark { width: 26pt; height: 26pt; }
+  #sheet.stylized h1 { margin-top: 5pt; font: 800 20pt/1.15 Orbitron, sans-serif; color: #13204a; }
+  #sheet.stylized header p { font-weight: 500; color: #2563d9; }
+  #sheet.stylized :is(th, td) { padding: 4pt 8pt; border-bottom-color: #d5dcea; }
+  #sheet.stylized thead th { background: #eef3fd; border-bottom-color: #2563d9; color: #1e40af; }
+  #sheet.stylized td:first-child { font-weight: 600; }
+  #sheet.stylized td:nth-child(2) { color: #333; }
+  #sheet.stylized tbody tr:not(.group):nth-child(even) td { background: #f7f9fd; }
+  #sheet.stylized tr.group th { padding: 14pt 8pt 4pt; border-bottom-color: #2563d9; font: 800 10pt Orbitron, sans-serif; letter-spacing: 0.02em; color: #13204a; }
+
+  /* Compact: small text, tight rows and narrow margins, the title and date on one line. */
+  #sheet.compact { page: compact; }
+  #sheet.compact header { display: flex; align-items: baseline; gap: 8pt; padding-bottom: 3pt; margin-bottom: 2pt; }
+  #sheet.compact .brand { display: none; }
+  #sheet.compact h1 { margin: 0; font-size: 12pt; }
+  #sheet.compact header p { margin: 0; font-size: 8pt; }
+  #sheet.compact :is(th, td) { padding: 1.5pt 6pt 1.5pt 0; font-size: 7.5pt; line-height: 1.2; }
+  #sheet.compact thead th { font-size: 6.5pt; }
+  #sheet.compact tr.group th { padding-top: 6pt; font-size: 8.5pt; }
 }
 
 .status-banner {

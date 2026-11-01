@@ -3,7 +3,7 @@ import * as firebase from './firebase.js';
 import { parseFirebaseConfig, encodeJoinCode, decodeJoinCode, findTeam, newSecret } from './joincode.js';
 import { scanCode, BARCODES } from './scanner.js';
 import { codeKey, findProduct, searchCatalog, catalogSuppliers, catalogSize, catalogLoaded, catalogImage } from './catalog.js';
-import { printLabels, printSheet, LABEL_SHEET_URL, LABEL_STYLES } from './labels.js';
+import { printLabels, printSheet, LABEL_SHEET_URL, LABEL_STYLES, SHEET_STYLES } from './labels.js';
 import { toCsv, parseCsv } from './csv.js';
 import { BACKUP_COLLECTIONS, makeBackup, readBackup } from './backup.js';
 import { startStatusBanners, checkRules } from './status.js';
@@ -45,6 +45,8 @@ const DEMO = new URLSearchParams(location.search).has('demo');
 const THEME_KEY = 'ftc-inventory-theme';
 // The QR label style last picked, remembered on this device only.
 const LABEL_STYLE_KEY = 'ftc-inventory-label-style';
+// The table print style last picked, remembered on this device only.
+const SHEET_STYLE_KEY = 'ftc-inventory-sheet-style';
 const THEME_COLORS = { light: '#eef1f7', dark: '#151b30' };
 function setTheme(theme) {
   document.documentElement.dataset.theme = theme;
@@ -1174,6 +1176,33 @@ function rowHtml(p, columns, photos) {
 
 // ---------- printing ----------
 
+// Asks which of SHEET_STYLES to print in, then prints the table with the team's name and today's date under the title.
+function printTable(title, headers, groups) {
+  const style = localStorage.getItem(SHEET_STYLE_KEY) ?? 'stylized';
+  const dialog = document.getElementById('ask');
+  dialog.innerHTML = `
+    <form method="dialog" class="card">
+      <h2>Print</h2>
+      <fieldset class="types">
+        <legend>Style</legend>
+        ${Object.entries(SHEET_STYLES).map(([value, name]) =>
+          `<label><input type="radio" name="style" value="${value}" ${value === style ? 'checked' : ''} />${name}</label>`).join('')}
+      </fieldset>
+      <div class="row">
+        <button value="print">Print</button>
+        <button value="cancel" class="secondary">Cancel</button>
+      </div>
+    </form>`;
+  dialog.returnValue = ''; // Escape keeps the last returnValue
+  dialog.addEventListener('close', () => {
+    if (dialog.returnValue !== 'print') return;
+    const picked = dialog.querySelector('input[name="style"]:checked').value;
+    localStorage.setItem(SHEET_STYLE_KEY, picked);
+    printSheet(title, `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, groups, picked);
+  }, { once: true });
+  dialog.showModal();
+}
+
 // Prints the parts listed right now, grouped like the screen.
 function printInventory() {
   const current = currentProject();
@@ -1182,7 +1211,7 @@ function printInventory() {
     name && `${name} (${countParts(rows.length)})`,
     rows.map((p) => [p.name, p.partNumber, `${p.quantity} ${p.unit ?? ''}`.trim(), placeText(p), categoryLabel(p.category)]),
   ]);
-  printSheet(current.name, `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, groups);
+  printTable(current.name, headers, groups);
 }
 
 // ---------- CSV export and import ----------
@@ -2633,7 +2662,7 @@ function printOrders(tab, orders) {
   const headers = ['Item', 'Part #', 'Qty', 'Supplier', 'Notes'];
   const rows = orders.map((o) => [o.name, o.partNumber, String(o.quantity), o.supplier, o.notes ?? '']);
   const title = ORDER_TABS.find(([key]) => key === tab)[1];
-  printSheet(`Order list: ${title}`, `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, [['', rows]]);
+  printTable(`Order list: ${title}`, headers, [['', rows]]);
 }
 
 function markOrdered(order) {
@@ -2909,7 +2938,7 @@ function printBuilds(tab, builds) {
     return [b.name, part?.partNumber ?? '', String(b.quantity), MADE[part?.made] ?? '', part?.material ?? '', b.notes ?? ''];
   });
   const title = BUILD_TABS.find(([key]) => key === tab)[1];
-  printSheet(`Make list: ${title}`, `${state.connection.teamName} · ${new Date().toLocaleDateString()}`, headers, [['', rows]]);
+  printTable(`Make list: ${title}`, headers, [['', rows]]);
 }
 
 async function deleteProject(current) {
