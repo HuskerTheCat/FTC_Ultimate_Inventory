@@ -261,11 +261,11 @@ button.link { min-height: 0; background: none; border: none; box-shadow: none; c
 /* A dialog has one gradient button; actions repeated on every row of a list are secondary, with blue text. */
 button.secondary.accent { color: var(--accent); }
 button:disabled, button[aria-disabled="true"] { opacity: 0.4; cursor: default; }
-/* Every button reacts to the pointer, even where a local background rule hides the specific hover: lighter on dark, darker on light. Gradient buttons keep their own brighten. Touch screens skip it so nothing stays lit after a tap. */
+/* Every button reacts to the pointer, and every grey one lights up the same colour (!important beats the buttons that set their own background). Blue buttons brighten; text-only ones lighten. Touch screens skip it so nothing stays lit after a tap. */
 @media (hover: hover) {
-  button:not(:disabled, [aria-disabled="true"]):hover { filter: brightness(1.4); }
-  button:not([class]):not(:disabled):hover { filter: brightness(1.08); }
-  :root[data-theme="light"] button:is(.secondary, .icon, .danger, .link, .sort, .part-name, .tag, .spots, .use, .add-to, .find, .spot:not([aria-pressed="true"]), .order-tabs button):not(:disabled, [aria-disabled="true"]):hover { filter: brightness(0.94); }
+  button:is(.secondary, .icon, .step, .spots, .use, .find, .add-to, .tag, .spot:not([aria-pressed="true"]), .order-tabs button, #project, #apps-toggle, #scan, #filters-toggle, #scan-barcode):not(:disabled, [aria-disabled="true"], .danger):hover { background: var(--raised-hover) !important; }
+  button:is(.sort, .part-name, .link):not(:disabled):hover { filter: brightness(1.4); }
+  :root[data-theme="light"] button:is(.sort, .part-name, .link):not(:disabled):hover { filter: brightness(0.7); }
 }
 
 /* Inventory: header, project picker, search and filters */
