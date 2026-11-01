@@ -45,7 +45,7 @@ const DEMO = new URLSearchParams(location.search).has('demo');
 const THEME_KEY = 'ftc-inventory-theme';
 // The QR label style last picked, remembered on this device only.
 const LABEL_STYLE_KEY = 'ftc-inventory-label-style';
-const THEME_COLORS = { light: '#eef1f7', dark: '#0e1221' };
+const THEME_COLORS = { light: '#eef1f7', dark: '#151b30' };
 function setTheme(theme) {
   document.documentElement.dataset.theme = theme;
   document.querySelector('meta[name="theme-color"]').content = THEME_COLORS[theme];
