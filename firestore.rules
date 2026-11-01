@@ -4,7 +4,7 @@ service cloud.firestore {
     // Add 1 whenever these rules change. The app is built with this number (vite.config.js) and, after sign-in,
     // reads rulesVersion/<number>; if the team's published rules are older, that's denied and the app shows a
     // banner linking to "Updating the rules" in SETUP.md.
-    function rulesVersion() { return 9; }
+    function rulesVersion() { return 10; }
 
     function signedIn() {
       return request.auth != null;
@@ -51,7 +51,7 @@ service cloud.firestore {
     }
     function validPart() {
       let part = request.resource.data;
-      return part.keys().hasOnly(['projectId', 'name', 'partNumber', 'barcode', 'link', 'quantity', 'minQuantity', 'location', 'supplier', 'category', 'tags', 'unit', 'condition', 'notes', 'spot', 'made', 'material', 'updatedBy', 'updatedAt'])
+      return part.keys().hasOnly(['projectId', 'name', 'partNumber', 'barcode', 'link', 'quantity', 'minQuantity', 'location', 'supplier', 'category', 'tags', 'unit', 'condition', 'damaged', 'broken', 'notes', 'spot', 'made', 'material', 'updatedBy', 'updatedAt'])
         && projectExists(part.projectId)
         && shortText(part.name) && part.name.size() > 0
         && shortText(part.partNumber)
@@ -63,6 +63,9 @@ service cloud.firestore {
         && validTags(part.tags)
         && (!('unit' in part) || shortText(part.unit))
         && (!('condition' in part) || part.condition in ['', 'new', 'used', 'damaged', 'broken'])
+        // How many of the part are damaged or broken, for a part the team has more than one of.
+        && (!('damaged' in part) || (part.damaged is int && part.damaged >= 0 && part.damaged <= 1000000))
+        && (!('broken' in part) || (part.broken is int && part.broken >= 0 && part.broken <= 1000000))
         && (!('notes' in part) || (part.notes is string && part.notes.size() <= 1000))
         && (!('spot' in part) || (part.spot is string && part.spot.matches('[A-Z][1-9][0-9]?')))
         && (!('made' in part) || part.made in ['3d-print', 'cnc', 'laser', 'other'])

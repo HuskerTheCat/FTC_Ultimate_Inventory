@@ -67,6 +67,8 @@ const DETAIL_FIELDS = [
 ];
 const UNITS = ['pcs', 'pack', 'box', 'm', 'ft'];
 const CONDITIONS = { '': 'Condition not set', new: 'New', used: 'Used', damaged: 'Damaged', broken: 'Broken' };
+// For a part the team has more than one of: how many are damaged and how many broken. Stored only when above 0.
+const UNIT_CONDITIONS = [['damaged', 'How many damaged'], ['broken', 'How many broken']];
 // How a part the team makes itself is made. Parts without `made` are bought.
 const MADE = { '3d-print': '3D printed', cnc: 'CNC machined', laser: 'Laser cut', other: 'Other' };
 
@@ -1148,7 +1150,7 @@ function rowHtml(p, columns, photos) {
   const selected = state.selected?.has(p.id);
   const label = (key) => columns.find(([k]) => k === key)?.[1];
   const image = catalogImage(p.partNumber);
-  const name = `<button type="button" class="part-name">${esc(p.name)}</button>${partChips(madeBadge(p.made) + lowBadge(p.id) + orderBadge(p.id) + buildBadge(p.id) + conditionBadge(p.condition), p.tags)}${notesLine(p.notes)}`;
+  const name = `<button type="button" class="part-name">${esc(p.name)}</button>${partChips(madeBadge(p.made) + lowBadge(p.id) + orderBadge(p.id) + buildBadge(p.id) + conditionBadge(p.condition) + unitsBadge(p), p.tags)}${notesLine(p.notes)}`;
   return `
     <tr data-id="${esc(p.id)}" class="${selected ? 'selected' : ''} ${p.packed ? 'packed' : ''} ${waiting(p.id) ? 'waiting' : ''}">
       ${state.selected ? `<td class="check"><input type="checkbox" aria-label="Select ${esc(p.name)}" ${selected ? 'checked' : ''} /></td>` : ''}
@@ -1197,6 +1199,8 @@ const CSV_COLUMNS = [
   ['category', 'Category', ['type', 'group']],
   ['tags', 'Tags', ['tag']],
   ['condition', 'Condition', []],
+  ['damaged', 'Damaged', []],
+  ['broken', 'Broken', []],
   ['made', 'Made by', ['made', 'method']],
   ['material', 'Material', ['filament']],
   ['barcode', 'Barcode', ['upc']],
@@ -1298,6 +1302,10 @@ function csvPart(values, projectId) {
   if (minQuantity !== null && (!Number.isInteger(minQuantity) || minQuantity < 0 || minQuantity > 1000000)) {
     return { problem: 'low stock at not a whole number' };
   }
+  const counts = UNIT_CONDITIONS.map(([key]) => [key, text(key) ? wholeNumber(text(key)) : 0]);
+  if (counts.some(([, n]) => !Number.isInteger(n) || n < 0) || counts.reduce((sum, [, n]) => sum + n, 0) > quantity) {
+    return { problem: 'damaged or broken not a whole number up to the quantity' };
+  }
   const condition = text('condition').toLowerCase();
   // "3D printed" or "3d-print"; anything else is bought.
   const made = Object.keys(MADE).find((key) => [key, MADE[key].toLowerCase()].includes(text('made').toLowerCase()));
@@ -1321,6 +1329,7 @@ function csvPart(values, projectId) {
       ...(text('spot') && { spot: text('spot').toUpperCase() }),
       ...(link && { link }),
       ...(minQuantity !== null && { minQuantity }),
+      ...(quantity > 1 && Object.fromEntries(counts.filter(([, n]) => n))),
     },
   };
 }
@@ -1713,6 +1722,12 @@ const buildBadge = (partId) => [['need', 'to-make', 'not started'], ['making', '
 const madeBadge = (made) => (made ? `<small class="badge made">${MADE[made]}</small>` : '');
 const conditionBadge = (condition) => ['used', 'damaged', 'broken'].includes(condition)
   ? `<small class="badge ${condition}">${CONDITIONS[condition]}</small>` : '';
+// How many of the part are damaged or broken. Never more than are in stock, since − and + don't change these counts.
+const unitsBadge = (p) => UNIT_CONDITIONS
+  .map(([key]) => [key, Math.min(p[key] ?? 0, p.quantity)])
+  .filter(([, n]) => n)
+  .map(([key, n]) => `<small class="badge ${key}">${n} ${key}</small>`)
+  .join('');
 // Phones show a part as a short card, with its location (and inventory, outside inventories) and part number on one
 // line under the name. Supplier and category are left to the part dialog there.
 // Each piece is its own span, so a line breaks between pieces instead of inside a part number.
@@ -3081,7 +3096,7 @@ function openPartDialog(part, carry = null, note = '') {
         <div id="part-tags" class="tags"></div>
         <select id="add-tag" aria-label="Add a tag"></select>
       </div>
-      <details class="more-details" ${DETAIL_FIELDS.some(([key]) => values?.[key]) ? 'open' : ''}>
+      <details class="more-details" ${[...DETAIL_FIELDS, ...UNIT_CONDITIONS].some(([key]) => values?.[key]) ? 'open' : ''}>
         <summary>More details</summary>
         <div class="more-fields">
         ${input('unit', 'Unit', 'list="unit-list" placeholder="e.g. pcs"')}
@@ -3091,6 +3106,7 @@ function openPartDialog(part, carry = null, note = '') {
               `<option value="${value}" ${value === (values?.condition ?? '') ? 'selected' : ''}>${label}</option>`).join('')}
           </select>
         </label>
+        ${UNIT_CONDITIONS.map(([key, label]) => input(key, label, 'type="number" min="0" step="1" placeholder="0"')).join('')}
         <label>Notes<textarea name="notes" rows="3" maxlength="1000">${esc(part?.notes ?? '')}</textarea></label>
         </div>
       </details>
@@ -3124,6 +3140,18 @@ function openPartDialog(part, carry = null, note = '') {
   };
   form.made.onchange = renderMade;
   renderMade();
+  // Damaged and broken counts are for a part the team has more than one of.
+  const renderCounts = () => {
+    const several = Number(form.quantity.value) > 1;
+    for (const [key] of UNIT_CONDITIONS) {
+      form[key].closest('label').hidden = !several;
+      // A hidden count isn't saved, so it can't block saving either.
+      if (several) form[key].max = form.quantity.value;
+      else form[key].removeAttribute('max');
+    }
+  };
+  form.quantity.addEventListener('input', renderCounts);
+  renderCounts();
   // Opening More details scrolls its fields into view, since on a phone they open below the bottom of the screen.
   const more = dialog.querySelector('.more-details');
   more.querySelector('summary').onclick = () => more.open || requestAnimationFrame(() => more.scrollIntoView({ block: 'start', behavior: 'smooth' }));
@@ -3210,6 +3238,11 @@ function openPartDialog(part, carry = null, note = '') {
     if (form.minQuantity.value !== '') data.minQuantity = Number(form.minQuantity.value);
     if (form.made.value) data.made = form.made.value;
     if (form.made.value && form.material.value.trim()) data.material = form.material.value.trim();
+    if (data.quantity > 1) for (const [key] of UNIT_CONDITIONS) if (Number(form[key].value)) data[key] = Number(form[key].value);
+    if ((data.damaged ?? 0) + (data.broken ?? 0) > data.quantity) {
+      e.preventDefault();
+      return showError(new Error(`Damaged and broken add up to more than the ${data.quantity} you have.`));
+    }
     if (part) return editPart(part, data);
     // A part like one already in the project asks first, over the form, so going back keeps what was typed.
     e.preventDefault();
@@ -3302,7 +3335,7 @@ function hideUndo() {
 }
 
 // Everything a part stores apart from who changed it last and when.
-// A barcode, link, low-stock quantity, spot, way it's made or material is only stored when the part has one, so parts without them still save under
+// A barcode, link, low-stock quantity, spot, way it's made, material or damaged or broken count is only stored when the part has one, so parts without them still save under
 // rules from before them.
 const partData = (part) => ({
   ...Object.fromEntries([...FIELDS, ...DETAIL_FIELDS].map(([key]) => [key, part[key] ?? ''])),
@@ -3314,6 +3347,8 @@ const partData = (part) => ({
   ...(part.spot && { spot: part.spot }),
   ...(part.made && { made: part.made }),
   ...(part.material && { material: part.material }),
+  ...(part.damaged && { damaged: part.damaged }),
+  ...(part.broken && { broken: part.broken }),
 });
 
 // Logs a change alongside its write rather than after the server confirms it, so an offline change
@@ -3323,7 +3358,7 @@ const logged = (write, action, partName, details) =>
 
 // Every field an edit can change, with its name for the change log.
 const EDIT_FIELDS = [...FIELDS, ...DETAIL_FIELDS, ['spot', 'Spot'], ['barcode', 'Barcode'], ['link', 'Link'], ['minQuantity', 'Low stock at'], ['tags', 'Tags'],
-  ['made', 'Made by'], ['material', 'Material']];
+  ['made', 'Made by'], ['material', 'Material'], ['damaged', 'Damaged'], ['broken', 'Broken']];
 // A restored part's inventory counts too, so Replace can move a part back.
 const RESTORE_PART_FIELDS = [...EDIT_FIELDS, ['projectId', 'Inventory']];
 

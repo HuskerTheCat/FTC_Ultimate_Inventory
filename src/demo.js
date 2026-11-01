@@ -76,20 +76,21 @@ const SAMPLE_SPOTS = {
   'Speed servo': 'A1', 'Torque servo': 'A2', 'Super speed servo': 'A3', 'Touch sensor': 'B1',
 };
 
-// [name, part number, quantity, location, supplier, category, tags, extras: notes, condition (default new), unit (default pcs), minQuantity ("Low stock at")]
+// [name, part number, quantity, location, supplier, category, tags, extras: notes, condition (default new), unit (default pcs), minQuantity ("Low stock at"),
+// damaged and broken counts]
 const SAMPLE_PARTS = [
   ['Yellow Jacket motor 312 RPM', '5203-2402-0019', 6, 'Shelf A', 'goBILDA', 'Electronics/Motors', ['drivetrain'], { notes: 'Two of these have a worn encoder cable. Test before using.', minQuantity: 4 }],
   ['Yellow Jacket motor 435 RPM', '5203-2402-0014', 4, 'Shelf A', 'goBILDA', 'Electronics/Motors', ['drivetrain']],
   ['Core Hex motor', 'REV-41-1300', 3, 'Shelf A', 'REV Robotics', 'Electronics/Motors', ['intake']],
   ['HD Hex motor 40:1', 'REV-41-1301', 2, 'Shelf A', 'REV Robotics', 'Electronics/Motors', ['lift'], { condition: 'used', notes: 'Spares from last season’s arm.' }],
-  ['Speed servo', '2000-0025-0003', 5, 'Bin 1', 'goBILDA', 'Electronics/Servos', ['intake']],
+  ['Speed servo', '2000-0025-0003', 5, 'Bin 1', 'goBILDA', 'Electronics/Servos', ['intake'], { broken: 1 }],
   ['Torque servo', '2000-0025-0002', 3, 'Bin 1', 'goBILDA', 'Electronics/Servos', ['claw'], { notes: 'Use for the claw. The speed servo is too weak.' }],
   ['Super speed servo', '2000-0025-0001', 2, 'Bin 1', 'goBILDA', 'Electronics/Servos', ['claw'], { condition: 'used' }],
   ['Touch sensor', 'REV-31-1425', 3, 'Bin 1', 'REV Robotics', 'Electronics/Sensors', ['lift']],
   ['Control Hub', 'REV-31-1595', 1, 'Electronics drawer', 'REV Robotics', 'Electronics/Controllers', ['competition'], { notes: 'Firmware 1.8. Update only at the shop, never at a competition.' }],
   ['Expansion Hub', 'REV-31-1153', 1, 'Electronics drawer', 'REV Robotics', 'Electronics/Controllers', []],
   ['Driver Hub', 'REV-31-1596', 2, 'Drive team box', 'REV Robotics', 'Electronics/Controllers', ['competition']],
-  ['Gamepad', 'REV-31-2983', 3, 'Drive team box', 'REV Robotics', 'Electronics/Controllers', ['competition'], { condition: 'damaged', notes: 'The one with tape on it has a drifting left stick.' }],
+  ['Gamepad', 'REV-31-2983', 3, 'Drive team box', 'REV Robotics', 'Electronics/Controllers', ['competition'], { condition: 'used', damaged: 1, notes: 'The one with tape on it has a drifting left stick.' }],
   ['12V Slim battery', 'REV-31-1302', 3, 'Battery cart', 'REV Robotics', 'Electronics/Power', ['competition'], { notes: 'Charge the night before. Number 4 holds charge poorly, use it for practice only.', minQuantity: 4 }],
   ['Battery charger', 'REV-31-1299', 2, 'Battery cart', 'REV Robotics', 'Electronics/Power', []],
   ['Switch cable and bracket', 'REV-31-1387', 2, 'Electronics drawer', 'REV Robotics', 'Electronics/Power', []],
@@ -222,7 +223,7 @@ const SAMPLE_LOG = [
   [1, 'demo', 'Husker', 'added', 'Pinpoint odometry computer', ''],
   [2, 'demo', 'Husker', 'quantity', '12V Slim battery', 'Quantity -1'],
   [3, 'demo-gabby', 'Gabby', 'made', 'Odometry pod mount', '+2 from the make list'],
-  [5, 'demo-gabby', 'Gabby', 'edited', 'Gamepad', 'Condition damaged'],
+  [5, 'demo-gabby', 'Gabby', 'edited', 'Gamepad', 'Damaged (blank) → 1'],
   [7, 'demo-gabby', 'Gabby', 'used', 'Touch sensor', 'Competition Robot: 1'],
   [26, 'demo-grace', 'Grace', 'arrived', 'USB camera', 'Received 1'],
   [30, 'demo-grace', 'Grace', 'quantity', 'M4 x 12mm button head screw (25 pack)', 'Quantity -4'],

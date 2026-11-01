@@ -19,7 +19,7 @@ Add one line when a change needs the other apps to act; delete it once every app
 
 | Change | Who | Copy from |
 |---|---|---|
-| Rules v9 (v8: custom parts, `builds`, order `status`; v9: condition `'damaged'`; includes v7) | Competition, Design | `validPart()`, `validBuild()`, `validOrder()`, `builds` match, log action `'made'`, `rulesVersion()` in Inventory's `firestore.rules` |
+| Rules v10 (v8: custom parts, `builds`, order `status`; v9: condition `'damaged'`; v10: part `damaged`/`broken` counts; includes v7) | Competition, Design | `validPart()`, `validBuild()`, `validOrder()`, `builds` match, log action `'made'`, `rulesVersion()` in Inventory's `firestore.rules` |
 | Topo lines smooth with soft glow (2026-11-01): curves instead of straight segments, graded halo instead of one hard 5px halo | Competition, Design, if wanted | `src/topo.svg` (same file; Inventory's `/mnt/project-files/topo-sharper/smooth.mjs` regenerates it) |
 | Buttons have no border; filled buttons use `--btn-shadow` (2026-11-01) | Competition, Design, if wanted | `--btn-shadow` in both themes, the `button:is(...)` shadow rule at the end of `src/style.css`, `#apps-toggle` and `button.icon` with a transparent border |
 | Every button highlights on hover (2026-11-01) | Competition, Design, if wanted | the `@media (hover: hover)` block after `button:disabled` in `src/style.css` |

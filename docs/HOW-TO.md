@@ -95,7 +95,7 @@ The name, part number, supplier, category and link fill in, plus the supplier's 
 - **Category** can have subcategories: `Electronics/Sensors` shows as Electronics › Sensors.
 - **Tags** are short labels like `spare` or `competition`. Tap one to show only parts with it.
 - **Made by:** for a part the team makes, pick 3D printed, CNC machined, Laser cut or Other. Then Material shows, and Link becomes File link for its CAD, STL or slicer file. **Filters → Custom** lists only those parts.
-- **More details** holds unit, condition and notes.
+- **More details** holds unit, condition and notes. For a part you have more than one of, it also asks how many are damaged and how many broken.
 - **Save and add another** keeps the location, category and tags, handy for a whole bin.
 - Filtered to one location, or just scanned a bin? **+ Add part** starts there.
 
