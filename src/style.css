@@ -887,8 +887,8 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
   #sheet { display: block; color: #000; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   #sheet header { position: relative; display: block; padding: 0 0 7pt; margin-bottom: 8pt; border-bottom: 3pt solid; border-image: linear-gradient(90deg, #13204a, #2563d9 55%, #5b9bff) 1; }
   /* A faint patch of the map, fading out before the title. */
-  #sheet header .topo { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: #2563d9; stroke-width: 1.2; opacity: 0.3; -webkit-mask: linear-gradient(90deg, transparent 25%, #000 75%); mask: linear-gradient(90deg, transparent 25%, #000 75%); }
-  #sheet .brand { position: relative; display: flex; align-items: center; gap: 7pt; font: 500 10pt Orbitron, sans-serif; letter-spacing: 0.02em; color: #2563d9; }
+  #sheet header .topo { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: #2563d9; stroke-width: 1.4; opacity: 0.45; -webkit-mask: linear-gradient(90deg, transparent 25%, #000 75%); mask: linear-gradient(90deg, transparent 25%, #000 75%); }
+  #sheet .brand { position: relative; display: flex; align-items: center; gap: 8pt; font: 500 16pt/1 Orbitron, sans-serif; letter-spacing: 0.02em; color: #2563d9; }
   #sheet .brand b { font-weight: 800; }
   #sheet .cube-mark { width: 26pt; height: 26pt; }
   #sheet h1 { position: relative; margin: 5pt 0 0; font: 800 20pt/1.15 Orbitron, sans-serif; color: #13204a; }
