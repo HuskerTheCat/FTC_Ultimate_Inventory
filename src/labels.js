@@ -47,7 +47,7 @@ function topo(i) {
   const x = (i * 137) % 450;
   const y = (i * 311) % 2025;
   const lines = CONTOURS.filter((c) => c.right > x && c.left < x + 750 && c.bottom > y && c.top < y + 375);
-  return `<svg class="topo" viewBox="${x} ${y} 750 375" aria-hidden="true"><path d="${lines.map((c) => c.d).join('')}"/></svg>`;
+  return `<svg class="topo" viewBox="${x} ${y} 750 375" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path d="${lines.map((c) => c.d).join('')}"/></svg>`;
 }
 
 // A short title, like a grid spot's C12, prints big.
@@ -103,10 +103,11 @@ export function printSheet(title, subtitle, headers, groups) {
   }
   const table = document.createElement('table');
   table.append(head, body);
-  const brand = document.createElement('div');
-  brand.className = 'brand';
-  brand.innerHTML = `${CUBE_MARK}<span>FTC Ultimate <b>Inventory</b></span>`;
-  sheet.append(brand, element('h1', title), element('p', subtitle), table);
+  // The header: a faint patch of the topographic map behind the brand, title and subtitle.
+  const header = document.createElement('header');
+  header.innerHTML = `${topo(5)}<div class="brand">${CUBE_MARK}<span>FTC Ultimate <b>Inventory</b></span></div>`;
+  header.append(element('h1', title), element('p', subtitle));
+  sheet.append(header, table);
   print(sheet);
 }
 
