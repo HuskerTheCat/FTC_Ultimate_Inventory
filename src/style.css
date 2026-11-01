@@ -264,8 +264,8 @@ button:disabled, button[aria-disabled="true"] { opacity: 0.4; cursor: default; }
 /* Every button reacts to the pointer, and every grey one lights up the same colour (!important beats the buttons that set their own background). Blue buttons brighten; text-only ones lighten. Touch screens skip it so nothing stays lit after a tap. */
 @media (hover: hover) {
   button:is(.secondary, .icon, .step, .spots, .use, .find, .add-to, .tag, .spot:not([aria-pressed="true"]), .order-tabs button, #project, #apps-toggle, #scan, #filters-toggle, #scan-barcode):not(:disabled, [aria-disabled="true"], .danger):hover { background: var(--raised-hover) !important; }
-  button:is(.sort, .part-name, .link):not(:disabled):hover { filter: brightness(1.4); }
-  :root[data-theme="light"] button:is(.sort, .part-name, .link):not(:disabled):hover { filter: brightness(0.7); }
+  :is(button:is(.sort, .part-name, .link):not(:disabled), summary):hover { filter: brightness(1.4); }
+  :root[data-theme="light"] :is(button:is(.sort, .part-name, .link):not(:disabled), summary):hover { filter: brightness(0.7); }
 }
 
 /* Inventory: header, project picker, search and filters */
