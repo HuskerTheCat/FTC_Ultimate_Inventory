@@ -20,5 +20,6 @@ Add one line when a change needs the other apps to act; delete it once every app
 | Change | Who | Copy from |
 |---|---|---|
 | Rules v9 (v8: custom parts, `builds`, order `status`; v9: condition `'damaged'`; includes v7) | Competition, Design | `validPart()`, `validBuild()`, `validOrder()`, `builds` match, log action `'made'`, `rulesVersion()` in Inventory's `firestore.rules` |
+| Buttons have no border; filled buttons use `--btn-shadow` (2026-11-01) | Competition, Design, if wanted | `--btn-shadow` in both themes, the `button:is(...)` shadow rule at the end of `src/style.css`, `#apps-toggle` and `button.icon` with a transparent border |
 | Update banner re-checks on resume and every 15 min (Windows/Android) | Competition, Design, only if they have the banner | `startStatusBanners` in `src/status.js` |
 | ☰ → What's new: shows the repo's WHATS-NEW.md, blue dot until opened | Competition, Design, if wanted | `src/whatsnew.js`, `openWhatsNewDialog` + `.new-dot`/`.whats-new` styles, `raw.githubusercontent.com` in the CSP (`index.html`), `marked` as a dependency |
