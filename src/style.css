@@ -28,6 +28,8 @@
   --focus: 0 0 0 3px rgb(91 155 255 / 0.85);
   --float-shadow: 0 18px 48px rgb(0 0 0 / 0.5);
   --btn-shadow: 0 1px 2px rgb(0 0 0 / 0.45), 0 2px 6px rgb(0 0 0 / 0.25);
+  --card-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 14px rgb(0 0 0 / 0.25);
+  --field-shadow: inset 0 1px 3px rgb(0 0 0 / 0.5), 0 1px 0 rgb(255 255 255 / 0.09);
   color-scheme: dark;
 }
 /* Pain and suffering mode: the light theme, picked in the ☰ menu and saved on this device. */
@@ -51,6 +53,8 @@
   --backdrop: rgb(20 26 46 / 0.4);
   --float-shadow: 0 18px 48px rgb(20 30 60 / 0.18);
   --btn-shadow: 0 1px 2px rgb(20 30 60 / 0.16), 0 2px 6px rgb(20 30 60 / 0.1);
+  --card-shadow: 0 1px 2px rgb(20 30 60 / 0.12), 0 4px 14px rgb(20 30 60 / 0.08);
+  --field-shadow: inset 0 1px 3px rgb(20 30 60 / 0.22);
   color-scheme: light;
 }
 
@@ -81,7 +85,6 @@ a { color: var(--accent); }
   margin-bottom: 16px;
   background: url(../public/icon.svg) center / contain no-repeat;
 }
-.center > .card { box-shadow: none; }
 /* The home page's cube opens the app switcher, like the inventory screen's. */
 .center > .lockup { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
 .center > .lockup #apps-toggle { margin: -3px; }
@@ -129,7 +132,7 @@ body:has(> #app > .center)::after, body.guide::after { content: ''; position: ab
 
 /* Guides button, top right of the first screens. */
 #app:has(> .center) { position: relative; }
-.guides-link { position: absolute; top: 16px; right: 24px; padding: 6px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font-weight: 600; text-decoration: none; }
+.guides-link { position: absolute; top: 16px; right: 24px; padding: 6px 14px; border: 1px solid transparent; border-radius: 10px; background: var(--surface); color: var(--text); font-weight: 600; text-decoration: none; }
 .guides-link:hover { background: var(--raised); }
 /* Phones: level with the logo above the title, clear of it. */
 @media (max-width: 759px) { .guides-link { top: 67px; } }
@@ -155,7 +158,7 @@ body:has(> #app > .center)::after, body.guide::after { content: ''; position: ab
 }
 .card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: 16px;
   padding: 20px;
   display: flex;
@@ -173,7 +176,7 @@ body:has(> #app > .center)::after, body.guide::after { content: ''; position: ab
   padding: 10px 14px;
   border-radius: 10px;
   background: color-mix(in srgb, var(--danger) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--danger) 50%, transparent);
+  border: 1px solid transparent;
   color: var(--danger);
 }
 /* The page's error banner floats at the top, over any open dialog. */
@@ -186,7 +189,7 @@ body:has(> #app > .center)::after, body.guide::after { content: ''; position: ab
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
   padding-right: 44px;
 }
-#error.notice { border-color: var(--border); background: var(--surface); color: var(--text); }
+#error.notice { background: var(--surface); color: var(--text); }
 #error .close { position: absolute; top: 4px; right: 4px; width: 34px; min-height: 34px; padding: 0; border: none; background: none; color: inherit; font-size: 1.4rem; line-height: 1; }
 
 /* Setup steps, and the steps still to do when creating a team */
@@ -194,7 +197,7 @@ body:has(> #app > .center)::after, body.guide::after { content: ''; position: ab
 .steps li::marker { color: var(--text); font-weight: 600; }
 .steps strong { color: var(--text); font-weight: 600; }
 .steps button { display: block; margin-top: 8px; }
-.problems { margin: 0; padding: 10px 14px 10px 32px; display: flex; flex-direction: column; gap: 6px; border-radius: 10px; background: color-mix(in srgb, var(--danger) 10%, transparent); border: 1px solid color-mix(in srgb, var(--danger) 50%, transparent); color: var(--danger); }
+.problems { margin: 0; padding: 10px 14px 10px 32px; display: flex; flex-direction: column; gap: 6px; border-radius: 10px; background: color-mix(in srgb, var(--danger) 10%, transparent); border: 1px solid transparent; color: var(--danger); }
 .problems[hidden] { display: none; }
 .problems .muted { list-style: none; margin-left: -18px; }
 .getting-started { max-width: 640px; margin: 24px auto; }
@@ -206,9 +209,10 @@ input, select, textarea {
   width: 100%;
   min-height: 42px;
   padding: 8px 12px;
-  border: 1px solid var(--field-border);
+  border: 1px solid transparent;
   border-radius: 10px;
   background: var(--field);
+  box-shadow: var(--field-shadow);
 }
 /* Our own dropdown arrow: the built-in one turns white while the list is open on some systems. */
 select {
@@ -223,14 +227,14 @@ select {
   select::picker-icon { display: none; }
 }
 select { white-space: nowrap; overflow: hidden; }
-::picker(select) { margin-top: 6px; padding: 6px; background: var(--raised); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--float-shadow); }
+::picker(select) { margin-top: 6px; padding: 6px; background: var(--raised); border: 1px solid transparent; border-radius: 12px; box-shadow: var(--float-shadow); }
 option { padding: 8px 10px; border-radius: 8px; color: var(--text); }
 option::checkmark { display: none; }
 option:is(:hover, :focus-visible) { background: var(--row-hover); outline: none; }
 option:checked { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
 input::placeholder, textarea::placeholder { color: var(--placeholder); }
-input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
-:is(input, select, textarea).invalid { border-color: var(--danger); }
+input:focus, select:focus, textarea:focus { outline: none; box-shadow: var(--focus); }
+:is(input, select, textarea).invalid { box-shadow: 0 0 0 2px var(--danger); }
 textarea { resize: vertical; font-family: ui-monospace, monospace; font-size: 0.85rem; }
 label[hidden] { display: none; }
 label, .field { display: flex; flex-direction: column; gap: 6px; font-size: 0.875rem; font-weight: 500; color: var(--muted); }
@@ -342,7 +346,7 @@ button.icon:hover, button.icon[aria-expanded="true"] { background: var(--raised)
   overflow: auto;
   padding: 6px;
   background: var(--raised);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: 12px;
   box-shadow: var(--float-shadow);
 }
@@ -392,7 +396,7 @@ a.menu-item { min-height: 42px; border-radius: 10px; text-decoration: none; }
   align-items: center;
   gap: 6px;
   padding: 12px 6px;
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: 10px;
   background: var(--field);
   color: var(--text);
@@ -400,14 +404,14 @@ a.menu-item { min-height: 42px; border-radius: 10px; text-decoration: none; }
   cursor: pointer;
 }
 .types input { position: absolute; opacity: 0; pointer-events: none; }
-.types label:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
+.types label:has(input:checked) { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
 .types label:has(input:focus-visible) { box-shadow: var(--focus); }
 .toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 8px; margin-bottom: 16px; }
 .toolbar:has(+ .filters:not([hidden])) { margin-bottom: 8px; }
 #filters-toggle.active { color: var(--accent); }
 #filter-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--bg); font-size: 0.8rem; line-height: 20px; text-align: center; }
 /* The panel the Filters button opens: filters on one row, sort and grouping on the next. */
-.filters { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 16px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+.filters { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 16px; padding: 12px; background: var(--surface); border: 1px solid transparent; border-radius: 14px; }
 .filters[hidden] { display: none; }
 .filters .row { width: 100%; }
 .filters .row > span { width: 44px; font-weight: 600; }
@@ -430,7 +434,7 @@ a.menu-item { min-height: 42px; border-radius: 10px; text-decoration: none; }
   #bulkbar:not([hidden]) {
     position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 5; margin: 0; padding: 10px;
     display: grid; grid-template-columns: auto auto 1fr; grid-template-areas: "count count done" "all clear edit"; gap: 8px;
-    background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--float-shadow);
+    background: var(--surface); border: 1px solid transparent; border-radius: 14px; box-shadow: var(--float-shadow);
   }
   #bulkbar #selected-count { grid-area: count; align-self: center; }
   #bulkbar #select-done { grid-area: done; justify-self: end; }
@@ -443,7 +447,7 @@ a.menu-item { min-height: 42px; border-radius: 10px; text-decoration: none; }
 }
 
 /* Parts table */
-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface); border: 1px solid transparent; border-radius: 14px; overflow: hidden; }
 th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 th { font-size: 0.85rem; font-weight: 600; color: var(--muted); white-space: nowrap; cursor: pointer; user-select: none; }
 thead th { background: var(--field); }
@@ -497,12 +501,12 @@ td.qty span { display: inline-block; min-width: 3ch; text-align: center; font-si
 td.qty small.unit { margin: 0 4px 0 0; font-size: 0.8rem; }
 td.name .notes { font-weight: 400; width: 0; min-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* Status badges are squared with an outline (and an icon for low stock, to order and on order), so they never look like the round tag chips. */
-.badge { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; padding: 2px 8px 2px 6px; border-radius: 4px; background: var(--raised); box-shadow: inset 0 0 0 1px rgb(143 152 181 / 0.35); font-size: 0.8rem; font-weight: 600; line-height: 1.45; color: var(--muted); vertical-align: middle; }
+.badge { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; padding: 2px 8px 2px 6px; border-radius: 4px; background: var(--raised);  font-size: 0.8rem; font-weight: 600; line-height: 1.45; color: var(--muted); vertical-align: middle; }
 .tags .badge { margin-left: 0; }
-.badge:is(.broken, .low) { color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 55%, transparent); }
-.badge:is(.on-order, .damaged) { color: var(--pending); background: color-mix(in srgb, var(--pending) 8%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pending) 55%, transparent); }
-.badge:is(.to-order, .to-make) { color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent); }
-.badge.making { color: var(--pending); background: color-mix(in srgb, var(--pending) 8%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pending) 55%, transparent); }
+.badge:is(.broken, .low) { color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, transparent);  }
+.badge:is(.on-order, .damaged) { color: var(--pending); background: color-mix(in srgb, var(--pending) 8%, transparent);  }
+.badge:is(.to-order, .to-make) { color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent);  }
+.badge.making { color: var(--pending); background: color-mix(in srgb, var(--pending) 8%, transparent);  }
 .badge.made { color: var(--text); }
 .badge:is(.low, .to-order, .on-order, .to-make, .making)::before { content: ''; flex: none; width: 12px; height: 12px; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; }
 .badge.low { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2 1 21h22L12 2zm-1 7h2v6h-2zm0 8h2v2h-2z'/%3E%3C/svg%3E"); }
@@ -535,7 +539,7 @@ button.tag.removed { padding: 3px 12px; font-size: 0.875rem; text-decoration: li
 
 /* Dialogs */
 /* The dialog itself is the rounded panel, so its scrollbar sits inside it and the sticky buttons never poke out at the corners. */
-dialog { border: 1px solid var(--border); border-radius: 16px; padding: 0; background: var(--surface); box-shadow: var(--float-shadow); width: min(480px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; color: var(--text); }
+dialog { border: 1px solid transparent; border-radius: 16px; padding: 0; background: var(--surface); box-shadow: var(--float-shadow); width: min(480px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; color: var(--text); }
 dialog::backdrop { background: var(--backdrop); backdrop-filter: blur(3px); }
 dialog .card { padding: 24px; border: none; }
 /* What's new: one section per version, its heading small and blue with a line above. */
@@ -560,7 +564,7 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
 }
 /* Catalog search sits apart at the top of Add part, since picking a result fills in the fields below it. */
 .catalog-search[hidden] { display: none; }
-.catalog-search { padding: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.catalog-search { padding: 14px; background: var(--bg); border: 1px solid transparent; border-radius: 12px; }
 .catalog-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .catalog-row > * { color: var(--text); font-weight: 400; font-size: 1rem; }
 .catalog-row input { flex: 999 1 200px; } /* the supplier picker only grows once it wraps under the search */
@@ -586,9 +590,9 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
 .no-photo[data-made="other"]::before { --box: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z'/%3E%3C/svg%3E"); }
 .thumb { width: 44px; height: 44px; }
 .part-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.part-photo { width: 64px; height: 64px; border: 1px solid var(--border); }
+.part-photo { width: 64px; height: 64px; border: 1px solid transparent; }
 /* Light mode: white photos on white rows get an edge. */
-:root[data-theme="light"] :is(.thumb, img.row-photo) { border: 1px solid var(--border); }
+:root[data-theme="light"] :is(.thumb, img.row-photo) { border: 1px solid transparent; }
 /* Fields most parts leave empty fold under More details. */
 .more-details summary { cursor: pointer; color: var(--accent); font-size: 0.875rem; font-weight: 500; }
 .more-fields { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
@@ -641,7 +645,7 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
     align-items: center;
     row-gap: 2px;
     background: var(--surface);
-    border: 1px solid var(--border);
+    border: 1px solid transparent;
     border-radius: 12px;
     margin-bottom: 8px;
     padding: 8px 8px 8px 12px;
@@ -670,7 +674,7 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   td[data-label="In use"] .in-use { grid-column: 2 / -1; grid-row: 3; margin-top: 6px; font-size: 0.85rem; }
   td[data-label="In use"] .add-to { grid-column: 3; grid-row: 2; justify-self: end; margin: 2px 0 0 8px; }
   tr:has(td[data-label="In use"]) td.card-meta { grid-column: 2; }
-  tbody tr.waiting { border: 1px dashed var(--pending); box-shadow: none; }
+  tbody tr.waiting { box-shadow: inset 3px 0 var(--pending); }
   tr.loading td[data-label="In use"] { display: none; }
   td.qty .skeleton { height: 40px; width: 120px; border-radius: 999px; }
   tbody tr.group { background: none; margin: 18px 0 8px; }
@@ -782,7 +786,7 @@ dialog:has(.grid-dialog) { width: min(960px, calc(100% - 32px)); }
 .grid > span.on { color: var(--accent); font-weight: 700; }
 button.spot { position: relative; height: 34px; min-height: 0; padding: 0 0 7px; border: 1px solid transparent; border-radius: 4px; background: var(--field); color: var(--text); font-size: 0.8rem; line-height: 1; }
 button.spot::after { content: ''; position: absolute; left: 32%; right: 32%; bottom: 6px; height: 3px; border-radius: 2px; background: var(--field-border); opacity: 0.55; }
-button.spot.full { background: var(--raised); border-color: var(--field-border); }
+button.spot.full { background: var(--raised); }
 button.spot:hover { background: var(--raised-hover); }
 /* Above its neighbours, so its glow shows on every side. */
 button.spot[aria-pressed="true"] { z-index: 1; background: var(--accent-gradient); border-color: transparent; color: var(--accent-text); }
@@ -800,7 +804,7 @@ button.spot[aria-pressed="true"]::after { background: currentColor; opacity: 0.8
 dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
 .adders { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 12px; }
 .adder input[type="number"] { min-width: 0; padding-inline: 10px; }
-.adder { display: block; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--field); }
+.adder { display: block; padding: 14px; border: 1px solid transparent; border-radius: 12px; background: var(--field); }
 .collapsible > summary { display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; color: var(--accent); list-style: none; }
 /* Add buttons and the add forms' headings start with the same drawn plus. */
 :is(#add, .toolbar > button:last-child, [data-start="#add"]) { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
@@ -915,7 +919,7 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
   gap: 12px;
   padding: 8px 8px 8px 16px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: 14px;
   box-shadow: var(--float-shadow);
   z-index: 6;
@@ -951,7 +955,7 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
 .guide li + li { margin-top: 4px; }
 .guide img { max-width: 100%; height: auto; vertical-align: top; border-radius: 10px; }
 .guide code { font: 0.9em ui-monospace, monospace; background: var(--raised); padding: 1px 5px; border-radius: 5px; }
-.guide pre { background: var(--field); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
+.guide pre { background: var(--field); border: 1px solid transparent; border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
 .guide pre code { background: none; padding: 0; }
 .guide blockquote { margin: 16px 0; padding: 2px 16px; border-left: 3px solid var(--accent); }
 @media (max-width: 700px) {
@@ -962,3 +966,8 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
 /* Filled buttons rest on a soft shadow instead of a border; buttons that are only text or a pill (sort, part name, Add to, links) stay flat. */
 button:is(:not([class]), .secondary, .icon, .step, .danger, .active, #scan, #filters-toggle, #scan-barcode, #project, #apps-toggle), .order-tabs button { box-shadow: var(--btn-shadow); }
 :is(#order-list, #build-list) button.danger, .menu-row button.icon, .members button.danger { box-shadow: none; }
+
+/* Surfaces rest on a soft shadow instead of a border. */
+:is(.card, .error, .problems, .guides-link, .filters, table, .catalog-search, .adder, .toast, .guide pre, .menu, .types label, .part-photo, .thumb, img.row-photo) { box-shadow: var(--card-shadow); }
+.menu, dialog, .toast { box-shadow: var(--float-shadow); }
+@media (max-width: 700px) { tbody tr:is([data-id], .loading) { box-shadow: var(--card-shadow); } }
