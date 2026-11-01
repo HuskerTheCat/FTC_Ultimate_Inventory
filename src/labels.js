@@ -85,10 +85,16 @@ function brandedQr(url) {
   </svg>`;
 }
 
-// Prints a table. groups is [[heading, rows]], each row a list of cell texts; a blank heading prints no heading row.
-export function printSheet(title, subtitle, headers, groups) {
+// Table print styles: Stylized has the brand header, Basic is plain, Compact fits the most rows on a page.
+export const SHEET_STYLES = { stylized: 'Stylized', basic: 'Basic', compact: 'Compact' };
+
+// Prints a table in one of SHEET_STYLES. groups is [[heading, rows]], each row a list of cell texts; a blank heading
+// prints no heading row.
+export function printSheet(title, subtitle, headers, groups, style) {
+  if (!SHEET_STYLES[style]) throw new Error(`Unknown sheet style: ${style}`);
   const sheet = document.createElement('div');
   sheet.id = 'sheet';
+  sheet.className = style;
   const head = document.createElement('thead');
   head.append(tableRow('th', headers));
   const body = document.createElement('tbody');
