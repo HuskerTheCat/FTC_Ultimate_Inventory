@@ -33,6 +33,8 @@ const serviceWorker = {
 // The Windows and Android builds use `--mode app`, which checks GitHub releases for updates instead.
 export default defineConfig({
   base: './',
+  // The contour lines go inside the stylesheet (src/style.css), so they arrive with it; other assets follow Vite's default.
+  build: { assetsInlineLimit: (file) => (file.endsWith('/src/topo.svg') ? true : undefined) },
   define: { __APP_VERSION__: JSON.stringify(version), __BUILD_ID__: JSON.stringify(buildId), __RULES_VERSION__: rulesMatch[1] },
   plugins: [versionFile, serviceWorker, guides()],
 });

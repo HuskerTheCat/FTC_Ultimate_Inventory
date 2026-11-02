@@ -367,21 +367,26 @@ function forgetConnection() {
 
 // ---------- screens ----------
 
-// The inventory's grey placeholder from index.html, kept before the first screen replaces it.
-const loadingScreen = app.querySelector('.first-inventory');
-// Its rows and column headers also stand in for the parts until they arrive.
-const skeletonRows = () => loadingScreen.querySelector('tbody').innerHTML;
-const skeletonHead = () => loadingScreen.querySelector('thead tr').innerHTML;
+// index.html's first screens (see the note there), kept before the real screen replaces them. A copy of one can be shown again.
+const firstScreens = Object.fromEntries([...app.querySelectorAll('[data-first]')].map((screen) => [screen.dataset.first, screen]));
+function firstScreen(name) {
+  const screen = firstScreens[name].cloneNode(true);
+  delete screen.dataset.first;
+  screen.inert = false;
+  return screen;
+}
+// The loading screen's rows and column headers also stand in for the parts until they arrive.
+const skeletonRows = () => firstScreens.inventory.querySelector('tbody').innerHTML;
+const skeletonHead = () => firstScreens.inventory.querySelector('thead tr').innerHTML;
 
 // Shown while joining the team after signing in: the inventory screen with its controls disabled and grey bars for the data.
 function renderLoading() {
-  const screen = loadingScreen.cloneNode(true);
-  screen.classList.remove('first-inventory');
+  const screen = firstScreen('inventory');
   screen.querySelector('.brand .name').textContent = state.connection.teamName;
   app.replaceChildren(screen);
 }
 
-// The team's program and number, as on the welcome screen's forms.
+// The team's program and number, as on the welcome screen (index.html).
 const teamFields = () => `
   <div class="teamid">
     <select name="program" aria-label="Program">${PROGRAMS.map((p) => `<option>${p}</option>`).join('')}</select>
@@ -392,37 +397,7 @@ const teamFields = () => `
 const joinCodeFrom = (text) => new URLSearchParams(text.split('#')[1]).get('join') ?? text;
 
 function renderWelcome() {
-  app.innerHTML = `
-    <main class="center wide">
-      ${lockup('FTC Ultimate')}
-      <p id="error" class="error" role="alert" popover="manual"></p>
-      <div class="card split">
-        <form id="signin">
-          <h2>Sign in to your team</h2>
-          ${teamFields()}
-          <button>Next</button>
-        </form>
-        <form id="join">
-          <h2>New to the team?</h2>
-          <input name="code" required autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Paste your join code" aria-label="Join code" />
-          <div class="row">
-            <button>Join team</button>
-            <button type="button" id="scan-join" class="secondary">Scan QR</button>
-          </div>
-        </form>
-      </div>
-      <div class="card">
-        <h2>Set up a new team</h2>
-        <button id="setup" class="secondary">Start setup</button>
-      </div>
-      <div class="card">
-        <h2>Just looking?</h2>
-        <button id="demo" class="secondary">Try the demo</button>
-      </div>
-      ${GUIDES_LINK}
-    </main>
-    <dialog id="dialog"></dialog>`;
-
+  app.replaceChildren(firstScreen('welcome'));
   wireMenus();
   app.querySelector('#demo').onclick = () => { location.search = 'demo'; };
   app.querySelector('#setup').onclick = renderSetup;
