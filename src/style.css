@@ -6,8 +6,6 @@
 @import '@fontsource/orbitron/latin-800.css';
 
 :root {
-  /* The contour lines, built into the stylesheet (vite.config.js) so they show with the first paint instead of loading after it. */
-  --topo-mask: url(./topo.svg);
   --bg: #151b30;
   --surface: #1f2640;
   --raised: #2a3354;
@@ -102,7 +100,7 @@ body { position: relative; --topo-from: #151b30; --topo-to: #3f6ae0; --topo-line
 /* The gradient stays put. It is as tall as the screen with a phone's address bar hidden, so it still fills the screen once the bar slides away. */
 body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; height: 100lvh; z-index: -1; pointer-events: none; background: linear-gradient(110deg, var(--topo-from) 20%, 68%, var(--topo-to) 100%); }
 /* The contour lines cover the whole page and scroll with it. */
-body::after { content: ''; position: absolute; inset: 0; min-height: 100lvh; z-index: -1; pointer-events: none; background: var(--topo-line); opacity: var(--topo-line-opacity); -webkit-mask: var(--topo-mask) center top / max(100vw, 1280px) auto repeat-y; mask: var(--topo-mask) center top / max(100vw, 1280px) auto repeat-y; }
+body::after { content: ''; position: absolute; inset: 0; min-height: 100lvh; z-index: -1; pointer-events: none; background: var(--topo-line); opacity: var(--topo-line-opacity); -webkit-mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; }
 /* Tied to the scroll, the lines slide back down by 70% of it, so they drift at 30% of the page's speed. will-change lets the browser run it alongside its own scrolling (without it Chrome moves the lines a frame late, which looks jumpy).
    The layer is 30% of the page plus 70% of a screen tall, so at the bottom of the page it ends exactly at the page's end and never makes the page longer. Browsers without scroll-driven animations scroll the lines with the page. */
 @keyframes topo-drift { to { transform: translateY(calc((100% - 100lvh) * 7 / 3)); } }
@@ -121,7 +119,7 @@ body::after { content: ''; position: absolute; inset: 0; min-height: 100lvh; z-i
    over "FTC Ultimate" and its name, on the topographic map of that app's first screens. Always the dark map, like the link preview,
    so it looks the same on both pages whatever mode each app is in. */
 #switching { --topo-to: #3f6ae0; --topo-line: #5b9bff; position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: linear-gradient(110deg, #151b30 20%, 68%, var(--topo-to) 100%); color: #eef1f8; opacity: 0; visibility: hidden; transition: opacity 0.25s, visibility 0s 0.25s; }
-#switching::before { content: ''; position: absolute; inset: 0; background: var(--topo-line); opacity: 0.65; -webkit-mask: var(--topo-mask) center top / max(100vw, 1280px) auto repeat-y; mask: var(--topo-mask) center top / max(100vw, 1280px) auto repeat-y; }
+#switching::before { content: ''; position: absolute; inset: 0; background: var(--topo-line); opacity: 0.65; -webkit-mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; }
 #switching img { position: relative; width: 128px; height: 128px; }
 #switching p { position: relative; display: flex; flex-direction: column; align-items: center; margin: 0; font: 800 1.6rem/1.15 Orbitron, sans-serif; }
 #switching .app-name { font-weight: 500; color: var(--topo-line); }
@@ -496,13 +494,6 @@ tr.loading .with-photo > div:last-child { flex: 1; min-width: 0; }
 td.qty .skeleton { width: 96px; height: 1.3em; }
 @keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
 @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
-/* index.html's first screens: only the one public/first-screen.js picked shows. */
-:root:not([data-first-screen="welcome"]) [data-first="welcome"],
-:root:not([data-first-screen="signin"]) [data-first="signin"],
-:root:not([data-first-screen="inventory"]) [data-first="inventory"] { display: none; }
-/* Text the first screens can't know yet, like the team's name, as a grey bar in its line. */
-.skeleton.text { display: inline-block; vertical-align: middle; }
-.brand .skeleton.text { width: 6em; }
 td.name { font-weight: 600; font-size: 1.05rem; }
 td[data-label="Part #"] { color: var(--muted); white-space: nowrap; }
 a.part-link { display: block; width: fit-content; text-decoration: none; font-weight: 500; }

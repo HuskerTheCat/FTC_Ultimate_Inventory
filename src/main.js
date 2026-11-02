@@ -39,8 +39,6 @@ const lockup = (name, tag = 'h1') => `<div class="lockup">
 // The AGPL license asks anyone hosting a version of the app to offer its source; forks should point this at their own code.
 const SOURCE_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory';
 const STORAGE_KEY = 'ftc-inventory-connection';
-// The Firebase project this device was last signed in to, so the next start can draw the right screen before Firebase has checked.
-const SIGNED_IN_KEY = 'ftc-inventory-signed-in';
 // Opening the app with ?demo runs it on sample data instead of a team's Firebase project (see demo.js).
 const DEMO = new URLSearchParams(location.search).has('demo');
 // Pain and suffering mode is the light theme. The choice is saved on this device only.
@@ -367,26 +365,51 @@ function forgetConnection() {
 
 // ---------- screens ----------
 
-// index.html's first screens (see the note there), kept before the real screen replaces them. A copy of one can be shown again.
-const firstScreens = Object.fromEntries([...app.querySelectorAll('[data-first]')].map((screen) => [screen.dataset.first, screen]));
-function firstScreen(name) {
-  const screen = firstScreens[name].cloneNode(true);
-  delete screen.dataset.first;
-  screen.inert = false;
-  return screen;
-}
-// The loading screen's rows and column headers also stand in for the parts until they arrive.
-const skeletonRows = () => firstScreens.inventory.querySelector('tbody').innerHTML;
-const skeletonHead = () => firstScreens.inventory.querySelector('thead tr').innerHTML;
+// Grey placeholder rows shaped like part rows, shown until the inventory arrives.
+const skeletonRows = () => [70, 45, 60, 80, 50, 65].map((width) => `
+  <tr class="loading" aria-hidden="true">
+    <td class="name"><div class="with-photo">
+      <div class="skeleton row-photo"></div>
+      <div><div class="skeleton line" style="width: ${width}%"></div><div class="tags"><div class="skeleton pill"></div><div class="skeleton pill"></div></div></div>
+    </div></td>
+    <td data-label="Part #"><div class="skeleton"></div></td>
+    <td data-label="Qty" class="qty"><div class="skeleton"></div></td>
+    <td data-label="In use"><div class="skeleton"></div></td>
+    <td data-label="Location"><div class="skeleton"></div></td>
+    <td data-label="Supplier"><div class="skeleton"></div></td>
+    <td data-label="Category"><div class="skeleton"></div></td>
+  </tr>`).join('');
 
-// Shown while joining the team after signing in: the inventory screen with its controls disabled and grey bars for the data.
+// The main inventory's column headers, shown while the real ones wait for the parts.
+const skeletonHead = ['Item', 'Part #', 'Qty', 'In use', 'Location', 'Supplier', 'Category'].map((label) => `<th>${label}</th>`).join('');
+
+// Shown while signing in and joining the team: the inventory screen with its controls disabled and grey bars for the data.
 function renderLoading() {
-  const screen = firstScreen('inventory');
-  screen.querySelector('.brand .name').textContent = state.connection.teamName;
-  app.replaceChildren(screen);
+  app.innerHTML = `<main aria-busy="true" aria-label="Loading inventory">
+    <header>
+      ${lockup(esc(state.connection.teamName))}
+      <div class="row">
+        <button class="secondary" disabled>${ICON_SCAN}<span>Scan</span></button>
+        <button class="icon" disabled aria-label="Menu">${ICON_MENU}</button>
+      </div>
+    </header>
+    <div class="projectpick">
+      <div class="projectmenu"><button id="project" class="secondary" disabled><span class="skeleton"></span></button></div>
+    </div>
+    <div class="toolbar">
+      <input type="search" placeholder="Search parts…" disabled />
+      <button class="secondary" disabled>${ICON_FILTER}<span>Filters</span></button>
+      <button class="icon" disabled aria-label="More">${ICON_MORE}</button>
+      <button disabled>${ICON_PLUS}<span>Add part</span></button>
+    </div>
+    <table>
+      <thead><tr>${skeletonHead}</tr></thead>
+      <tbody>${skeletonRows()}</tbody>
+    </table>
+  </main>`;
 }
 
-// The team's program and number, as on the welcome screen (index.html).
+// The team's program and number, as on the welcome screen's forms.
 const teamFields = () => `
   <div class="teamid">
     <select name="program" aria-label="Program">${PROGRAMS.map((p) => `<option>${p}</option>`).join('')}</select>
@@ -397,7 +420,37 @@ const teamFields = () => `
 const joinCodeFrom = (text) => new URLSearchParams(text.split('#')[1]).get('join') ?? text;
 
 function renderWelcome() {
-  app.replaceChildren(firstScreen('welcome'));
+  app.innerHTML = `
+    <main class="center wide">
+      ${lockup('FTC Ultimate')}
+      <p id="error" class="error" role="alert" popover="manual"></p>
+      <div class="card split">
+        <form id="signin">
+          <h2>Sign in to your team</h2>
+          ${teamFields()}
+          <button>Next</button>
+        </form>
+        <form id="join">
+          <h2>New to the team?</h2>
+          <input name="code" required autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Paste your join code" aria-label="Join code" />
+          <div class="row">
+            <button>Join team</button>
+            <button type="button" id="scan-join" class="secondary">Scan QR</button>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Set up a new team</h2>
+        <button id="setup" class="secondary">Start setup</button>
+      </div>
+      <div class="card">
+        <h2>Just looking?</h2>
+        <button id="demo" class="secondary">Try the demo</button>
+      </div>
+      ${GUIDES_LINK}
+    </main>
+    <dialog id="dialog"></dialog>`;
+
   wireMenus();
   app.querySelector('#demo').onclick = () => { location.search = 'demo'; };
   app.querySelector('#setup').onclick = renderSetup;
@@ -688,7 +741,7 @@ function renderInventory() {
       <button id="select-done" class="secondary">Done</button>
     </div>
     <table aria-busy="true">
-      <thead><tr>${skeletonHead()}</tr></thead>
+      <thead><tr>${skeletonHead}</tr></thead>
       <tbody id="rows">${skeletonRows()}</tbody>
     </table>
     <button id="add-more" class="secondary accent" hidden></button>
@@ -3969,20 +4022,13 @@ async function start() {
   }
 
   fb.connect(state.connection.config);
-  if (DEMO || localStorage.getItem(SIGNED_IN_KEY) === state.connection.config.projectId) renderLoading();
-  else renderSignIn();
+  renderLoading();
   let stopWatching = [];
   const enterTeam = async (user) => {
     stopWatching.forEach((stop) => stop());
     state.user = null;
     state.loaded.clear();
-    if (!user) {
-      if (!DEMO) localStorage.removeItem(SIGNED_IN_KEY);
-      // Already drawn by start() unless there's an error to show; drawing it again would clear what the browser filled in.
-      return app.querySelector('#auth') && !state.signInError ? undefined : renderSignIn();
-    }
-    if (!DEMO) localStorage.setItem(SIGNED_IN_KEY, state.connection.config.projectId);
-    renderLoading();
+    if (!user) return renderSignIn();
     try {
       const createdTeam = await fb.ensureMembership(user, state.connection, state.newName || nameOf({ email: user.email }), state.acceptedPrivacy);
       // Signing in by team number reads join/info, so it must exist before the owner ever opens Team.
