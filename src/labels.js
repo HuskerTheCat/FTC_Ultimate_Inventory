@@ -7,9 +7,9 @@ import TOPO from './topo.svg?raw';
 export const LABEL_SHEET_URL = 'https://www.onlinelabels.com/products/ol911';
 export const LABEL_STYLES = { normal: 'Normal', stylized: 'Stylized', mini: 'Mini' };
 const PER_PAGE = { normal: 21, stylized: 21, mini: 90 };
-// Each contour line of the topographic map with its bounds, so a stylized label draws only the lines on its patch.
-const CONTOURS = TOPO.match(/ d="([^"]+)"/)[1].split(/(?=M)/).map((d) => {
-  const numbers = d.match(/[\d.]+/g).map(Number);
+// Each piece of contour line of the topographic map with its bounds, so a stylized label draws only the lines on its patch.
+const CONTOURS = [...TOPO.matchAll(/ d="([^"]+)"/g)].map((m) => m[1]).join('').split(/(?=M)/).map((d) => {
+  const numbers = d.match(/-?[\d.]+/g).map(Number);
   const xs = numbers.filter((_, i) => i % 2 === 0);
   const ys = numbers.filter((_, i) => i % 2 === 1);
   return { d, left: Math.min(...xs), right: Math.max(...xs), top: Math.min(...ys), bottom: Math.max(...ys) };

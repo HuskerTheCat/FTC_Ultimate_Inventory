@@ -289,7 +289,7 @@ Softly rounded, never pill-shaped by default. Controls use 10px, menus 12px, pan
 Surface table with a field-colored header, 12px/14px cells and thin row dividers. Names are 600 with a 44px white photo tile (supplier photos are shot on white) or a faint box icon showing how the part is made. Quantities are big and bold between round −/+ steppers. Waiting rows are diagonally striped with an amber left edge; selected rows get a blue wash and a blue left edge. Loading rows use shimmering skeleton bars.
 
 ### Topo Background (signature)
-A navy-to-blue gradient (110°) with `src/topo.svg` contour lines masked in the accent color at 65% (45% light), drifting at 30% of scroll speed where scroll-driven animation exists and motion is allowed. The inventory screen shows it as a 320px band behind the header at 30% (22% light), fading down.
+A navy-to-blue gradient (110°) with `src/topo.svg` contour lines and their glow (`src/topo-glow.webp`) masked in the accent color at 65% (45% light), drifting at 30% of scroll speed where scroll-driven animation exists and motion is allowed. The inventory screen shows it as a 320px band behind the header at 30% (22% light), fading down.
 
 ## Do's and Don'ts
 

@@ -99,8 +99,9 @@ body { position: relative; --topo-from: #151b30; --topo-to: #3f6ae0; --topo-line
 :root[data-theme="light"] body { --topo-from: #eef1f7; --topo-to: #b9cdf7; --topo-line: #2563d9; --topo-line-opacity: 0.45; }
 /* The gradient stays put. It is as tall as the screen with a phone's address bar hidden, so it still fills the screen once the bar slides away. */
 body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; height: 100lvh; z-index: -1; pointer-events: none; background: linear-gradient(110deg, var(--topo-from) 20%, 68%, var(--topo-to) 100%); }
-/* The contour lines cover the whole page and scroll with it. */
-body::after { content: ''; position: absolute; inset: 0; min-height: 100lvh; z-index: -1; pointer-events: none; background: var(--topo-line); opacity: var(--topo-line-opacity); -webkit-mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; }
+/* The contour lines cover the whole page and scroll with it. Both files are built to redraw cheaply: the glow is a ready-blurred image, and topo.svg
+   holds the map 16 times over, since a page taller than one copy makes Chrome redraw the whole repeating map at once (slow, and blurry on phones). */
+body::after { content: ''; position: absolute; inset: 0; min-height: 100lvh; z-index: -1; pointer-events: none; background: var(--topo-line); opacity: var(--topo-line-opacity); -webkit-mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y, url(./topo-glow.webp) center top / max(100vw, 1280px) auto repeat-y; mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y, url(./topo-glow.webp) center top / max(100vw, 1280px) auto repeat-y; }
 /* Tied to the scroll, the lines slide back down by 70% of it, so they drift at 30% of the page's speed. will-change lets the browser run it alongside its own scrolling (without it Chrome moves the lines a frame late, which looks jumpy).
    The layer is 30% of the page plus 70% of a screen tall, so at the bottom of the page it ends exactly at the page's end and never makes the page longer. Browsers without scroll-driven animations scroll the lines with the page. */
 @keyframes topo-drift { to { transform: translateY(calc((100% - 100lvh) * 7 / 3)); } }
@@ -119,7 +120,7 @@ body::after { content: ''; position: absolute; inset: 0; min-height: 100lvh; z-i
    over "FTC Ultimate" and its name, on the topographic map of that app's first screens. Always the dark map, like the link preview,
    so it looks the same on both pages whatever mode each app is in. */
 #switching { --topo-to: #3f6ae0; --topo-line: #5b9bff; position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: linear-gradient(110deg, #151b30 20%, 68%, var(--topo-to) 100%); color: #eef1f8; opacity: 0; visibility: hidden; transition: opacity 0.25s, visibility 0s 0.25s; }
-#switching::before { content: ''; position: absolute; inset: 0; background: var(--topo-line); opacity: 0.65; -webkit-mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y; }
+#switching::before { content: ''; position: absolute; inset: 0; background: var(--topo-line); opacity: 0.65; -webkit-mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y, url(./topo-glow.webp) center top / max(100vw, 1280px) auto repeat-y; mask: url(./topo.svg) center top / max(100vw, 1280px) auto repeat-y, url(./topo-glow.webp) center top / max(100vw, 1280px) auto repeat-y; }
 #switching img { position: relative; width: 128px; height: 128px; }
 #switching p { position: relative; display: flex; flex-direction: column; align-items: center; margin: 0; font: 800 1.6rem/1.15 Orbitron, sans-serif; }
 #switching .app-name { font-weight: 500; color: var(--topo-line); }
