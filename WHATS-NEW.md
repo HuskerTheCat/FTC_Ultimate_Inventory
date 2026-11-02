@@ -10,9 +10,10 @@ List only the bigger changes every user would notice. Small or technical changes
 
 **Team owners:** re-publish the Firebase rules (rules version 10).
 
-- New look.
-- Much faster.
-- Damaged and broken part counts.
+- **New look:** cleaner design, glowing topo background and a brighter dark theme.
+- **Much faster:** smoother loading and scrolling, and your team number goes straight to sign-in.
+- Track how many of a part are damaged or broken.
+- Stylized, Basic or Compact printed sheets.
 - Bug fixes and small improvements.
 
 ## v0.6.4 · Oct 23, 2026
