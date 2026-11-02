@@ -82,15 +82,15 @@ const SAMPLE_PARTS = [
   ['Yellow Jacket motor 312 RPM', '5203-2402-0019', 6, 'Shelf A', 'goBILDA', 'Electronics/Motors', ['drivetrain'], { notes: 'Two of these have a worn encoder cable. Test before using.', minQuantity: 4 }],
   ['Yellow Jacket motor 435 RPM', '5203-2402-0014', 4, 'Shelf A', 'goBILDA', 'Electronics/Motors', ['drivetrain']],
   ['Core Hex motor', 'REV-41-1300', 3, 'Shelf A', 'REV Robotics', 'Electronics/Motors', ['intake']],
-  ['HD Hex motor 40:1', 'REV-41-1301', 2, 'Shelf A', 'REV Robotics', 'Electronics/Motors', ['lift'], { condition: 'used', notes: 'Spares from last season’s arm.' }],
+  ['HD Hex motor 40:1', 'REV-41-1301', 2, 'Shelf A', 'REV Robotics', 'Electronics/Motors', ['lift'], { notes: 'Spares from last season’s arm.' }],
   ['Speed servo', '2000-0025-0003', 5, 'Bin 1', 'goBILDA', 'Electronics/Servos', ['intake'], { broken: 1 }],
   ['Torque servo', '2000-0025-0002', 3, 'Bin 1', 'goBILDA', 'Electronics/Servos', ['claw'], { notes: 'Use for the claw. The speed servo is too weak.' }],
-  ['Super speed servo', '2000-0025-0001', 2, 'Bin 1', 'goBILDA', 'Electronics/Servos', ['claw'], { condition: 'used' }],
+  ['Super speed servo', '2000-0025-0001', 2, 'Bin 1', 'goBILDA', 'Electronics/Servos', ['claw'], { damaged: 1 }],
   ['Touch sensor', 'REV-31-1425', 3, 'Bin 1', 'REV Robotics', 'Electronics/Sensors', ['lift']],
   ['Control Hub', 'REV-31-1595', 1, 'Electronics drawer', 'REV Robotics', 'Electronics/Controllers', ['competition'], { notes: 'Firmware 1.8. Update only at the shop, never at a competition.' }],
   ['Expansion Hub', 'REV-31-1153', 1, 'Electronics drawer', 'REV Robotics', 'Electronics/Controllers', []],
   ['Driver Hub', 'REV-31-1596', 2, 'Drive team box', 'REV Robotics', 'Electronics/Controllers', ['competition']],
-  ['Gamepad', 'REV-31-2983', 3, 'Drive team box', 'REV Robotics', 'Electronics/Controllers', ['competition'], { condition: 'used', damaged: 1, notes: 'The one with tape on it has a drifting left stick.' }],
+  ['Gamepad', 'REV-31-2983', 3, 'Drive team box', 'REV Robotics', 'Electronics/Controllers', ['competition'], { damaged: 1, notes: 'The one with tape on it has a drifting left stick.' }],
   ['12V Slim battery', 'REV-31-1302', 3, 'Battery cart', 'REV Robotics', 'Electronics/Power', ['competition'], { notes: 'Charge the night before. Number 4 holds charge poorly, use it for practice only.', minQuantity: 4 }],
   ['Battery charger', 'REV-31-1299', 2, 'Battery cart', 'REV Robotics', 'Electronics/Power', []],
   ['Switch cable and bracket', 'REV-31-1387', 2, 'Electronics drawer', 'REV Robotics', 'Electronics/Power', []],
@@ -264,9 +264,9 @@ function loadSamples() {
   // Labels the team has already printed: the Shelf A bin and a few parts.
   for (const name of ['Control Hub', 'Speed servo', '12V Slim battery']) collections.printed.set(`part-${ids.get(name)}`, { at: hoursAgo(100) });
   collections.printed.set(`bin-${MAIN_PROJECT}-${encodeURIComponent('Shelf A')}`, { at: hoursAgo(100) });
-  const oldServo = { projectId: MAIN_PROJECT, name: 'Servo horn (old style)', partNumber: '', quantity: 3, location: 'Bin 1', supplier: 'goBILDA', category: 'Hardware', tags: [], unit: 'pcs', condition: 'used', notes: '' };
+  const oldServo = { projectId: MAIN_PROJECT, name: 'Servo horn (old style)', partNumber: '', quantity: 3, location: 'Bin 1', supplier: 'goBILDA', category: 'Hardware', tags: [], unit: 'pcs', condition: 'new', notes: '' };
   write('trash', 'part_demo-old-servo', { kind: 'part', docId: 'demo-old-servo', name: oldServo.name, data: oldServo, uses: [], deletedBy: USER.email, deletedAt: hoursAgo(72) });
-  const oldMotor = { projectId: MAIN_PROJECT, name: 'NeveRest 40 motor', partNumber: '', quantity: 2, location: 'Shelf A', supplier: 'AndyMark', category: 'Electronics/Motors', tags: ['drivetrain'], unit: 'pcs', condition: 'used', notes: 'Retired, replaced by Yellow Jackets.' };
+  const oldMotor = { projectId: MAIN_PROJECT, name: 'NeveRest 40 motor', partNumber: '', quantity: 2, location: 'Shelf A', supplier: 'AndyMark', category: 'Electronics/Motors', tags: ['drivetrain'], unit: 'pcs', condition: 'new', notes: 'Retired, replaced by Yellow Jackets.' };
   write('trash', 'part_demo-old-motor', { kind: 'part', docId: 'demo-old-motor', name: oldMotor.name, data: oldMotor, uses: [], deletedBy: 'gabby@example.com', deletedAt: hoursAgo(10) });
   const oldOrder = { name: 'Extra battery', partNumber: 'REV-31-1302', quantity: 1, supplier: 'REV Robotics', partId: ids.get('12V Slim battery') };
   write('trash', 'order_demo-old-order', { kind: 'order', docId: 'demo-old-order', name: oldOrder.name, data: oldOrder, uses: [], deletedBy: 'grace@example.com', deletedAt: hoursAgo(30) });

@@ -66,9 +66,11 @@ const DETAIL_FIELDS = [
   ['notes', 'Notes'],
 ];
 const UNITS = ['pcs', 'pack', 'box', 'm', 'ft'];
-const CONDITIONS = { '': 'Condition not set', new: 'New', used: 'Used', damaged: 'Damaged', broken: 'Broken' };
+const CONDITIONS = { '': 'Condition not set', new: 'New', damaged: 'Damaged', broken: 'Broken' };
+// Used is no longer offered. A part saved with it keeps and shows it until someone picks another condition.
+const CONDITION_LABELS = { ...CONDITIONS, used: 'Used' };
 // For a part the team has more than one of: how many are damaged and how many broken. Stored only when above 0.
-const UNIT_CONDITIONS = [['damaged', 'How many damaged'], ['broken', 'How many broken']];
+const UNIT_CONDITIONS = [['damaged', 'damaged'], ['broken', 'broken']];
 // How a part the team makes itself is made. Parts without `made` are bought.
 const MADE = { '3d-print': '3D printed', cnc: 'CNC machined', laser: 'Laser cut', other: 'Other' };
 
@@ -1320,7 +1322,7 @@ function csvPart(values, projectId) {
       supplier: text('supplier'),
       category: canonicalCategory(text('category')).slice(0, 200),
       unit: text('unit'),
-      condition: Object.hasOwn(CONDITIONS, condition) ? condition : '',
+      condition: Object.hasOwn(CONDITION_LABELS, condition) ? condition : '',
       notes: text('notes', 1000),
       tags: parseTags(text('tags')),
       ...(made && { made }),
@@ -1721,7 +1723,7 @@ const buildBadge = (partId) => [['need', 'to-make', 'not started'], ['making', '
   .join('');
 const madeBadge = (made) => (made ? `<small class="badge made">${MADE[made]}</small>` : '');
 const conditionBadge = (condition) => ['used', 'damaged', 'broken'].includes(condition)
-  ? `<small class="badge ${condition}">${CONDITIONS[condition]}</small>` : '';
+  ? `<small class="badge ${condition}">${CONDITION_LABELS[condition]}</small>` : '';
 // How many of the part are damaged or broken. Never more than are in stock, since − and + don't change these counts.
 const unitsBadge = (p) => UNIT_CONDITIONS
   .map(([key]) => [key, Math.min(p[key] ?? 0, p.quantity)])
@@ -3100,13 +3102,17 @@ function openPartDialog(part, carry = null, note = '') {
         <summary>More details</summary>
         <div class="more-fields">
         ${input('unit', 'Unit', 'list="unit-list" placeholder="e.g. pcs"')}
-        <label>Condition
+        <div class="condition-field">
+          <label>Condition
           <select name="condition">
-            ${Object.entries(CONDITIONS).map(([value, label]) =>
+            ${Object.entries(values?.condition === 'used' ? CONDITION_LABELS : CONDITIONS).map(([value, label]) =>
               `<option value="${value}" ${value === (values?.condition ?? '') ? 'selected' : ''}>${label}</option>`).join('')}
           </select>
-        </label>
-        ${UNIT_CONDITIONS.map(([key, label]) => input(key, label, 'type="number" min="0" step="1" placeholder="0"')).join('')}
+          </label>
+          <div class="unit-counts">
+            ${UNIT_CONDITIONS.map(([key, label]) => `<label><input name="${key}" value="${esc(values?.[key] ?? '')}" type="number" min="0" step="1" placeholder="0" />${label}</label>`).join('')}
+          </div>
+        </div>
         <label>Notes<textarea name="notes" rows="3" maxlength="1000">${esc(part?.notes ?? '')}</textarea></label>
         </div>
       </details>
@@ -3144,7 +3150,7 @@ function openPartDialog(part, carry = null, note = '') {
   const renderCounts = () => {
     const several = Number(form.quantity.value) > 1;
     for (const [key] of UNIT_CONDITIONS) {
-      form[key].closest('label').hidden = !several;
+      form[key].closest('.unit-counts').hidden = !several;
       // A hidden count isn't saved, so it can't block saving either.
       if (several) form[key].max = form.quantity.value;
       else form[key].removeAttribute('max');
