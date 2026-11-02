@@ -10,6 +10,19 @@ List only the bigger changes every user would notice. Small or technical changes
 
 **Team owners:** re-publish the Firebase rules (rules version 10).
 
+- New look.
+- Much faster.
+- Damaged and broken part counts.
+- Bug fixes and small improvements.
+
+## v0.6.4 · Oct 25, 2026`. Build apps uses that section as the release notes, and stops if it's missing.
+
+List only the bigger changes every user would notice. Small or technical changes go under one last line: `- Bug fixes and small improvements.`
+
+## v0.7.0 · Nov 2, 2026
+
+**Team owners:** re-publish the Firebase rules (rules version 10).
+
 - **New look:** borderless buttons, cards and menus with soft shadows, hover highlights on every button, a brighter dark theme, and the glowing topo map background on every screen.
 - **Much faster:** the app opens and scrolls far more smoothly, and the topo background no longer slows long inventory pages down.
 - Picking your team goes straight to its sign-in form.
