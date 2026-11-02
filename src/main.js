@@ -39,6 +39,8 @@ const lockup = (name, tag = 'h1') => `<div class="lockup">
 // The AGPL license asks anyone hosting a version of the app to offer its source; forks should point this at their own code.
 const SOURCE_URL = 'https://github.com/HuskerTheCat/FTC_Ultimate_Inventory';
 const STORAGE_KEY = 'ftc-inventory-connection';
+// The Firebase project this device was last signed in to, so the next start can draw the right screen before Firebase has checked.
+const SIGNED_IN_KEY = 'ftc-inventory-signed-in';
 // Opening the app with ?demo runs it on sample data instead of a team's Firebase project (see demo.js).
 const DEMO = new URLSearchParams(location.search).has('demo');
 // Pain and suffering mode is the light theme. The choice is saved on this device only.
@@ -4016,12 +4018,19 @@ async function start() {
   }
 
   fb.connect(state.connection.config);
+  if (DEMO || localStorage.getItem(SIGNED_IN_KEY) === state.connection.config.projectId) renderLoading();
+  else renderSignIn();
   let stopWatching = [];
   const enterTeam = async (user) => {
     stopWatching.forEach((stop) => stop());
     state.user = null;
     state.loaded.clear();
-    if (!user) return renderSignIn();
+    if (!user) {
+      if (!DEMO) localStorage.removeItem(SIGNED_IN_KEY);
+      // Already drawn by start() unless there's an error to show; drawing it again would clear what the browser filled in.
+      return app.querySelector('#auth') && !state.signInError ? undefined : renderSignIn();
+    }
+    if (!DEMO) localStorage.setItem(SIGNED_IN_KEY, state.connection.config.projectId);
     renderLoading();
     try {
       const createdTeam = await fb.ensureMembership(user, state.connection, state.newName || nameOf({ email: user.email }), state.acceptedPrivacy);

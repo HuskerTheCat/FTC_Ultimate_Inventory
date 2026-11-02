@@ -1,5 +1,5 @@
 // Opening another FTC Ultimate app on the website: this page fades into that app's loading screen (#switching in index.html),
-// then opens the app, which keeps the same screen up until it is ready (public/switching.js). Browsers with view transitions
+// then opens the app, which shows the same screen on every load until it is ready (public/switching.js). Browsers with view transitions
 // also cross-fade the two pages (style.css). The same file is in Inventory, Competition and Design.
 let prefetched = false;
 
@@ -22,6 +22,5 @@ export async function openApp(link) {
   screen.querySelector('.app-name').textContent = link.textContent.trim();
   document.documentElement.classList.add('switching');
   await Promise.all(screen.getAnimations().map((fade) => fade.finished));
-  sessionStorage.setItem('ftc-ultimate-switching', '1');
   location.href = link.href;
 }
