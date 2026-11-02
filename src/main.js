@@ -367,48 +367,18 @@ function forgetConnection() {
 
 // ---------- screens ----------
 
-// Grey placeholder rows shaped like part rows, shown until the inventory arrives.
-const skeletonRows = () => [70, 45, 60, 80, 50, 65].map((width) => `
-  <tr class="loading" aria-hidden="true">
-    <td class="name"><div class="with-photo">
-      <div class="skeleton row-photo"></div>
-      <div><div class="skeleton line" style="width: ${width}%"></div><div class="tags"><div class="skeleton pill"></div><div class="skeleton pill"></div></div></div>
-    </div></td>
-    <td data-label="Part #"><div class="skeleton"></div></td>
-    <td data-label="Qty" class="qty"><div class="skeleton"></div></td>
-    <td data-label="In use"><div class="skeleton"></div></td>
-    <td data-label="Location"><div class="skeleton"></div></td>
-    <td data-label="Supplier"><div class="skeleton"></div></td>
-    <td data-label="Category"><div class="skeleton"></div></td>
-  </tr>`).join('');
+// The inventory's grey placeholder from index.html, kept before the first screen replaces it.
+const loadingScreen = app.querySelector('.first-inventory');
+// Its rows and column headers also stand in for the parts until they arrive.
+const skeletonRows = () => loadingScreen.querySelector('tbody').innerHTML;
+const skeletonHead = () => loadingScreen.querySelector('thead tr').innerHTML;
 
-// The main inventory's column headers, shown while the real ones wait for the parts.
-const skeletonHead = ['Item', 'Part #', 'Qty', 'In use', 'Location', 'Supplier', 'Category'].map((label) => `<th>${label}</th>`).join('');
-
-// Shown once someone is signed in, while they join the team and the inventory loads: the inventory screen with its controls disabled and grey bars for the data.
+// Shown while joining the team after signing in: the inventory screen with its controls disabled and grey bars for the data.
 function renderLoading() {
-  app.innerHTML = `<main aria-busy="true" aria-label="Loading inventory">
-    <header>
-      ${lockup(esc(state.connection.teamName))}
-      <div class="row">
-        <button class="secondary" disabled>${ICON_SCAN}<span>Scan</span></button>
-        <button class="icon" disabled aria-label="Menu">${ICON_MENU}</button>
-      </div>
-    </header>
-    <div class="projectpick">
-      <div class="projectmenu"><button id="project" class="secondary" disabled><span class="skeleton"></span></button></div>
-    </div>
-    <div class="toolbar">
-      <input type="search" placeholder="Search parts…" disabled />
-      <button class="secondary" disabled>${ICON_FILTER}<span>Filters</span></button>
-      <button class="icon" disabled aria-label="More">${ICON_MORE}</button>
-      <button disabled>${ICON_PLUS}<span>Add part</span></button>
-    </div>
-    <table>
-      <thead><tr>${skeletonHead}</tr></thead>
-      <tbody>${skeletonRows()}</tbody>
-    </table>
-  </main>`;
+  const screen = loadingScreen.cloneNode(true);
+  screen.classList.remove('first-inventory');
+  screen.querySelector('.brand .name').textContent = state.connection.teamName;
+  app.replaceChildren(screen);
 }
 
 // The team's program and number, as on the welcome screen's forms.
@@ -743,7 +713,7 @@ function renderInventory() {
       <button id="select-done" class="secondary">Done</button>
     </div>
     <table aria-busy="true">
-      <thead><tr>${skeletonHead}</tr></thead>
+      <thead><tr>${skeletonHead()}</tr></thead>
       <tbody id="rows">${skeletonRows()}</tbody>
     </table>
     <button id="add-more" class="secondary accent" hidden></button>
