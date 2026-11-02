@@ -347,7 +347,15 @@ function showMessage(heading, html) {
 
 function saveConnection(connection) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(connection));
-  location.reload();
+  state.connection = connection;
+}
+
+// A team picked on the first screens opens without reloading the page: the screen stays until Firebase says whether this device
+// is signed in to the team, then the sign-in form (or the inventory) takes over, with no loading screen in between.
+function openNewTeam(connection) {
+  if (state.connection) return; // a second click while the first was still finding the team
+  saveConnection(connection);
+  openTeam();
 }
 
 // The join secret is only needed to join. Once in, this device forgets it, so the next person to use it can't join with it.
@@ -459,7 +467,7 @@ function renderWelcome() {
     try {
       const { program, teamNumber } = e.target;
       const number = Number(teamNumber.value);
-      saveConnection({ ...await findTeam(await findTeamProject(program.value, number)), program: program.value, teamNumber: number, role: 'member' });
+      openNewTeam({ ...await findTeam(await findTeamProject(program.value, number)), program: program.value, teamNumber: number, role: 'member' });
     } catch (error) {
       showError(error);
     }
@@ -467,7 +475,7 @@ function renderWelcome() {
   app.querySelector('#join').onsubmit = async (e) => {
     e.preventDefault();
     try {
-      saveConnection({ ...await decodeJoinCode(e.target.code.value), role: 'member' });
+      openNewTeam({ ...await decodeJoinCode(e.target.code.value), role: 'member' });
     } catch (error) {
       showError(error);
     }
@@ -529,8 +537,8 @@ function renderSetup() {
       </li>`).join('') + (problems.some((problem) => problem.step) ? '<li class="muted">Then click Create team again.</li>' : '');
       const team = { program: form.program.value, teamNumber: Number(form.teamNumber.value) };
       const signInExisting = list.querySelector('#signin-existing');
-      if (signInExisting) signInExisting.onclick = () => findTeam(config.projectId).then((found) => saveConnection({ ...found, ...team, role: 'member' })).catch(showError);
-      if (!problems.length) saveConnection({ config, secret: newSecret(), teamName: form.teamName.value.trim(), ...team, role: 'owner' });
+      if (signInExisting) signInExisting.onclick = () => findTeam(config.projectId).then((found) => openNewTeam({ ...found, ...team, role: 'member' })).catch(showError);
+      if (!problems.length) openNewTeam({ config, secret: newSecret(), teamName: form.teamName.value.trim(), ...team, role: 'owner' });
     } catch (error) {
       showError(error);
     } finally {
@@ -3961,16 +3969,21 @@ async function registerTeam(user) {
   });
 }
 
+// True when the link brought a team new to this device.
 async function joinFromLink() {
   const code = new URLSearchParams(location.hash.slice(1)).get('join');
-  if (!code) return;
+  if (!code) return false;
   history.replaceState(null, '', location.pathname);
   const joining = await decodeJoinCode(code);
   const current = state.connection;
   // Already on this team: keep the secret, so someone new on this device can join with it.
-  if (current?.config.projectId === joining.config.projectId) return saveConnection({ ...current, secret: joining.secret });
-  if (current && !await askConfirm(`Switch from ${current.teamName} to ${joining.teamName}?`, 'Switch team')) return;
+  if (current?.config.projectId === joining.config.projectId) {
+    saveConnection({ ...current, secret: joining.secret });
+    return false;
+  }
+  if (current && !await askConfirm(`Switch from ${current.teamName} to ${joining.teamName}?`, 'Switch team')) return false;
   saveConnection({ ...joining, role: 'member' });
+  return true;
 }
 
 // A scanned label opened in the browser: remember it until the inventory has loaded.
@@ -4006,6 +4019,7 @@ function dataChanged(key, docs) {
 }
 
 async function start() {
+  let joined = false;
   if (DEMO) {
     fb = await import('./demo.js');
     state.connection = { teamName: 'Demo Team' };
@@ -4013,7 +4027,7 @@ async function start() {
   } else {
     state.connection = JSON.parse(localStorage.getItem(STORAGE_KEY));
     try {
-      await joinFromLink();
+      joined = await joinFromLink();
       labelFromLink();
     } catch (error) {
       showMessage('Couldn’t open the link', esc(error.message));
@@ -4021,8 +4035,15 @@ async function start() {
     if (!state.connection) return renderWelcome();
   }
 
+  // Someone opening their team again is most likely still signed in, so the inventory's loading screen shows until Firebase says so.
+  // A team new to this device goes straight on to its sign-in form.
+  if (!joined) renderLoading();
+  openTeam();
+}
+
+// Connects to the team's Firebase, then follows the sign-in: the sign-in form while signed out, the inventory once in.
+function openTeam() {
   fb.connect(state.connection.config);
-  renderLoading();
   let stopWatching = [];
   const enterTeam = async (user) => {
     stopWatching.forEach((stop) => stop());
