@@ -10,7 +10,7 @@ List only the bigger changes every user would notice. Small or technical changes
 
 **Team owners:** re-publish the Firebase rules (rules version 10).
 
-- **New look:** cleaner design, glowing topo background and a brighter dark theme.
+- **New look:** minor UI overhaul.
 - **Fixed performance issues:** smoother loading and scrolling.
 - Track how many of a part are damaged or broken.
 - Stylized, Basic or Compact printed sheets.
