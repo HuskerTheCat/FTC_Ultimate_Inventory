@@ -139,6 +139,9 @@ body::after { content: ''; position: absolute; inset: 0; min-height: 100lvh; z-i
 .email { overflow-wrap: anywhere; }
 .center-text { text-align: center; padding: 32px 0; }
 #empty p { margin: 0 0 4px; }
+/* After the last part: adds another, centered under the list. */
+#add-more { display: flex; align-items: center; gap: 6px; margin: 16px auto 0; }
+#add-more[hidden] { display: none; }
 /* Computers and tablets: the first screens sit in the middle of the window, with the logo beside the title
    and the welcome and setup cards two across, so they fit without scrolling. */
 @media (min-width: 760px) {
@@ -812,7 +815,7 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
 .collapsible > summary { display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; color: var(--accent); list-style: none; }
 /* Add buttons and the add forms' headings start with the same drawn plus. */
 :is(#add, .toolbar > button:last-child, [data-start="#add"]) { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-:is(#add, .toolbar > button:last-child, [data-start="#add"], .collapsible > summary) svg { flex: none; width: 18px; height: 18px; }
+:is(#add, #add-more, .toolbar > button:last-child, [data-start="#add"], .collapsible > summary) svg { flex: none; width: 18px; height: 18px; }
 /* A closed add box is just its heading, like the other add links; it becomes a box once open. */
 .adder:not([open]) { padding: 4px 0; border-color: transparent; background: none; }
 .collapsible > summary::-webkit-details-marker { display: none; }

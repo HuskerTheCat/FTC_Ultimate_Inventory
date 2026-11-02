@@ -746,6 +746,7 @@ function renderInventory() {
       <thead><tr>${skeletonHead}</tr></thead>
       <tbody id="rows">${skeletonRows()}</tbody>
     </table>
+    <button id="add-more" class="secondary accent" hidden></button>
     <div id="empty" class="muted center-text" hidden><p></p><button id="show-all" class="link" hidden>Show all parts</button></div>
     <p id="elsewhere" class="muted center-text" hidden></p>
     <div id="getting-started" class="card getting-started" hidden>
@@ -804,6 +805,8 @@ function renderInventory() {
   app.querySelector('#bulk-edit').onclick = openBulkEditDialog;
   app.querySelector('#select-done').onclick = () => { state.selected = null; renderRows(); };
   app.querySelector('#add').onclick = () => (currentProject().source ? openPicker() : openPartDialog(null, { location: state.location }));
+  // The button after the last part adds another, the same way as the Add button at the top.
+  app.querySelector('#add-more').onclick = () => app.querySelector('#add').click();
   app.querySelector('#scan').onclick = () => scanCode(dialog).then((text) => text && openScanned(text)).catch(showError);
   app.querySelector('#invite').onclick = () => openTeamDialog().catch(showError);
   app.querySelector('#log').onclick = openLogDialog;
@@ -1097,6 +1100,9 @@ function renderRows() {
   empty.querySelector('p').textContent = all.length ? 'No parts match your filters.'
     : usesParts ? 'No parts yet. Tap “Add parts” to pick parts this project uses.'
       : 'No parts yet. Tap “Add part” to add the first one.';
+  const addMore = app.querySelector('#add-more');
+  addMore.hidden = !rows.length || !!state.selected;
+  addMore.innerHTML = `${ICON_PLUS}<span>${usesParts ? 'Add more parts' : 'Add another part'}</span>`;
   renderElsewhere(usesParts);
   renderPacked();
 }
