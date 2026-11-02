@@ -494,6 +494,13 @@ tr.loading .with-photo > div:last-child { flex: 1; min-width: 0; }
 td.qty .skeleton { width: 96px; height: 1.3em; }
 @keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
 @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+/* The placeholders in index.html, shown until the app's code has drawn its first screen (public/first-screen.js picks one). */
+.first-inventory, [data-first-screen="inventory"] .first-card { display: none; }
+[data-first-screen="inventory"] .first-inventory { display: flex; flex-direction: column; gap: 12px; }
+:is(.first-card, .first-inventory) .skeleton.title { width: 220px; height: 2.2rem; }
+:is(.first-card, .first-inventory) .skeleton.field { width: 100%; height: 44px; border-radius: 10px; }
+.first-inventory header .skeleton.field { width: 120px; }
+.first-inventory .skeleton.row { width: 100%; height: 64px; border-radius: 10px; }
 td.name { font-weight: 600; font-size: 1.05rem; }
 td[data-label="Part #"] { color: var(--muted); white-space: nowrap; }
 a.part-link { display: block; width: fit-content; text-decoration: none; font-weight: 500; }

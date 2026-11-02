@@ -24,6 +24,7 @@
     <link rel="preload" href="/node_modules/@fontsource/orbitron/files/orbitron-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/src/topo.svg" as="image" crossorigin />
     <script src="switching.js"></script>
+    <script src="first-screen.js"></script>
   </head>
   <body>
     <p id="offline-banner" class="status-banner offline" role="status" hidden>Offline. Changes sync when you reconnect.</p>
@@ -32,7 +33,27 @@
     <a id="rules-banner" class="status-banner update" href="https://huskerthecat.github.io/FTC_Ultimate_Inventory/setup.html#updating-the-rules" target="_blank" rel="noopener" hidden>Firebase rules out of date. How to update →</a>
     <a id="open-rules-banner" class="status-banner danger" href="https://huskerthecat.github.io/FTC_Ultimate_Inventory/setup.html#updating-the-rules" target="_blank" rel="noopener" hidden>Your Firebase isn’t secure. How to fix →</a>
     <a id="demo-banner" class="status-banner demo" href="index.html" hidden>Demo only. <u>Set up your team →</u></a>
-    <div id="app"></div>
+    <!-- Grey placeholders until the app's code has drawn its first screen; public/first-screen.js picks which one shows. -->
+    <div id="app">
+      <main class="center first-card" aria-busy="true" aria-label="Loading">
+        <div class="skeleton title"></div>
+        <div class="card">
+          <div class="skeleton field"></div>
+          <div class="skeleton field"></div>
+          <div class="skeleton field"></div>
+        </div>
+      </main>
+      <main class="first-inventory" aria-busy="true" aria-label="Loading inventory">
+        <header><div class="skeleton title"></div><div class="skeleton field"></div></header>
+        <div class="skeleton field"></div>
+        <div class="skeleton row"></div>
+        <div class="skeleton row"></div>
+        <div class="skeleton row"></div>
+        <div class="skeleton row"></div>
+        <div class="skeleton row"></div>
+        <div class="skeleton row"></div>
+      </main>
+    </div>
     <dialog id="ask"></dialog>
     <div id="switching" data-app="inventory" aria-hidden="true"><img src="loading.svg" alt="" /><p><span class="name">FTC Ultimate</span><span class="app-name">Inventory</span></p></div>
     <script type="module" src="/src/main.js"></script>
