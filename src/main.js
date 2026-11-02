@@ -381,7 +381,7 @@ const skeletonRows = () => [70, 45, 60, 80, 50, 65].map((width) => `
 // The main inventory's column headers, shown while the real ones wait for the parts.
 const skeletonHead = ['Item', 'Part #', 'Qty', 'In use', 'Location', 'Supplier', 'Category'].map((label) => `<th>${label}</th>`).join('');
 
-// Shown while signing in and joining the team: the inventory screen with its controls disabled and grey bars for the data.
+// Shown once someone is signed in, while they join the team and the inventory loads: the inventory screen with its controls disabled and grey bars for the data.
 function renderLoading() {
   app.innerHTML = `<main aria-busy="true" aria-label="Loading inventory">
     <header>
@@ -3987,13 +3987,13 @@ async function start() {
   }
 
   fb.connect(state.connection.config);
-  renderLoading();
   let stopWatching = [];
   const enterTeam = async (user) => {
     stopWatching.forEach((stop) => stop());
     state.user = null;
     state.loaded.clear();
     if (!user) return renderSignIn();
+    renderLoading();
     try {
       const createdTeam = await fb.ensureMembership(user, state.connection, state.newName || nameOf({ email: user.email }), state.acceptedPrivacy);
       // Signing in by team number reads join/info, so it must exist before the owner ever opens Team.
