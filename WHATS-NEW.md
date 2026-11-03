@@ -12,6 +12,7 @@ List only the bigger changes every user would notice. Small or technical changes
 
 - **New look:** minor UI overhaul.
 - **Fixed performance issues:** smoother loading and scrolling.
+- **Tabs:** Inventories, Orders, Make list and Locations each have their own tab, along the bottom on phones.
 - Track how many of a part are damaged or broken.
 - Stylized, Basic or Compact printed sheets.
 - Bug fixes and small improvements.

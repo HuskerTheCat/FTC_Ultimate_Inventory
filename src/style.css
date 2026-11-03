@@ -309,6 +309,26 @@ header .brand .app-name { font-size: 1.05rem; }
   header .brand .app-name { font-size: 0.9rem; }
 }
 header .row { flex-wrap: nowrap; }
+/* Inventories, Orders, Make list and Locations, as in Competition. Phones: a bar along the bottom, in thumb reach, which
+   things floating at the bottom sit above (--tabs-h). Computers and tablets: under the header. */
+.tabs { display: flex; gap: 4px; }
+.tabs .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 56px; padding: 6px; background: none; color: var(--muted); font-size: 0.8rem; }
+.tabs .tab[aria-current="page"] { color: var(--accent); }
+@media (hover: hover) { .tabs .tab:not([aria-current]):hover { color: var(--text); } }
+@media (max-width: 700px) {
+  :root:has(.tabs) { --tabs-h: 61px; }
+  .tabs { position: fixed; z-index: 10; left: 0; right: 0; bottom: 0; padding: 4px 8px env(safe-area-inset-bottom); background: var(--surface); border-top: 1px solid var(--border); }
+  #app:has(.tabs) { padding-bottom: calc(104px + var(--tabs-h)); }
+}
+@media (min-width: 701px) {
+  .tabs { margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .tabs .tab { flex: none; flex-direction: row; gap: 8px; min-height: 44px; padding: 8px 16px; border-radius: 10px 10px 0 0; font-size: 1rem; }
+  .tabs .tab[aria-current="page"] { box-shadow: inset 0 -2px var(--accent); }
+}
+/* Orders, Make list and Locations: their page sits in the window like the parts list, not floating like a dialog. */
+#tabpage { position: static; width: auto; max-height: none; overflow: visible; margin: 0; padding: 0; background: none; box-shadow: none; color: inherit; }
+#tabpage .card { box-shadow: var(--card-shadow); }
+#tabpage .card > .row:last-child { bottom: var(--tabs-h, 0px); }
 /* Buttons with an icon and a label: Scan, Filters and the part form's barcode Scan. */
 :is(#scan, #filters-toggle, #scan-barcode) { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); }
 /* Square icon buttons that open a menu: the header menu and More. */
@@ -435,7 +455,7 @@ a.menu-item { min-height: 42px; border-radius: 10px; text-decoration: none; }
 /* Phones: while selecting, the bar floats at the bottom in place of Add part, the count and Done above the actions. */
 @media screen and (max-width: 700px) {
   #bulkbar:not([hidden]) {
-    position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 5; margin: 0; padding: 10px;
+    position: fixed; left: 12px; right: 12px; bottom: calc(12px + var(--tabs-h, 0px) + env(safe-area-inset-bottom)); z-index: 5; margin: 0; padding: 10px;
     display: grid; grid-template-columns: auto auto 1fr; grid-template-areas: "count count done" "all clear edit"; gap: 8px;
     background: var(--surface); border: 1px solid transparent; border-radius: 14px; box-shadow: var(--float-shadow);
   }
@@ -445,8 +465,8 @@ a.menu-item { min-height: 42px; border-radius: 10px; text-decoration: none; }
   #bulkbar #select-none { grid-area: clear; }
   #bulkbar #bulk-edit { grid-area: edit; }
   main:has(#bulkbar:not([hidden])) .toolbar #add { display: none; }
-  main:has(#bulkbar:not([hidden])) .toast { bottom: calc(124px + env(safe-area-inset-bottom)); }
-  #app:has(#bulkbar:not([hidden])) { padding-bottom: 128px; }
+  main:has(#bulkbar:not([hidden])) .toast { bottom: calc(124px + var(--tabs-h, 0px) + env(safe-area-inset-bottom)); }
+  #app:has(#bulkbar:not([hidden])) { padding-bottom: calc(128px + var(--tabs-h, 0px)); }
 }
 
 /* Parts table */
@@ -634,7 +654,7 @@ dialog:has(.part-form) { width: min(720px, calc(100% - 32px)); }
   .toolbar #add {
     position: fixed;
     right: 16px;
-    bottom: calc(16px + env(safe-area-inset-bottom));
+    bottom: calc(16px + var(--tabs-h, 0px) + env(safe-area-inset-bottom));
     z-index: 5;
     min-height: 56px;
     padding: 0 22px;
@@ -957,7 +977,7 @@ dialog:has(.locations) { width: min(720px, calc(100% - 32px)); }
   right: 16px;
   margin: 0 auto;
   width: fit-content;
-  bottom: calc(16px + env(safe-area-inset-bottom));
+  bottom: calc(16px + var(--tabs-h, 0px) + env(safe-area-inset-bottom));
   display: flex;
   align-items: center;
   gap: 12px;

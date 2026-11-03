@@ -132,6 +132,16 @@ const TYPES = {
   },
 };
 
+// The tabs under the header. Inventories is the parts list; the others open their page in its place.
+const TABS = [
+  { id: 'inventories', label: 'Inventories', icon: TYPES.inventory.icon },
+  { id: 'orders', label: 'Orders', icon: ICON_CART, open: openOrdersPage },
+  { id: 'builds', label: 'Make list', icon: ICON_HAMMER, open: openBuildsPage },
+  { id: 'locations', label: 'Locations', icon: ICON_PIN, open: openLocationsPage },
+];
+// The tab open last on this device.
+const TAB_KEY = 'ftc-inventory-tab';
+
 // The unfiltered view that "Reset filters" returns to.
 const DEFAULT_FILTERS = { search: '', category: '', location: '', tag: '', made: '', low: false, sort: 'name', sortDir: 1, group: '' };
 
@@ -671,10 +681,6 @@ function renderInventory() {
         <div class="menuwrap">
           <button id="main-menu-toggle" class="icon" aria-label="Menu" title="Menu" aria-haspopup="true" aria-expanded="false" aria-controls="main-menu">${ICON_MENU}<span class="new-dot" hidden></span></button>
           <div id="main-menu" class="menu right" hidden>
-            <h3>Lists</h3>
-            <button id="orders" class="menu-item">${ICON_CART}Orders</button>
-            <button id="builds" class="menu-item">${ICON_HAMMER}Make list</button>
-            <button id="locations" class="menu-item">${ICON_PIN}Locations</button>
             <h3>History</h3>
             <button id="log" class="menu-item">${ICON_HISTORY}Change log</button>
             <button id="trash" class="menu-item">${ICON_TRASH}Trash</button>
@@ -695,74 +701,80 @@ function renderInventory() {
         </div>
       </div>
     </header>
+    <nav class="tabs" aria-label="Sections">
+      ${TABS.map((tab) => `<button class="tab" data-tab="${tab.id}">${tab.icon}<span>${tab.label}</span></button>`).join('')}
+    </nav>
     <p id="error" class="error" role="alert" popover="manual"></p>
-    <div class="projectpick">
-      <div class="projectmenu menuwrap">
-        <button id="project" class="secondary" aria-haspopup="true" aria-expanded="false" aria-controls="project-menu"><span class="skeleton"></span></button>
-        <div id="project-menu" class="menu" hidden></div>
-      </div>
-    </div>
-    <p id="packed-count" class="muted small" role="status" hidden></p>
-    <div class="toolbar">
-      <input id="search" type="search" placeholder="Search parts…" />
-      <button id="filters-toggle" class="secondary" aria-expanded="false" aria-controls="filters">${ICON_FILTER}<span>Filters</span><b id="filter-count" hidden></b></button>
-      <div class="menuwrap">
-        <button id="more-toggle" class="icon" aria-label="More" title="More" aria-haspopup="true" aria-expanded="false" aria-controls="more-menu">${ICON_MORE}</button>
-        <div id="more-menu" class="menu right" hidden>
-          <button id="select" class="menu-item">${ICON_SELECT}Select parts</button>
-          <button id="print-labels" class="menu-item">${ICON_QR}Print QR labels</button>
-          <button id="print-inventory" class="menu-item">${ICON_PRINT}Print inventory</button>
-          <button id="unpack-all" class="menu-item" hidden>${ICON_BOX}Unpack all</button>
-          <button id="export-csv" class="menu-item">${ICON_DOWNLOAD}Export CSV</button>
-          <button id="import" class="menu-item">${ICON_UPLOAD}Import spreadsheet</button>
+    <dialog id="tabpage" class="tabpage"></dialog>
+    <div id="inventory-page">
+      <div class="projectpick">
+        <div class="projectmenu menuwrap">
+          <button id="project" class="secondary" aria-haspopup="true" aria-expanded="false" aria-controls="project-menu"><span class="skeleton"></span></button>
+          <div id="project-menu" class="menu" hidden></div>
         </div>
       </div>
-      <button id="add" disabled>${ICON_PLUS}<span>Add part</span></button>
-    </div>
-    <div id="filters" class="filters" hidden>
-      <div class="row">
-        <span class="muted small">Filter</span>
-        <select id="category" aria-label="Filter by category"></select>
-        <select id="location" aria-label="Filter by location"></select>
-        <select id="tag" aria-label="Filter by tag"></select>
-        <select id="made" aria-label="Filter by made by"></select>
-        <button id="low" class="secondary" aria-pressed="false">Low stock</button>
+      <p id="packed-count" class="muted small" role="status" hidden></p>
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="Search parts…" />
+        <button id="filters-toggle" class="secondary" aria-expanded="false" aria-controls="filters">${ICON_FILTER}<span>Filters</span><b id="filter-count" hidden></b></button>
+        <div class="menuwrap">
+          <button id="more-toggle" class="icon" aria-label="More" title="More" aria-haspopup="true" aria-expanded="false" aria-controls="more-menu">${ICON_MORE}</button>
+          <div id="more-menu" class="menu right" hidden>
+            <button id="select" class="menu-item">${ICON_SELECT}Select parts</button>
+            <button id="print-labels" class="menu-item">${ICON_QR}Print QR labels</button>
+            <button id="print-inventory" class="menu-item">${ICON_PRINT}Print inventory</button>
+            <button id="unpack-all" class="menu-item" hidden>${ICON_BOX}Unpack all</button>
+            <button id="export-csv" class="menu-item">${ICON_DOWNLOAD}Export CSV</button>
+            <button id="import" class="menu-item">${ICON_UPLOAD}Import spreadsheet</button>
+          </div>
+        </div>
+        <button id="add" disabled>${ICON_PLUS}<span>Add part</span></button>
       </div>
-      <div class="row">
-        <span class="muted small">Sort</span>
-        <select id="sort" aria-label="Sort by"></select>
-        <button id="sort-dir" class="secondary" aria-label="Reverse sort order">Ascending</button>
-        <select id="group" aria-label="Group by">
-          <option value="">No grouping</option>
-          <option value="category">Group by category</option>
-          <option value="location">Group by location</option>
-          <option value="supplier">Group by supplier</option>
-        </select>
-        <button id="reset-filters" class="link" hidden>Reset filters</button>
+      <div id="filters" class="filters" hidden>
+        <div class="row">
+          <span class="muted small">Filter</span>
+          <select id="category" aria-label="Filter by category"></select>
+          <select id="location" aria-label="Filter by location"></select>
+          <select id="tag" aria-label="Filter by tag"></select>
+          <select id="made" aria-label="Filter by made by"></select>
+          <button id="low" class="secondary" aria-pressed="false">Low stock</button>
+        </div>
+        <div class="row">
+          <span class="muted small">Sort</span>
+          <select id="sort" aria-label="Sort by"></select>
+          <button id="sort-dir" class="secondary" aria-label="Reverse sort order">Ascending</button>
+          <select id="group" aria-label="Group by">
+            <option value="">No grouping</option>
+            <option value="category">Group by category</option>
+            <option value="location">Group by location</option>
+            <option value="supplier">Group by supplier</option>
+          </select>
+          <button id="reset-filters" class="link" hidden>Reset filters</button>
+        </div>
       </div>
-    </div>
-    <div id="bulkbar" class="viewbar" hidden>
-      <span id="selected-count"></span>
-      <button id="select-shown" class="secondary">Select all shown</button>
-      <button id="select-none" class="secondary">Clear</button>
-      <button id="bulk-edit">Edit selected</button>
-      <button id="select-done" class="secondary">Done</button>
-    </div>
-    <table aria-busy="true">
-      <thead><tr>${skeletonHead}</tr></thead>
-      <tbody id="rows">${skeletonRows()}</tbody>
-    </table>
-    <button id="add-more" class="secondary accent" hidden></button>
-    <div id="empty" class="muted center-text" hidden><p></p><button id="show-all" class="link" hidden>Show all parts</button></div>
-    <p id="elsewhere" class="muted center-text" hidden></p>
-    <div id="getting-started" class="card getting-started" hidden>
-      <h2>Add your first parts</h2>
-      <div class="row">
-        <button data-start="#add">${ICON_PLUS}<span>Add part</span></button>
-        <button data-start="#scan" class="secondary">Scan a package</button>
-        <button data-start="#import" class="secondary">Import spreadsheet</button>
-        <button data-start="#locations" class="secondary">Add locations</button>
-        ${DEMO ? '' : '<button data-start="#invite" class="secondary">Invite your team</button>'}
+      <div id="bulkbar" class="viewbar" hidden>
+        <span id="selected-count"></span>
+        <button id="select-shown" class="secondary">Select all shown</button>
+        <button id="select-none" class="secondary">Clear</button>
+        <button id="bulk-edit">Edit selected</button>
+        <button id="select-done" class="secondary">Done</button>
+      </div>
+      <table aria-busy="true">
+        <thead><tr>${skeletonHead}</tr></thead>
+        <tbody id="rows">${skeletonRows()}</tbody>
+      </table>
+      <button id="add-more" class="secondary accent" hidden></button>
+      <div id="empty" class="muted center-text" hidden><p></p><button id="show-all" class="link" hidden>Show all parts</button></div>
+      <p id="elsewhere" class="muted center-text" hidden></p>
+      <div id="getting-started" class="card getting-started" hidden>
+        <h2>Add your first parts</h2>
+        <div class="row">
+          <button data-start="#add">${ICON_PLUS}<span>Add part</span></button>
+          <button data-start="#scan" class="secondary">Scan a package</button>
+          <button data-start="#import" class="secondary">Import spreadsheet</button>
+          <button data-start='[data-tab="locations"]' class="secondary">Add locations</button>
+          ${DEMO ? '' : '<button data-start="#invite" class="secondary">Invite your team</button>'}
+        </div>
       </div>
     </div>
     <div id="undo" class="toast" role="status" hidden><span></span><button class="link">Undo</button></div>
@@ -779,9 +791,12 @@ function renderInventory() {
     if (id) switchProject(id);
   };
   app.querySelector('#filters-toggle').onclick = toggleFilters;
-  app.querySelector('#locations').onclick = openLocationsDialog;
-  app.querySelector('#orders').onclick = openOrdersDialog;
-  app.querySelector('#builds').onclick = () => openBuildsDialog();
+  app.querySelector('.tabs').onclick = (e) => {
+    const id = e.target.closest('[data-tab]')?.dataset.tab;
+    if (!id) return;
+    scrollTo(0, 0);
+    showTab(id);
+  };
   app.querySelector('#trash').onclick = openTrashDialog;
   app.querySelector('#export-backup').onclick = () => exportBackup().catch(showError);
   app.querySelector('#restore-backup').onclick = chooseBackup;
@@ -878,9 +893,25 @@ function renderInventory() {
   };
 
   renderRows();
+  showTab(TABS.some((tab) => tab.id === localStorage.getItem(TAB_KEY)) ? localStorage.getItem(TAB_KEY) : 'inventories');
 }
 
+// Shows a tab's page: the parts list for Inventories, or the tab's page in its place.
+function showTab(id) {
+  localStorage.setItem(TAB_KEY, id);
+  for (const button of app.querySelectorAll('.tabs [data-tab]')) {
+    if (button.dataset.tab === id) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  }
+  const page = app.querySelector('#tabpage');
+  if (page.open) page.close();
+  app.querySelector('#inventory-page').hidden = id !== 'inventories';
+  TABS.find((tab) => tab.id === id).open?.();
+}
+
+// Opening an inventory, project or packing list (from a link, a scan or a search) shows it in Inventories.
 function switchProject(id, search = '') {
+  showTab('inventories');
   Object.assign(state, { projectId: id, search, category: '', location: '', tag: '', made: '', low: false, sort: 'name', sortDir: 1, selected: null });
   app.querySelector('#search').value = search;
   renderRows();
@@ -2322,14 +2353,13 @@ function askNewLocation() {
 }
 
 // A location can only be deleted once no part in any project is there.
-function openLocationsDialog() {
-  const dialog = app.querySelector('#dialog');
+function openLocationsPage() {
+  const dialog = app.querySelector('#tabpage');
   dialog.innerHTML = `
     <form method="dialog" class="card locations">
       <h2>Locations</h2>
       ${locationAdders()}
       <ul id="location-list" class="members"></ul>
-      <div class="row"><button value="close" class="secondary">Close</button></div>
     </form>`;
   const list = dialog.querySelector('#location-list');
   const renderLocations = () => {
@@ -2356,9 +2386,10 @@ function openLocationsDialog() {
     if (rename) renameLocation(state.locations.find((l) => l.id === rename)).catch(showError);
   };
   renderLocations();
-  state.onLocationsChange = renderLocations;
-  dialog.addEventListener('close', () => { state.onLocationsChange = null; }, { once: true });
-  dialog.showModal();
+  // Its own hook, since the grid and part dialogs opened over this page use onLocationsChange.
+  state.onLocationsPageChange = renderLocations;
+  dialog.addEventListener('close', () => { state.onLocationsPageChange = null; }, { once: true });
+  dialog.show();
 }
 
 // ---------- storage grids ----------
@@ -2447,7 +2478,7 @@ function openGridDialog(start, part = null, spot = part?.spot ?? '') {
     const location = state.locations.find((l) => l.id === start.id);
     if (!location) return dialog.close();
     const grid = gridSize(location);
-    if (!grid) return openLocationsDialog(); // its grid was removed
+    if (!grid) return dialog.close(); // its grid was removed: back to Locations
     dialog.querySelector('#grid-about').textContent = finding ? `${part ? `${location.name}, spot` : 'Spot'} ${spot}` : `${grid.rows} rows, ${grid.cols} columns`;
     box.innerHTML = gridHtml(location, marked);
     const here = marked ? state.parts.filter((p) => p.location === location.name && p.spot === marked) : [];
@@ -2468,7 +2499,7 @@ function openGridDialog(start, part = null, spot = part?.spot ?? '') {
     const id = e.target.closest('[data-part]')?.dataset.part;
     if (id) openPartDialog(state.parts.find((p) => p.id === id));
   };
-  dialog.querySelector('#back')?.addEventListener('click', openLocationsDialog);
+  dialog.querySelector('#back')?.addEventListener('click', () => dialog.close());
   form.onsubmit = (e) => {
     const action = e.submitter.value;
     if (action !== 'size' && action !== 'remove') return;
@@ -2504,8 +2535,8 @@ async function renameLocation(location) {
 
 // Parts the team needs, has ordered, or got, one tab each. "Ordered" moves an order to the next tab, "Arrived" adds it to the
 // inventory and keeps it under Arrived until the team clears it. Tapping an order loads it into the form below to change it.
-function openOrdersDialog() {
-  const dialog = app.querySelector('#dialog');
+function openOrdersPage() {
+  const dialog = app.querySelector('#tabpage');
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>Orders</h2>
@@ -2531,7 +2562,6 @@ function openOrdersDialog() {
         <button value="add" id="save-order" hidden>Add</button>
         <button type="button" id="cancel-edit" class="secondary" hidden>Cancel</button>
         <button type="button" id="print-orders" class="secondary">Print</button>
-        <button value="close" formnovalidate class="secondary">Close</button>
       </div>
     </form>`;
   const form = dialog.querySelector('form');
@@ -2611,7 +2641,6 @@ function openOrdersDialog() {
   };
   // Adding keeps the dialog open; Enter in a field adds too.
   form.onsubmit = (e) => {
-    if (e.submitter?.value === 'close') return;
     e.preventDefault();
     const name = form.name.value.trim();
     const quantity = Number(form.quantity.value);
@@ -2666,7 +2695,7 @@ function openOrdersDialog() {
   renderOrders();
   state.onOrdersChange = renderOrders;
   dialog.addEventListener('close', () => { state.onOrdersChange = null; }, { once: true });
-  dialog.showModal();
+  dialog.show();
 }
 
 const sortedOrders = () => [...state.orders].sort((a, b) => a.name.localeCompare(b.name));
@@ -2727,8 +2756,8 @@ async function receiveOrder(order) {
 
 // The make list: parts the team makes itself, Not started, In progress and Complete, like the order list.
 // Every item is for a part; how it's made, its material and its file are the part's.
-function openBuildsDialog() {
-  const dialog = app.querySelector('#dialog');
+function openBuildsPage() {
+  const dialog = app.querySelector('#tabpage');
   dialog.innerHTML = `
     <form method="dialog" class="card">
       <h2>Make list</h2>
@@ -2753,7 +2782,6 @@ function openBuildsDialog() {
         <button value="add" id="save-build" hidden>Add</button>
         <button type="button" id="cancel-edit" class="secondary" hidden>Cancel</button>
         <button type="button" id="print-builds" class="secondary">Print</button>
-        <button value="close" formnovalidate class="secondary">Close</button>
       </div>
     </form>`;
   const form = dialog.querySelector('form');
@@ -2833,7 +2861,6 @@ function openBuildsDialog() {
   };
   // Adding keeps the dialog open; Enter in a field adds too.
   form.onsubmit = (e) => {
-    if (e.submitter?.value === 'close') return;
     e.preventDefault();
     const name = form.name.value.trim();
     const quantity = Number(form.quantity.value);
@@ -2876,7 +2903,7 @@ function openBuildsDialog() {
   renderBuilds();
   state.onBuildsChange = renderBuilds;
   dialog.addEventListener('close', () => { state.onBuildsChange = null; }, { once: true });
-  dialog.showModal();
+  dialog.show();
 }
 
 // A Main Inventory part the team makes, new on the make list with none made yet.
@@ -4008,6 +4035,7 @@ function dataChanged(key, docs) {
   renderRows();
   state.picker?.();
   state.onLocationsChange?.();
+  state.onLocationsPageChange?.();
   if (!state.pendingLink || state.loaded.size < 4) return;
   const link = state.pendingLink;
   state.pendingLink = null;
