@@ -1,10 +1,17 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Add 1 whenever these rules change. The app is built with this number (vite.config.js) and, after sign-in,
-    // reads rulesVersion/<number>; if the team's published rules are older, that's denied and the app shows a
-    // banner linking to "Updating the rules" in SETUP.md.
+    // One rules file for every FTC Ultimate app, since publishing rules replaces the whole file. It must stay identical
+    // in every app's repo: whenever you change it, copy the whole file into the other apps' repos in the same change
+    // (see SUITE.md).
+
+    // ---------- Shared: team, members, join (every FTC Ultimate app) ----------
+
+    // Each app has its own number. Add 1 to an app's number whenever its section changes, and to both when the shared
+    // section changes. Each app is built with its number (vite.config.js) and, after sign-in, reads <name>/<number>;
+    // if the team's published rules are older, that's denied and the app shows a banner linking to "Updating the rules".
     function rulesVersion() { return 10; }
+    function scoutRulesVersion() { return 7; }
 
     function signedIn() {
       return request.auth != null;
@@ -21,6 +28,61 @@ service cloud.firestore {
     function shortText(value) {
       return value is string && value.size() <= 200;
     }
+    function validName(value) {
+      return value is string && value.size() > 0 && value.size() <= 40;
+    }
+
+    // Never holds a doc: reading it only checks the rules version (see rulesVersion above).
+    match /rulesVersion/{version} {
+      allow get: if int(version) <= rulesVersion();
+    }
+
+    match /team/info {
+      allow read: if isMember();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['name', 'secret', 'owner'])
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.secret is string && request.resource.data.secret.size() >= 10;
+      allow update: if isOwner()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['secret'])
+        && request.resource.data.secret is string && request.resource.data.secret.size() >= 10;
+    }
+
+    // The key that lets the owner take the team off the developer's team list (see hub.rules). Only the owner sees it.
+    match /team/owner {
+      allow read: if isOwner();
+      allow create: if isOwner()
+        && request.resource.data.keys().hasOnly(['ownerKey'])
+        && request.resource.data.ownerKey is string && request.resource.data.ownerKey.size() >= 10;
+    }
+
+    match /join/info {
+      allow read: if true;
+      allow write: if isOwner()
+        && request.resource.data.keys().hasOnly(['apiKey', 'authDomain', 'appId', 'name'])
+        && shortText(request.resource.data.apiKey)
+        && shortText(request.resource.data.authDomain)
+        && shortText(request.resource.data.appId)
+        && shortText(request.resource.data.name);
+    }
+    match /members/{uid} {
+      allow read: if isMember();
+      // New members must have confirmed their email; members who joined before this rule keep their access.
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.auth.token.email_verified == true
+        && request.resource.data.keys().hasOnly(['email', 'name', 'secret', 'joinedAt'])
+        && request.resource.data.email == request.auth.token.email
+        && validName(request.resource.data.name)
+        && request.resource.data.joinedAt == request.time
+        && request.resource.data.secret == team().secret;
+      allow update: if request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
+        && validName(request.resource.data.name);
+      allow delete: if isOwner() && uid != request.auth.uid;
+    }
+
+    // ---------- Inventory ----------
+
     // existsAfter, so restoring from the trash can bring back a project and its uses in one write.
     function projectExists(id) {
       return id is string && existsAfter(/databases/$(database)/documents/projects/$(id));
@@ -31,9 +93,6 @@ service cloud.firestore {
         && shortText(project.name) && project.name.size() > 0
         && (project.source == '' || projectExists(project.source))
         && (!('kind' in project) || (project.kind == 'packing' && project.source != ''));
-    }
-    function validName(value) {
-      return value is string && value.size() > 0 && value.size() <= 40;
     }
     function webLink(value) {
       return value is string && value.size() <= 1000 && value.matches('https://.+');
@@ -106,55 +165,6 @@ service cloud.firestore {
         && (!('notes' in build) || (build.notes is string && build.notes.size() <= 1000))
         && build.quantity is int && build.quantity > 0 && build.quantity <= 1000000
         && build.partId is string && existsAfter(/databases/$(database)/documents/parts/$(build.partId));
-    }
-
-    // Never holds a doc: reading it only checks the rules version (see rulesVersion above).
-    match /rulesVersion/{version} {
-      allow get: if int(version) <= rulesVersion();
-    }
-
-    match /team/info {
-      allow read: if isMember();
-      allow create: if signedIn()
-        && request.resource.data.keys().hasOnly(['name', 'secret', 'owner'])
-        && request.resource.data.owner == request.auth.uid
-        && request.resource.data.secret is string && request.resource.data.secret.size() >= 10;
-      allow update: if isOwner()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['secret'])
-        && request.resource.data.secret is string && request.resource.data.secret.size() >= 10;
-    }
-
-    // The key that lets the owner take the team off the developer's team list (see hub.rules). Only the owner sees it.
-    match /team/owner {
-      allow read: if isOwner();
-      allow create: if isOwner()
-        && request.resource.data.keys().hasOnly(['ownerKey'])
-        && request.resource.data.ownerKey is string && request.resource.data.ownerKey.size() >= 10;
-    }
-
-    match /join/info {
-      allow read: if true;
-      allow write: if isOwner()
-        && request.resource.data.keys().hasOnly(['apiKey', 'authDomain', 'appId', 'name'])
-        && shortText(request.resource.data.apiKey)
-        && shortText(request.resource.data.authDomain)
-        && shortText(request.resource.data.appId)
-        && shortText(request.resource.data.name);
-    }
-    match /members/{uid} {
-      allow read: if isMember();
-      // New members must have confirmed their email; members who joined before this rule keep their access.
-      allow create: if signedIn() && request.auth.uid == uid
-        && request.auth.token.email_verified == true
-        && request.resource.data.keys().hasOnly(['email', 'name', 'secret', 'joinedAt'])
-        && request.resource.data.email == request.auth.token.email
-        && validName(request.resource.data.name)
-        && request.resource.data.joinedAt == request.time
-        && request.resource.data.secret == team().secret;
-      allow update: if request.auth.uid == uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
-        && validName(request.resource.data.name);
-      allow delete: if isOwner() && uid != request.auth.uid;
     }
 
     match /log/{entryId} {
@@ -257,6 +267,149 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['favorites', 'views'])
         && request.resource.data.favorites is list && request.resource.data.favorites.size() <= 500
         && request.resource.data.views is list && request.resource.data.views.size() <= 50;
+    }
+
+    // ---------- Scout ----------
+
+    // Never holds a doc: reading it only checks Scout's rules version (see scoutRulesVersion above).
+    match /scoutRulesVersion/{version} {
+      allow get: if int(version) <= scoutRulesVersion();
+    }
+
+    // A robot's route for the route player (see the Routes tab). Any member can add, change or delete the team's routes.
+    function validRoute() {
+      let route = request.resource.data;
+      return route.keys().hasOnly(['name', 'season', 'phase', 'alliance', 'team', 'robot', 'start', 'steps', 'shared', 'updatedBy', 'updatedAt'])
+        && route.name is string && route.name.size() > 0 && route.name.size() <= 100
+        && route.season is string && route.season.size() <= 20
+        && route.phase in ['auto', 'teleop']
+        && route.alliance in ['red', 'blue']
+        && (route.team == null || route.team is int)
+        && route.robot is map
+        && route.start is map
+        && route.steps is list && route.steps.size() <= 40
+        && route.shared is bool
+        && route.updatedBy == request.auth.uid
+        && route.updatedAt == request.time;
+    }
+    match /scoutRoutes/{id} {
+      allow read: if isMember();
+      allow create, update: if isMember() && validRoute();
+      allow delete: if isMember();
+    }
+
+    // One team's result in one match from the Scout tab. Scouts add their own; any member can delete one entered by mistake.
+    function validMatch() {
+      let record = request.resource.data;
+      return record.keys().hasOnly(['season', 'event', 'match', 'team', 'alliance', 'counts', 'points', 'notes', 'events', 'scout', 'savedAt'])
+        && record.season is string && record.season.size() <= 20
+        && record.event is string && record.event.size() <= 100
+        && record.match is int && record.match > 0
+        && record.team is int && record.team > 0
+        && record.alliance in ['red', 'blue']
+        && record.counts is map
+        && record.points is map
+        && record.notes is string && record.notes.size() <= 2000
+        && (!('events' in record) || (record.events is list && record.events.size() <= 1000))
+        && record.scout == request.auth.uid
+        && record.savedAt == request.time;
+    }
+    match /scoutMatches/{id} {
+      allow read: if isMember();
+      allow create: if isMember() && validMatch();
+      allow delete: if isMember();
+    }
+
+    // One alliance's result in one match, scouted as a whole from the Scout tab. Same rules as a team's result.
+    function validAlliance() {
+      let record = request.resource.data;
+      return record.keys().hasOnly(['season', 'event', 'match', 'alliance', 'teams', 'counts', 'points', 'notes', 'events', 'scout', 'savedAt'])
+        && record.season is string && record.season.size() <= 20
+        && record.event is string && record.event.size() <= 100
+        && record.match is int && record.match > 0
+        && record.alliance in ['red', 'blue']
+        && record.teams is list && record.teams.size() <= 2
+        && record.counts is map
+        && record.points is map
+        && record.notes is string && record.notes.size() <= 2000
+        && record.events is list && record.events.size() <= 1000
+        && record.scout == request.auth.uid
+        && record.savedAt == request.time;
+    }
+    match /scoutAlliances/{id} {
+      allow read: if isMember();
+      allow create: if isMember() && validAlliance();
+      allow delete: if isMember();
+    }
+
+    // A team's pit interview from the Scout tab, under its team number. Any member can redo or delete it.
+    match /scoutPits/{team} {
+      allow read: if isMember();
+      allow create, update: if isMember()
+        && request.resource.data.keys().hasOnly(['season', 'team', 'claims', 'drivetrain', 'notes', 'by', 'updatedAt'])
+        && request.resource.data.season is string && request.resource.data.season.size() <= 20
+        && request.resource.data.team is int && string(request.resource.data.team) == team
+        && request.resource.data.claims is map
+        && request.resource.data.drivetrain is string && request.resource.data.drivetrain.size() <= 30
+        && request.resource.data.notes is string && request.resource.data.notes.size() <= 2000
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isMember();
+    }
+
+    // A team-wide custom button for the Scout tab.
+    match /scoutButtons/{id} {
+      allow read: if isMember();
+      allow create: if isMember()
+        && request.resource.data.keys().hasOnly(['label', 'points', 'period'])
+        && request.resource.data.period in ['auto', 'teleop', 'both']
+        && request.resource.data.label is string && request.resource.data.label.size() > 0 && request.resource.data.label.size() <= 30
+        && request.resource.data.points is int && request.resource.data.points >= -100 && request.resource.data.points <= 100;
+      allow delete: if isMember();
+    }
+
+    // Where each member is at the competition (Find tab), under their uid: a place, a message or both. Only they can change it.
+    match /scoutCheckIns/{uid} {
+      allow read: if isMember();
+      allow create, update: if isMember() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['place', 'note', 'at'])
+        && request.resource.data.place in ['', 'pits', 'stands', 'queue', 'field', 'practice']
+        && request.resource.data.note is string && request.resource.data.note.size() <= 100
+        && (request.resource.data.place != '' || request.resource.data.note.size() > 0)
+        && request.resource.data.at == request.time;
+    }
+
+    // The latest question to a member, under their uid, asking where they are. Their next check-in answers it.
+    match /scoutPings/{uid} {
+      allow read: if isMember();
+      allow create, update: if isMember() && uid != request.auth.uid
+        && exists(/databases/$(database)/documents/members/$(uid))
+        && request.resource.data.keys().hasOnly(['from', 'at'])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.at == request.time;
+    }
+
+    // Where a member gets alerts when asked where they are (Find tab): their browser's push subscription, which teammates
+    // pass to the push relay (relay/worker.js). Only they can change it.
+    match /scoutPushSubs/{uid} {
+      allow read: if isMember();
+      allow create, update: if isMember() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['endpoint', 'p256dh', 'auth'])
+        && request.resource.data.endpoint is string && request.resource.data.endpoint.size() <= 1000 && request.resource.data.endpoint.matches('https://.+')
+        && shortText(request.resource.data.p256dh)
+        && shortText(request.resource.data.auth);
+      allow delete: if request.auth.uid == uid;
+    }
+
+    // The team's robot (size in inches, speeds in in/s and °/s), copied into each new route.
+    match /scoutSettings/robot {
+      allow read: if isMember();
+      allow create, update: if isMember()
+        && request.resource.data.keys().hasOnly(['width', 'length', 'speed', 'turnSpeed'])
+        && request.resource.data.width is number && request.resource.data.width >= 6 && request.resource.data.width <= 18
+        && request.resource.data.length is number && request.resource.data.length >= 6 && request.resource.data.length <= 18
+        && request.resource.data.speed is number && request.resource.data.speed >= 5 && request.resource.data.speed <= 200
+        && request.resource.data.turnSpeed is number && request.resource.data.turnSpeed >= 30 && request.resource.data.turnSpeed <= 1000;
     }
   }
 }
