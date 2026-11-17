@@ -240,7 +240,8 @@ async function nopCommerce(site, listing) {
     const product = data.find((d) => d['@type'] === 'Product');
     if (!product?.sku) return null;
     const name = cleanName(product.name);
-    const supplierCategory = data.find((d) => d['@type'] === 'BreadcrumbList').itemListElement.map((i) => i.item.name).join(' ');
+    // Some pages' breadcrumbs now give a step's name on the step itself instead of on its link.
+    const supplierCategory = (data.find((d) => d['@type'] === 'BreadcrumbList')?.itemListElement ?? []).map((i) => i.item?.name ?? i.name).join(' ');
     const image = [product.image ?? ''].flat()[0];
     return { partNumber: product.sku.trim(), upc: product.gtin12 ?? product.gtin13 ?? '', name, category: categoryOf(name, supplierCategory), url, image };
   });
