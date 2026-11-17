@@ -1,7 +1,7 @@
 // Builds src/catalog.json, the supplier part catalog the in-app scanner looks package barcodes up in.
 // It reads the product data each supplier publishes on its own store, so the app needs no server:
 // the catalog ships inside the app and works offline. Run by the "Update part catalog" workflow.
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const OUT = new URL('../../src/catalog.json', import.meta.url);
 const USER_AGENT = 'FTC-Ultimate-Inventory catalog builder (+https://github.com/HuskerTheCat/FTC_Ultimate_Inventory)';
@@ -249,11 +249,23 @@ async function nopCommerce(site, listing) {
 
 // ---------- catalog ----------
 
+// A store that refuses us keeps last week's parts, so one supplier can't stop the others from updating.
+const previous = JSON.parse(readFileSync(OUT, 'utf8'));
+async function readOrKeep(supplier, read) {
+  try {
+    return await read();
+  } catch (error) {
+    if (!previous[supplier]) throw error;
+    console.log(`::warning::${supplier} kept last week's parts: ${error.message}`);
+    return previous[supplier].map(([partNumber, upc, name, category, url, image]) => ({ partNumber, upc, name, category, url, image }));
+  }
+}
+
 const bySupplier = {};
 const seen = new Set();
 for (const [supplier, read] of Object.entries(SUPPLIERS)) {
   const parts = [];
-  for (const part of await read()) {
+  for (const part of await readOrKeep(supplier, read)) {
     if (seen.has(part.partNumber.toLowerCase())) continue;
     seen.add(part.partNumber.toLowerCase());
     parts.push(part);
