@@ -446,6 +446,7 @@ function renderWelcome() {
         <form id="signin">
           <h2>Sign in to your team</h2>
           ${teamFields()}
+          <p id="unregistered" class="field-note" role="alert" hidden></p>
           <button>Next</button>
         </form>
         <form id="join">
@@ -474,12 +475,20 @@ function renderWelcome() {
   app.querySelector('#setup').onclick = renderSetup;
   app.querySelector('#signin').onsubmit = async (e) => {
     e.preventDefault();
+    const note = e.target.querySelector('#unregistered');
+    const { program, teamNumber } = e.target;
+    note.hidden = true;
     try {
-      const { program, teamNumber } = e.target;
       const number = Number(teamNumber.value);
       openNewTeam({ ...await findTeam(await findTeamProject(program.value, number)), program: program.value, teamNumber: number, role: 'member' });
     } catch (error) {
-      showError(error);
+      if (error.code !== 'team-unregistered') return showError(error);
+      // Not on the hub's list: say so right under the number box, outlined red until it changes.
+      note.innerHTML = `Team ${Number(teamNumber.value)} isn’t registered yet.<br>Use <strong>Set up a new team</strong> below, or a join code.`;
+      note.hidden = false;
+      teamNumber.classList.add('invalid');
+      teamNumber.focus();
+      teamNumber.addEventListener('input', () => { teamNumber.classList.remove('invalid'); note.hidden = true; }, { once: true });
     }
   };
   app.querySelector('#join').onsubmit = async (e) => {

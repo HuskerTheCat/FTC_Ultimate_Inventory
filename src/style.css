@@ -176,6 +176,8 @@ body::after { content: ''; position: absolute; inset: 0; min-height: 100lvh; z-i
 .teamid { display: flex; gap: 8px; }
 .teamid select { width: auto; flex: none; }
 .teamid input { flex: 1; min-width: 0; }
+.field-note { margin: 0; padding: 8px 12px; border-radius: 10px; font-size: 0.875rem; font-weight: 500; color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, var(--surface)); border: 1px solid var(--danger); }
+.field-note[hidden] { display: none; }
 .error {
   margin: 0 0 12px;
   padding: 10px 14px;

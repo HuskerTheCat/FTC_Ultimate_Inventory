@@ -123,9 +123,9 @@ Firebase pauses sign-in after several wrong passwords. Wait, or use **Forgot pas
 
 If other websites work, the network may block Firebase (some school networks do). Try another network.
 
-### "FTC team 12345 can't sign in by number yet. Join with your team's join code instead. Team admins can sign in from Set up a new team."
+### "Team 12345 isn't registered yet. Use Set up a new team below, or a join code."
 
-Your team isn't on the central list yet. Until the admin fixes it, use **New to the team?** with the join code, then **Sign in**.
+Shown in red under the team number box. Your team isn't on the central list yet. Until the admin fixes it, use **New to the team?** with the join code, then **Sign in**.
 
 Admins: on a device that's signed in to the team, open the app online. Otherwise choose **Start setup**, enter your team number, paste your `firebaseConfig` and click **Create team**. The app sees the team exists: click **Sign in to it** and sign in. Your team goes back on the list.
 
