@@ -523,6 +523,7 @@ function renderSetup() {
             <button type="button" id="copy-rules" class="secondary">Copy rules</button></li>
           <li>In Project settings, add a web app (<code>&lt;/&gt;</code>) and copy its <code>firebaseConfig</code>.</li>
         </ol>
+        <p class="muted small"><a href="${SETUP_URL}" target="_blank" rel="noopener">Detailed setup steps</a></p>
       </div>
       <form id="create" class="card">
         <h2>Create your team</h2>
